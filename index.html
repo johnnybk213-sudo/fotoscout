@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FotoScout</title>
+
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FotoScout">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Find fotospots i nærheden baseret på din position, vejr og lysforhold">
+
+<!-- iOS splash/icon fallback -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='108' fill='%230d1117'/%3E%3Ccircle cx='256' cy='230' r='70' fill='none' stroke='%23f0a030' stroke-width='14'/%3E%3Crect x='146' y='160' width='220' height='160' rx='20' fill='none' stroke='%23f0a030' stroke-width='14'/%3E%3Ccircle cx='256' cy='230' r='35' fill='%23f0a030' opacity='0.4'/%3E%3Ctext x='256' y='430' text-anchor='middle' font-family='system-ui' font-weight='800' font-size='72' fill='%23f0a030'%3EFS%3C/text%3E%3C/svg%3E">
+
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --card-hover: #1c2333;
+    --accent: #f0a030;
+    --accent2: #e06820;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --text-bright: #ffffff;
+    --border: #30363d;
+    --golden: #f5c542;
+    --blue-hour: #4a7fff;
+    --harsh: #ff6b35;
+    --overcast: #8899aa;
+    --success: #3fb950;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Install banner */
+  .install-banner {
+    display: none;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(240,160,48,0.15), rgba(224,104,32,0.1));
+    border-bottom: 1px solid rgba(240,160,48,0.2);
+    align-items: center;
+    gap: 12px;
+    animation: slideDown 0.3s ease;
+  }
+
+  .install-banner.show { display: flex; }
+
+  @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .install-banner .install-text {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .install-banner .install-text strong { color: var(--accent); }
+
+  .install-btn {
+    padding: 8px 18px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .install-dismiss {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  /* Header */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, var(--bg) 0%, rgba(13,17,23,0.95) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 16px 16px 12px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .light-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+  }
+
+  .light-badge .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .light-golden { background: rgba(245,197,66,0.1); color: var(--golden); border-color: rgba(245,197,66,0.3); }
+  .light-golden .dot { background: var(--golden); }
+  .light-blue { background: rgba(74,127,255,0.1); color: var(--blue-hour); border-color: rgba(74,127,255,0.3); }
+  .light-blue .dot { background: var(--blue-hour); }
+  .light-harsh { background: rgba(255,107,53,0.1); color: var(--harsh); border-color: rgba(255,107,53,0.3); }
+  .light-harsh .dot { background: var(--harsh); }
+  .light-overcast { background: rgba(136,153,170,0.1); color: var(--overcast); border-color: rgba(136,153,170,0.3); }
+  .light-overcast .dot { background: var(--overcast); }
+  .light-night { background: rgba(74,127,255,0.08); color: #6a8fcc; border-color: rgba(74,127,255,0.2); }
+  .light-night .dot { background: #6a8fcc; }
+
+  /* Weather strip */
+  .weather-strip {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .weather-strip .item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .weather-strip .icon { font-size: 16px; }
+
+  /* Radius control */
+  .radius-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .radius-control label {
+    font-size: 12px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    min-width: 58px;
+  }
+
+  .radius-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .radius-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .radius-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 42px;
+    text-align: right;
+  }
+
+  /* Status bar */
+  .status-bar {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-bar .count {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Loading state */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    gap: 16px;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  /* Error state */
+  .error-msg {
+    margin: 20px 16px;
+    padding: 16px;
+    background: rgba(255,70,70,0.1);
+    border: 1px solid rgba(255,70,70,0.2);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: #ff7070;
+    text-align: center;
+  }
+
+  .error-msg button {
+    margin-top: 12px;
+    padding: 8px 20px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* Cards */
+  .cards {
+    padding: 8px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: transform 0.15s, border-color 0.15s;
+  }
+
+  .card:active {
+    transform: scale(0.98);
+    border-color: var(--accent);
+  }
+
+  .card-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: #0a0e14;
+    overflow: hidden;
+  }
+
+  .card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s;
+  }
+
+  .card-img-wrap .no-img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 48px;
+    opacity: 0.15;
+  }
+
+  .card-distance {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+
+  .card-category {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(240,160,48,0.85);
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--bg);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .card-body {
+    padding: 14px 16px 16px;
+  }
+
+  .card-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-footer {
+    display: flex;
+    gap: 8px;
+  }
+
+  .card-footer a, .card-footer button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s;
+  }
+
+  .btn-navigate {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .btn-navigate:active { background: var(--accent2); }
+
+  .btn-wiki {
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    border: 1px solid var(--border) !important;
+  }
+
+  .btn-wiki:active { background: rgba(255,255,255,0.12); }
+
+  /* Photo tip banner */
+  .photo-tip {
+    margin: 8px 16px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(240,160,48,0.1), rgba(224,104,32,0.08));
+    border: 1px solid rgba(240,160,48,0.2);
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .photo-tip .tip-title {
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Refresh button */
+  .refresh-btn {
+    position: fixed;
+    bottom: 24px;
+    bottom: max(24px, calc(env(safe-area-inset-bottom) + 12px));
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(240,160,48,0.3);
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+
+  .refresh-btn:active { transform: scale(0.9); }
+  .refresh-btn.spinning { animation: spin 0.8s linear infinite; }
+
+  /* Filter pills */
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .filter-row::-webkit-scrollbar { display: none; }
+
+  .filter-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-pill.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  /* GPS tracking indicator */
+  .gps-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--success);
+    margin-left: 8px;
+  }
+
+  .gps-indicator .gps-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+
+<!-- Install banner -->
+<div class="install-banner" id="installBanner">
+  <div class="install-text">
+    <strong>Installér FotoScout</strong> som app for fuld skærm og hurtig adgang
+  </div>
+  <button class="install-btn" id="installBtn">Installér</button>
+  <button class="install-dismiss" id="installDismiss">✕</button>
+</div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">Foto<span>Scout</span></div>
+    <div id="lightBadge" class="light-badge light-overcast">
+      <div class="dot"></div>
+      <span id="lightText">Analyserer lys...</span>
+    </div>
+  </div>
+  <div id="weatherStrip" class="weather-strip">
+    <div class="item"><span class="icon">📍</span> <span id="weatherLocation">Finder position...</span></div>
+  </div>
+  <div class="radius-control">
+    <label>Søgeradius</label>
+    <input type="range" class="radius-slider" id="radiusSlider" min="1" max="30" value="5">
+    <div class="radius-value" id="radiusValue">5 km</div>
+  </div>
+</div>
+
+<div class="filter-row" id="filterRow">
+  <button class="filter-pill active" data-filter="all">Alle</button>
+  <button class="filter-pill" data-filter="tourism">Seværdigheder</button>
+  <button class="filter-pill" data-filter="natural">Natur</button>
+  <button class="filter-pill" data-filter="historic">Historisk</button>
+  <button class="filter-pill" data-filter="architecture">Arkitektur</button>
+  <button class="filter-pill" data-filter="water">Vand</button>
+</div>
+
+<div id="photoTip" class="photo-tip" style="display:none;">
+  <div class="tip-title">📸 Foto-tip lige nu</div>
+  <div id="tipText"></div>
+</div>
+
+<div id="statusBar" class="status-bar">
+  <span>Starter op...</span>
+</div>
+
+<div id="content">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Finder din position...</div>
+  </div>
+</div>
+
+<button class="refresh-btn" id="refreshBtn" title="Opdater">↻</button>
+
+<script>
+// ============================================================
+// FotoScout PWA v1
+// ============================================================
+
+// --- Register Service Worker ---
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(err => {
+    console.log('SW registration failed:', err);
+  });
+}
+
+// --- PWA Install Prompt ---
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const result = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBanner').classList.remove('show');
+});
+
+document.getElementById('installDismiss').addEventListener('click', () => {
+  document.getElementById('installBanner').classList.remove('show');
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').classList.remove('show');
+  deferredPrompt = null;
+});
+
+// --- State ---
+const state = {
+  lat: null,
+  lon: null,
+  radius: 5,
+  weather: null,
+  lightCondition: null,
+  pois: [],
+  filter: 'all',
+  loading: false,
+  watchId: null,
+  lastPOIFetch: 0,
+  lastWeatherFetch: 0
+};
+
+// --- Helpers ---
+function deg2rad(d) { return d * Math.PI / 180; }
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function formatDist(km) {
+  return km < 1 ? `${Math.round(km*1000)} m` : `${km.toFixed(1)} km`;
+}
+
+// --- Sun position ---
+function getSunPosition(lat, lon, date) {
+  const dayOfYear = Math.floor((date - new Date(date.getFullYear(),0,0)) / 86400000);
+  const declination = 23.45 * Math.sin(deg2rad(360/365 * (dayOfYear - 81)));
+  const hourAngle = (date.getHours() + date.getMinutes()/60 - 12) * 15;
+  const latRad = deg2rad(lat);
+  const decRad = deg2rad(declination);
+  const haRad = deg2rad(hourAngle);
+  const altitude = Math.asin(
+    Math.sin(latRad) * Math.sin(decRad) +
+    Math.cos(latRad) * Math.cos(decRad) * Math.cos(haRad)
+  ) * 180 / Math.PI;
+  return { altitude, declination };
+}
+
+function getLightCondition(lat, lon, weather) {
+  const now = new Date();
+  const sun = getSunPosition(lat, lon, now);
+  const alt = sun.altitude;
+  const clouds = weather ? weather.cloudcover : 50;
+  let condition, cls, tip;
+
+  if (alt < -6) {
+    condition = 'Nat'; cls = 'light-night';
+    tip = 'Perfekt til natfotografering og astrofoto. Brug stativ og lang lukkertid. Stjerner og Mælkevejen kan være synlige ved lav skydækning.';
+  } else if (alt < -0.5) {
+    condition = 'Blue Hour'; cls = 'light-blue';
+    tip = 'Blue hour! Den magiske blå tone i himlen er perfekt til bylandskaber og silhuetter. Brug stativ og eksperimenter med lange lukketider.';
+  } else if (alt < 10) {
+    condition = 'Golden Hour'; cls = 'light-golden';
+    tip = 'Golden hour! Det varme, bløde sidelys er ideelt til portrætter og landskaber. Skyggerne er lange og dramatiske. Skyd nu!';
+  } else if (alt < 25 && clouds > 60) {
+    condition = 'Blødt overskyet'; cls = 'light-overcast';
+    tip = 'Skydækket fungerer som en kæmpe softbox. Godt til portrætter, skovfotografering og detaljer uden hårde skygger.';
+  } else if (alt > 50 && clouds < 30) {
+    condition = 'Hårdt middagslys'; cls = 'light-harsh';
+    tip = 'Hårdt lys ovenfra giver stærke skygger. Søg skygge til portrætter, eller brug det kreativt til grafiske skygge-kompositioner.';
+  } else if (clouds > 70) {
+    condition = 'Overskyet'; cls = 'light-overcast';
+    tip = 'Jævnt, diffust lys — ideelt til naturfotografering, vandfald med lang lukkertid og farverig skovbund.';
+  } else {
+    condition = 'Godt dagslys'; cls = 'light-golden';
+    tip = 'Fine lysforhold med en god blanding af sol og skyer. Brug solens retning til at skabe dybde i dine billeder.';
+  }
+  return { condition, cls, tip, sunAlt: alt };
+}
+
+// --- Categories ---
+const categoryMap = {
+  'castle': { label: 'Slot', filter: 'historic' },
+  'ruins': { label: 'Ruin', filter: 'historic' },
+  'monument': { label: 'Monument', filter: 'historic' },
+  'memorial': { label: 'Memorial', filter: 'historic' },
+  'archaeological_site': { label: 'Arkæologi', filter: 'historic' },
+  'church': { label: 'Kirke', filter: 'architecture' },
+  'cathedral': { label: 'Domkirke', filter: 'architecture' },
+  'monastery': { label: 'Kloster', filter: 'architecture' },
+  'tower': { label: 'Tårn', filter: 'architecture' },
+  'lighthouse': { label: 'Fyrtårn', filter: 'architecture' },
+  'bridge': { label: 'Bro', filter: 'architecture' },
+  'windmill': { label: 'Vindmølle', filter: 'architecture' },
+  'watermill': { label: 'Vandmølle', filter: 'architecture' },
+  'viewpoint': { label: 'Udsigt', filter: 'tourism' },
+  'artwork': { label: 'Kunst', filter: 'tourism' },
+  'museum': { label: 'Museum', filter: 'tourism' },
+  'attraction': { label: 'Attraktion', filter: 'tourism' },
+  'theme_park': { label: 'Forlystelse', filter: 'tourism' },
+  'zoo': { label: 'Zoo', filter: 'tourism' },
+  'garden': { label: 'Have', filter: 'natural' },
+  'peak': { label: 'Bjergtop', filter: 'natural' },
+  'cliff': { label: 'Klint', filter: 'natural' },
+  'beach': { label: 'Strand', filter: 'water' },
+  'spring': { label: 'Kilde', filter: 'water' },
+  'waterfall': { label: 'Vandfald', filter: 'water' },
+  'lake': { label: 'Sø', filter: 'water' },
+  'glacier': { label: 'Gletsjer', filter: 'natural' },
+  'cave_entrance': { label: 'Grotte', filter: 'natural' },
+  'nature_reserve': { label: 'Naturreservat', filter: 'natural' },
+  'protected_area': { label: 'Beskyttet', filter: 'natural' },
+  'wood': { label: 'Skov', filter: 'natural' },
+  'wetland': { label: 'Vådområde', filter: 'natural' },
+  'harbour': { label: 'Havn', filter: 'water' },
+  'marina': { label: 'Marina', filter: 'water' },
+};
+
+function categorize(tags) {
+  for (const [key, val] of Object.entries(categoryMap)) {
+    if (tags.tourism === key || tags.historic === key || tags.natural === key ||
+        tags['waterway'] === key || tags['man_made'] === key || tags['leisure'] === key) {
+      return val;
+    }
+  }
+  if (tags.tourism) return { label: tags.tourism.replace(/_/g,' '), filter: 'tourism' };
+  if (tags.historic) return { label: tags.historic.replace(/_/g,' '), filter: 'historic' };
+  if (tags.natural) return { label: tags.natural.replace(/_/g,' '), filter: 'natural' };
+  return { label: 'Sted', filter: 'tourism' };
+}
+
+// --- Geolocation with continuous watching ---
+function startLocationWatch() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation er ikke understøttet'));
+      return;
+    }
+
+    let resolved = false;
+
+    state.watchId = navigator.geolocation.watchPosition(
+      pos => {
+        const newLat = pos.coords.latitude;
+        const newLon = pos.coords.longitude;
+
+        // Check if we've moved significantly (>500m)
+        const moved = state.lat === null || haversine(state.lat, state.lon, newLat, newLon) > 0.5;
+
+        state.lat = newLat;
+        state.lon = newLon;
+
+        if (!resolved) {
+          resolved = true;
+          resolve({ lat: newLat, lon: newLon });
+        } else if (moved) {
+          // Auto-refresh when moved significantly
+          onLocationUpdate();
+        }
+      },
+      err => {
+        if (!resolved) reject(err);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
+    );
+  });
+}
+
+async function onLocationUpdate() {
+  const now = Date.now();
+  // Throttle: don't refresh more than once per 2 minutes
+  if (now - state.lastPOIFetch < 120000) return;
+
+  // Update weather if stale (>10 min)
+  if (now - state.lastWeatherFetch > 600000) {
+    try {
+      state.weather = await fetchWeather(state.lat, state.lon);
+      state.lastWeatherFetch = now;
+      renderWeather();
+      renderLight();
+    } catch {}
+  }
+
+  // Refresh POIs
+  await loadPOIs();
+  reverseGeocode(state.lat, state.lon);
+}
+
+// --- Weather (Open-Meteo) ---
+async function fetchWeather(lat, lon) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,cloud_cover,weather_code&timezone=auto`;
+  const res = await fetch(url);
+  const data = await res.json();
+  const c = data.current;
+  return {
+    temp: Math.round(c.temperature_2m),
+    humidity: c.relative_humidity_2m,
+    wind: Math.round(c.wind_speed_10m),
+    cloudcover: c.cloud_cover,
+    code: c.weather_code
+  };
+}
+
+function weatherIcon(code) {
+  if (code <= 1) return '☀️';
+  if (code <= 3) return '⛅';
+  if (code <= 48) return '☁️';
+  if (code <= 67) return '🌧️';
+  if (code <= 77) return '🌨️';
+  if (code <= 82) return '🌧️';
+  if (code <= 86) return '🌨️';
+  return '⛈️';
+}
+
+// --- POIs (Overpass API) ---
+async function fetchPOIs(lat, lon, radiusKm) {
+  const r = radiusKm * 1000;
+  const query = `
+    [out:json][timeout:25];
+    (
+      nwr["tourism"~"attraction|viewpoint|artwork|museum|castle|zoo|theme_park|monument"](around:${r},${lat},${lon});
+      nwr["historic"~"castle|ruins|monument|memorial|archaeological_site|church|monastery|tower|lighthouse|windmill|watermill|bridge"](around:${r},${lat},${lon});
+      nwr["natural"~"peak|cliff|beach|spring|waterfall|lake|glacier|cave_entrance|wood|wetland"](around:${r},${lat},${lon});
+      nwr["leisure"~"nature_reserve|garden|marina"](around:${r},${lat},${lon});
+      nwr["man_made"~"lighthouse|tower|windmill|watermill|bridge"](around:${r},${lat},${lon});
+      nwr["waterway"="waterfall"](around:${r},${lat},${lon});
+    );
+    out center 100;
+  `;
+  const res = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    body: 'data=' + encodeURIComponent(query)
+  });
+  const data = await res.json();
+  const seen = new Set();
+  const pois = [];
+
+  for (const el of data.elements) {
+    const tags = el.tags || {};
+    const name = tags.name || tags['name:da'] || tags['name:en'];
+    if (!name) continue;
+    const key = name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const elLat = el.lat || el.center?.lat;
+    const elLon = el.lon || el.center?.lon;
+    if (!elLat || !elLon) continue;
+    const dist = haversine(lat, lon, elLat, elLon);
+    const cat = categorize(tags);
+    pois.push({
+      name, lat: elLat, lon: elLon, dist, tags, category: cat,
+      wikiTitle: tags.wikipedia || tags['wikipedia:da'] || tags['wikipedia:en'] || null,
+      wikidataId: tags.wikidata || null,
+      image: null, description: null
+    });
+  }
+  pois.sort((a, b) => a.dist - b.dist);
+  return pois;
+}
+
+// --- Wikipedia ---
+async function fetchWikiInfo(poi) {
+  let title = null;
+  let lang = 'da';
+
+  if (poi.wikiTitle) {
+    const parts = poi.wikiTitle.split(':');
+    if (parts.length === 2) { lang = parts[0]; title = parts[1]; }
+    else { title = poi.wikiTitle; }
+  } else {
+    title = poi.name;
+  }
+
+  try {
+    const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      if (lang !== 'en') {
+        const res2 = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(poi.name)}`);
+        if (res2.ok) {
+          const data2 = await res2.json();
+          return { image: data2.thumbnail?.source?.replace(/\/\d+px-/, '/800px-') || null, description: data2.extract || null };
+        }
+      }
+      return { image: null, description: null };
+    }
+    const data = await res.json();
+    return { image: data.thumbnail?.source?.replace(/\/\d+px-/, '/800px-') || null, description: data.extract || null };
+  } catch {
+    return { image: null, description: null };
+  }
+}
+
+// --- Rendering ---
+function renderWeather() {
+  const w = state.weather;
+  if (!w) return;
+  document.getElementById('weatherStrip').innerHTML = `
+    <div class="item"><span class="icon">📍</span> <span id="weatherLocation">${state.lat.toFixed(3)}, ${state.lon.toFixed(3)}</span>
+      <span class="gps-indicator"><span class="gps-dot"></span> Live</span>
+    </div>
+    <div class="item"><span class="icon">${weatherIcon(w.code)}</span> ${w.temp}°C</div>
+    <div class="item"><span class="icon">💨</span> ${w.wind} km/t</div>
+    <div class="item"><span class="icon">☁️</span> ${w.cloudcover}%</div>
+  `;
+}
+
+function renderLight() {
+  if (!state.weather) return;
+  const light = getLightCondition(state.lat, state.lon, state.weather);
+  state.lightCondition = light;
+  const badge = document.getElementById('lightBadge');
+  badge.className = `light-badge ${light.cls}`;
+  document.getElementById('lightText').textContent = light.condition;
+  document.getElementById('photoTip').style.display = 'block';
+  document.getElementById('tipText').textContent = light.tip;
+}
+
+function renderCards() {
+  const container = document.getElementById('content');
+  const filtered = state.filter === 'all'
+    ? state.pois
+    : state.pois.filter(p => p.category.filter === state.filter);
+
+  document.getElementById('statusBar').innerHTML = `
+    <span class="count">${filtered.length}</span> fotospots inden for <span class="count">${state.radius} km</span>
+  `;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;color:var(--text-dim);">
+        <div style="font-size:48px;margin-bottom:12px;">📷</div>
+        <div style="font-size:15px;">Ingen steder fundet${state.filter !== 'all' ? ' i denne kategori' : ''}.</div>
+        <div style="font-size:13px;margin-top:8px;">Prøv at øge søgeradius eller skift filter.</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '<div class="cards">' + filtered.map(poi => {
+    const imgHtml = poi.image
+      ? `<img src="${poi.image}" alt="${poi.name}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=\\'no-img\\'>📷</div>'">`
+      : `<div class="no-img">📷</div>`;
+    const desc = poi.description || 'Ingen beskrivelse tilgængelig. Tryk "Læs mere" for at se på Wikipedia.';
+    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${poi.lat},${poi.lon}`;
+    const wikiSearch = `https://da.wikipedia.org/wiki/Special:Search/${encodeURIComponent(poi.name)}`;
+
+    return `
+      <div class="card">
+        <div class="card-img-wrap">
+          ${imgHtml}
+          <div class="card-distance">${formatDist(poi.dist)}</div>
+          <div class="card-category">${poi.category.label}</div>
+        </div>
+        <div class="card-body">
+          <div class="card-name">${poi.name}</div>
+          <div class="card-desc">${desc}</div>
+          <div class="card-footer">
+            <a href="${navUrl}" target="_blank" rel="noopener" class="btn-navigate">📍 Navigér</a>
+            <a href="${wikiSearch}" target="_blank" rel="noopener" class="btn-wiki">📖 Læs mere</a>
+          </div>
+        </div>
+      </div>`;
+  }).join('') + '</div>';
+}
+
+// --- Filters ---
+document.getElementById('filterRow').addEventListener('click', e => {
+  const pill = e.target.closest('.filter-pill');
+  if (!pill) return;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  state.filter = pill.dataset.filter;
+  renderCards();
+});
+
+// --- Radius slider ---
+const slider = document.getElementById('radiusSlider');
+const radiusVal = document.getElementById('radiusValue');
+slider.addEventListener('input', () => { radiusVal.textContent = `${parseInt(slider.value)} km`; });
+let debounceTimer;
+slider.addEventListener('change', () => {
+  state.radius = parseInt(slider.value);
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => loadPOIs(), 300);
+});
+
+// --- Refresh ---
+document.getElementById('refreshBtn').addEventListener('click', () => { init(); });
+
+// --- Main flow ---
+async function loadPOIs() {
+  const content = document.getElementById('content');
+  content.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Søger efter fotospots...</div></div>`;
+
+  try {
+    state.pois = await fetchPOIs(state.lat, state.lon, state.radius);
+    state.lastPOIFetch = Date.now();
+    const batch = state.pois.slice(0, 30);
+    const results = await Promise.allSettled(batch.map(poi => fetchWikiInfo(poi)));
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled' && r.value) {
+        batch[i].image = r.value.image;
+        batch[i].description = r.value.description;
+      }
+    });
+    renderCards();
+  } catch (err) {
+    content.innerHTML = `<div class="error-msg">Kunne ikke hente steder: ${err.message}<br><button onclick="loadPOIs()">Prøv igen</button></div>`;
+  }
+}
+
+async function reverseGeocode(lat, lon) {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=da`);
+    const data = await res.json();
+    const addr = data.address;
+    const loc = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+    if (loc) {
+      const el = document.getElementById('weatherLocation');
+      if (el) el.textContent = loc;
+    }
+  } catch {}
+}
+
+async function init() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  const content = document.getElementById('content');
+  content.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Finder din position...</div></div>`;
+
+  try {
+    const pos = await startLocationWatch();
+    state.lat = pos.lat;
+    state.lon = pos.lon;
+
+    content.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Henter vejrdata...</div></div>`;
+
+    try {
+      state.weather = await fetchWeather(state.lat, state.lon);
+      state.lastWeatherFetch = Date.now();
+      renderWeather();
+      renderLight();
+    } catch (e) { console.warn('Vejrdata fejlede:', e); }
+
+    await loadPOIs();
+    reverseGeocode(state.lat, state.lon);
+
+    // Update light conditions every minute
+    setInterval(() => { if (state.weather) renderLight(); }, 60000);
+
+  } catch (err) {
+    content.innerHTML = `<div class="error-msg">
+      Kunne ikke finde din position. Tillad venligst GPS-adgang i din browser.
+      <br><br><small>${err.message}</small>
+      <br><button onclick="init()">Prøv igen</button></div>`;
+  }
+  btn.classList.remove('spinning');
+}
+
+// Start!
+init();
+</script>
+</body>
+</html>
