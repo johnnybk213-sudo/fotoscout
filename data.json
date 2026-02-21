@@ -1,0 +1,50 @@
+{
+  "locations": [
+    {
+      "id": "loc-001",
+      "name": "Rubjerg Knude Fyr",
+      "address": "Rubjergvej 2, 9480 Løkken",
+      "lat": 57.4483,
+      "lon": 9.7742,
+      "notes": "Bedst ved solnedgang. Vidvinkel for at fange fyrtårnet med klinten.",
+      "photos": [],
+      "tags": ["fyrtårn", "klint", "nordjylland"],
+      "created": "2026-02-21"
+    },
+    {
+      "id": "loc-002",
+      "name": "Bovbjerg Fyr",
+      "address": "Fyrvej 20, 7620 Lemvig",
+      "lat": 56.5144,
+      "lon": 8.1219,
+      "notes": "Rødt fyrtårn på klinten. Flot ved både solopgang og solnedgang.",
+      "photos": [],
+      "tags": ["fyrtårn", "klint", "vestjylland"],
+      "created": "2026-02-21"
+    }
+  ],
+  "inspirations": [
+    {
+      "id": "insp-001",
+      "title": "Dramatisk bølgeslag ved solnedgang",
+      "area": "Strand ved Blokhus",
+      "lat": 57.2600,
+      "lon": 9.5800,
+      "notes": "Lav position tæt på vandkanten, lang lukkertid (1/4 sek), ND-filter.",
+      "photo": "",
+      "tags": ["strand", "solnedgang", "nordjylland"],
+      "created": "2026-02-21"
+    },
+    {
+      "id": "insp-002",
+      "title": "Bunkerruiner i klitterne",
+      "area": "Houvig, nær Søndervig",
+      "lat": 56.0800,
+      "lon": 8.0900,
+      "notes": "Atlantvoldens bunkere delvist begravet i sand. Sort/hvid konvertering.",
+      "photo": "",
+      "tags": ["bunkere", "klitter", "vestjylland"],
+      "created": "2026-02-21"
+    }
+  ]
+}

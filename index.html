@@ -4,35 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>FotoScout</title>
-
-<!-- PWA -->
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#0d1117">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FotoScout">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="Find fotospots i nærheden baseret på din position, vejr og lysforhold">
-
-<!-- iOS splash/icon fallback -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='108' fill='%230d1117'/%3E%3Ccircle cx='256' cy='230' r='70' fill='none' stroke='%23f0a030' stroke-width='14'/%3E%3Crect x='146' y='160' width='220' height='160' rx='20' fill='none' stroke='%23f0a030' stroke-width='14'/%3E%3Ccircle cx='256' cy='230' r='35' fill='%23f0a030' opacity='0.4'/%3E%3Ctext x='256' y='430' text-anchor='middle' font-family='system-ui' font-weight='800' font-size='72' fill='%23f0a030'%3EFS%3C/text%3E%3C/svg%3E">
-
+<meta name="description" content="Personlig foto-planlægger til Vestkysten">
 <style>
   :root {
     --bg: #0d1117;
     --card: #161b22;
-    --card-hover: #1c2333;
-    --accent: #f0a030;
-    --accent2: #e06820;
     --text: #e6edf3;
     --text-dim: #8b949e;
     --text-bright: #ffffff;
     --border: #30363d;
-    --golden: #f5c542;
-    --blue-hour: #4a7fff;
-    --harsh: #ff6b35;
-    --overcast: #8899aa;
-    --success: #3fb950;
+    --pin: #4a7fff;
+    --pin-bg: rgba(74,127,255,0.12);
+    --cam: #f0a030;
+    --cam-bg: rgba(240,160,48,0.12);
     --radius: 12px;
   }
 
@@ -44,53 +33,7 @@
     color: var(--text);
     min-height: 100vh;
     min-height: 100dvh;
-    overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Install banner */
-  .install-banner {
-    display: none;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, rgba(240,160,48,0.15), rgba(224,104,32,0.1));
-    border-bottom: 1px solid rgba(240,160,48,0.2);
-    align-items: center;
-    gap: 12px;
-    animation: slideDown 0.3s ease;
-  }
-
-  .install-banner.show { display: flex; }
-
-  @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-  .install-banner .install-text {
-    flex: 1;
-    font-size: 13px;
-    color: var(--text);
-    line-height: 1.4;
-  }
-
-  .install-banner .install-text strong { color: var(--accent); }
-
-  .install-btn {
-    padding: 8px 18px;
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-
-  .install-dismiss {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px;
   }
 
   /* Header */
@@ -98,10 +41,10 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: linear-gradient(180deg, var(--bg) 0%, rgba(13,17,23,0.95) 100%);
+    background: rgba(13,17,23,0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    padding: 16px 16px 12px;
+    padding: 16px;
     padding-top: max(16px, env(safe-area-inset-top));
     border-bottom: 1px solid var(--border);
   }
@@ -110,370 +53,41 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
-  .logo {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-  }
+  .logo { font-size: 22px; font-weight: 800; }
+  .logo span { color: var(--cam); }
 
-  .logo span { color: var(--accent); }
-
-  .light-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    border: 1px solid var(--border);
-  }
-
-  .light-badge .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  .light-golden { background: rgba(245,197,66,0.1); color: var(--golden); border-color: rgba(245,197,66,0.3); }
-  .light-golden .dot { background: var(--golden); }
-  .light-blue { background: rgba(74,127,255,0.1); color: var(--blue-hour); border-color: rgba(74,127,255,0.3); }
-  .light-blue .dot { background: var(--blue-hour); }
-  .light-harsh { background: rgba(255,107,53,0.1); color: var(--harsh); border-color: rgba(255,107,53,0.3); }
-  .light-harsh .dot { background: var(--harsh); }
-  .light-overcast { background: rgba(136,153,170,0.1); color: var(--overcast); border-color: rgba(136,153,170,0.3); }
-  .light-overcast .dot { background: var(--overcast); }
-  .light-night { background: rgba(74,127,255,0.08); color: #6a8fcc; border-color: rgba(74,127,255,0.2); }
-  .light-night .dot { background: #6a8fcc; }
-
-  /* Weather strip */
-  .weather-strip {
-    display: flex;
-    gap: 12px;
-    align-items: center;
+  .location-name {
     font-size: 13px;
     color: var(--text-dim);
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-  }
-
-  .weather-strip .item {
     display: flex;
     align-items: center;
     gap: 4px;
   }
 
-  .weather-strip .icon { font-size: 16px; }
-
-  /* Radius control */
-  .radius-control {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .radius-control label {
-    font-size: 12px;
-    color: var(--text-dim);
-    white-space: nowrap;
-    min-width: 58px;
-  }
-
-  .radius-slider {
-    flex: 1;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    outline: none;
-  }
-
-  .radius-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
+  .gps-dot {
+    width: 6px; height: 6px;
     border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-    border: 2px solid var(--bg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    background: #3fb950;
+    animation: pulse 1.5s ease-in-out infinite;
   }
 
-  .radius-value {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--accent);
-    min-width: 42px;
-    text-align: right;
-  }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 
-  /* Status bar */
-  .status-bar {
-    padding: 10px 16px;
-    font-size: 13px;
-    color: var(--text-dim);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .status-bar .count {
-    color: var(--accent);
-    font-weight: 700;
-  }
-
-  /* Loading state */
-  .loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 80px 20px;
-    gap: 16px;
-  }
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .loading-text {
-    font-size: 14px;
-    color: var(--text-dim);
-  }
-
-  /* Error state */
-  .error-msg {
-    margin: 20px 16px;
-    padding: 16px;
-    background: rgba(255,70,70,0.1);
-    border: 1px solid rgba(255,70,70,0.2);
-    border-radius: var(--radius);
-    font-size: 14px;
-    color: #ff7070;
-    text-align: center;
-  }
-
-  .error-msg button {
-    margin-top: 12px;
-    padding: 8px 20px;
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-  }
-
-  /* Cards */
-  .cards {
-    padding: 8px 16px 100px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .card {
-    background: var(--card);
-    border-radius: var(--radius);
-    overflow: hidden;
-    border: 1px solid var(--border);
-    transition: transform 0.15s, border-color 0.15s;
-  }
-
-  .card:active {
-    transform: scale(0.98);
-    border-color: var(--accent);
-  }
-
-  .card-img-wrap {
-    position: relative;
-    width: 100%;
-    height: 220px;
-    background: #0a0e14;
-    overflow: hidden;
-  }
-
-  .card-img-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: opacity 0.3s;
-  }
-
-  .card-img-wrap .no-img {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    font-size: 48px;
-    opacity: 0.15;
-  }
-
-  .card-distance {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 4px 10px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-bright);
-  }
-
-  .card-category {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: rgba(240,160,48,0.85);
-    padding: 3px 10px;
-    border-radius: 16px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--bg);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .card-body {
-    padding: 14px 16px 16px;
-  }
-
-  .card-name {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text-bright);
-    margin-bottom: 4px;
-    line-height: 1.3;
-  }
-
-  .card-desc {
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.5;
-    margin-bottom: 12px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .card-footer {
-    display: flex;
-    gap: 8px;
-  }
-
-  .card-footer a, .card-footer button {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
-    transition: background 0.15s;
-  }
-
-  .btn-navigate {
-    background: var(--accent);
-    color: var(--bg);
-  }
-
-  .btn-navigate:active { background: var(--accent2); }
-
-  .btn-wiki {
-    background: rgba(255,255,255,0.06);
-    color: var(--text);
-    border: 1px solid var(--border) !important;
-  }
-
-  .btn-wiki:active { background: rgba(255,255,255,0.12); }
-
-  /* Photo tip banner */
-  .photo-tip {
-    margin: 8px 16px;
-    padding: 14px 16px;
-    background: linear-gradient(135deg, rgba(240,160,48,0.1), rgba(224,104,32,0.08));
-    border: 1px solid rgba(240,160,48,0.2);
-    border-radius: var(--radius);
-    font-size: 13px;
-    color: var(--text);
-    line-height: 1.5;
-  }
-
-  .photo-tip .tip-title {
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 4px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* Refresh button */
-  .refresh-btn {
-    position: fixed;
-    bottom: 24px;
-    bottom: max(24px, calc(env(safe-area-inset-bottom) + 12px));
-    right: 24px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(240,160,48,0.3);
-    z-index: 99;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-  }
-
-  .refresh-btn:active { transform: scale(0.9); }
-  .refresh-btn.spinning { animation: spin 0.8s linear infinite; }
-
-  /* Filter pills */
-  .filter-row {
+  /* Filters */
+  .filters {
     display: flex;
     gap: 6px;
     overflow-x: auto;
-    padding: 8px 16px;
-    -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .filter-row::-webkit-scrollbar { display: none; }
+  .filters::-webkit-scrollbar { display: none; }
 
-  .filter-pill {
+  .pill {
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 12px;
@@ -486,77 +100,425 @@
     transition: all 0.15s;
   }
 
-  .filter-pill.active {
-    background: var(--accent);
-    color: var(--bg);
-    border-color: var(--accent);
+  .pill.active { background: var(--cam); color: var(--bg); border-color: var(--cam); }
+  .pill.active-loc { background: var(--pin); color: #fff; border-color: var(--pin); }
+  .pill.active-insp { background: var(--cam); color: var(--bg); border-color: var(--cam); }
+
+  /* Status */
+  .status {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--text-dim);
   }
 
-  /* GPS tracking indicator */
-  .gps-indicator {
+  .status .count { color: var(--cam); font-weight: 700; }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 80px 20px;
+    gap: 16px;
+  }
+
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--cam);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { font-size: 14px; color: var(--text-dim); }
+
+  /* Cards */
+  .cards {
+    padding: 8px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: transform 0.15s;
+  }
+
+  .card:active { transform: scale(0.98); }
+
+  .card-img {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: #0a0e14;
+    overflow: hidden;
+  }
+
+  .card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-img .placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 48px;
+    opacity: 0.15;
+  }
+
+  .card-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-badge.loc { background: var(--pin); }
+  .card-badge.insp { background: var(--cam); }
+
+  .card-distance {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+
+  .card-body { padding: 14px 16px 16px; }
+
+  .card-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .card-location {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-notes {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .card-tag {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .card-tag.loc { background: var(--pin-bg); color: var(--pin); }
+  .card-tag.insp { background: var(--cam-bg); color: var(--cam); }
+
+  .card-footer { display: flex; gap: 8px; }
+
+  .card-footer a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-nav {
+    background: var(--pin);
+    color: #fff;
+  }
+
+  .btn-nav:active { background: #3a6fee; }
+
+  .btn-nav.insp-nav {
+    background: var(--cam);
+    color: var(--bg);
+  }
+
+  .btn-nav.insp-nav:active { background: #e09020; }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty p { font-size: 15px; line-height: 1.6; }
+  .empty .sub { font-size: 13px; margin-top: 8px; }
+
+  /* Detail overlay */
+  .detail-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    z-index: 200;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .detail-overlay.open { display: block; }
+
+  .detail-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(13,17,23,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 12px 16px;
+    padding-top: max(12px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .detail-back {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .detail-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-bright);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .detail-badge {
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .detail-badge.loc { background: var(--pin); }
+  .detail-badge.insp { background: var(--cam); }
+
+  /* Gallery */
+  .gallery {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .gallery::-webkit-scrollbar { display: none; }
+
+  .gallery-img {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    height: 280px;
+    background: #0a0e14;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gallery-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .gallery-placeholder {
+    font-size: 64px;
+    opacity: 0.15;
+  }
+
+  .gallery-counter {
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .gallery-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .gallery-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+
+  .gallery-dot.active { background: var(--cam); }
+
+  .detail-body {
+    padding: 20px 16px 100px;
+  }
+
+  .detail-location {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .detail-dist {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 11px;
-    color: var(--success);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
     margin-left: 8px;
   }
 
-  .gps-indicator .gps-dot {
-    width: 6px;
-    height: 6px;
+  .detail-notes {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  .detail-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .detail-tag {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .detail-tag.loc { background: var(--pin-bg); color: var(--pin); }
+  .detail-tag.insp { background: var(--cam-bg); color: var(--cam); }
+
+  .detail-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #fff;
+  }
+
+  .detail-nav-btn.loc { background: var(--pin); }
+  .detail-nav-btn.insp { background: var(--cam); color: var(--bg); }
+
+  /* Admin link */
+  .admin-link {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: var(--success);
-    animation: pulse 1.5s ease-in-out infinite;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    text-decoration: none;
+    z-index: 99;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   }
 </style>
 </head>
 <body>
 
-<!-- Install banner -->
-<div class="install-banner" id="installBanner">
-  <div class="install-text">
-    <strong>Installér FotoScout</strong> som app for fuld skærm og hurtig adgang
-  </div>
-  <button class="install-btn" id="installBtn">Installér</button>
-  <button class="install-dismiss" id="installDismiss">✕</button>
-</div>
-
 <div class="header">
   <div class="header-top">
     <div class="logo">Foto<span>Scout</span></div>
-    <div id="lightBadge" class="light-badge light-overcast">
-      <div class="dot"></div>
-      <span id="lightText">Analyserer lys...</span>
+    <div class="location-name">
+      <span class="gps-dot"></span>
+      <span id="locationName">Finder position...</span>
     </div>
   </div>
-  <div id="weatherStrip" class="weather-strip">
-    <div class="item"><span class="icon">📍</span> <span id="weatherLocation">Finder position...</span></div>
-  </div>
-  <div class="radius-control">
-    <label>Søgeradius</label>
-    <input type="range" class="radius-slider" id="radiusSlider" min="1" max="30" value="5">
-    <div class="radius-value" id="radiusValue">5 km</div>
+  <div class="filters" id="filters">
+    <button class="pill active" data-filter="all">Alle</button>
+    <button class="pill" data-filter="locations">Lokationer</button>
+    <button class="pill" data-filter="inspirations">Inspiration</button>
   </div>
 </div>
 
-<div class="filter-row" id="filterRow">
-  <button class="filter-pill active" data-filter="all">Alle</button>
-  <button class="filter-pill" data-filter="tourism">Seværdigheder</button>
-  <button class="filter-pill" data-filter="natural">Natur</button>
-  <button class="filter-pill" data-filter="historic">Historisk</button>
-  <button class="filter-pill" data-filter="architecture">Arkitektur</button>
-  <button class="filter-pill" data-filter="water">Vand</button>
-</div>
-
-<div id="photoTip" class="photo-tip" style="display:none;">
-  <div class="tip-title">📸 Foto-tip lige nu</div>
-  <div id="tipText"></div>
-</div>
-
-<div id="statusBar" class="status-bar">
-  <span>Starter op...</span>
-</div>
+<div class="status" id="status">Indlæser...</div>
 
 <div id="content">
   <div class="loading">
@@ -565,503 +527,342 @@
   </div>
 </div>
 
-<button class="refresh-btn" id="refreshBtn" title="Opdater">↻</button>
+<!-- Detail view -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-header">
+    <button class="detail-back" onclick="closeDetail()">&#8592;</button>
+    <div class="detail-title" id="detailTitle"></div>
+    <span class="detail-badge" id="detailBadge"></span>
+  </div>
+  <div id="detailContent"></div>
+</div>
+
+<a href="./admin.html" class="admin-link" title="Admin">&#9881;</a>
 
 <script>
 // ============================================================
-// FotoScout PWA v1
+// FotoScout App
 // ============================================================
 
-// --- Register Service Worker ---
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(err => {
-    console.log('SW registration failed:', err);
-  });
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
-// --- PWA Install Prompt ---
-let deferredPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installBanner').classList.add('show');
-});
-
-document.getElementById('installBtn').addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const result = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  document.getElementById('installBanner').classList.remove('show');
-});
-
-document.getElementById('installDismiss').addEventListener('click', () => {
-  document.getElementById('installBanner').classList.remove('show');
-});
-
-window.addEventListener('appinstalled', () => {
-  document.getElementById('installBanner').classList.remove('show');
-  deferredPrompt = null;
-});
-
-// --- State ---
 const state = {
   lat: null,
   lon: null,
-  radius: 5,
-  weather: null,
-  lightCondition: null,
-  pois: [],
+  data: { locations: [], inspirations: [] },
   filter: 'all',
-  loading: false,
-  watchId: null,
-  lastPOIFetch: 0,
-  lastWeatherFetch: 0
+  items: []
 };
 
-// --- Helpers ---
-function deg2rad(d) { return d * Math.PI / 180; }
-
+// --- Haversine ---
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2)**2;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 function formatDist(km) {
+  if (km === null) return '';
   return km < 1 ? `${Math.round(km*1000)} m` : `${km.toFixed(1)} km`;
 }
 
-// --- Sun position ---
-function getSunPosition(lat, lon, date) {
-  const dayOfYear = Math.floor((date - new Date(date.getFullYear(),0,0)) / 86400000);
-  const declination = 23.45 * Math.sin(deg2rad(360/365 * (dayOfYear - 81)));
-  const hourAngle = (date.getHours() + date.getMinutes()/60 - 12) * 15;
-  const latRad = deg2rad(lat);
-  const decRad = deg2rad(declination);
-  const haRad = deg2rad(hourAngle);
-  const altitude = Math.asin(
-    Math.sin(latRad) * Math.sin(decRad) +
-    Math.cos(latRad) * Math.cos(decRad) * Math.cos(haRad)
-  ) * 180 / Math.PI;
-  return { altitude, declination };
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
 }
 
-function getLightCondition(lat, lon, weather) {
-  const now = new Date();
-  const sun = getSunPosition(lat, lon, now);
-  const alt = sun.altitude;
-  const clouds = weather ? weather.cloudcover : 50;
-  let condition, cls, tip;
-
-  if (alt < -6) {
-    condition = 'Nat'; cls = 'light-night';
-    tip = 'Perfekt til natfotografering og astrofoto. Brug stativ og lang lukkertid. Stjerner og Mælkevejen kan være synlige ved lav skydækning.';
-  } else if (alt < -0.5) {
-    condition = 'Blue Hour'; cls = 'light-blue';
-    tip = 'Blue hour! Den magiske blå tone i himlen er perfekt til bylandskaber og silhuetter. Brug stativ og eksperimenter med lange lukketider.';
-  } else if (alt < 10) {
-    condition = 'Golden Hour'; cls = 'light-golden';
-    tip = 'Golden hour! Det varme, bløde sidelys er ideelt til portrætter og landskaber. Skyggerne er lange og dramatiske. Skyd nu!';
-  } else if (alt < 25 && clouds > 60) {
-    condition = 'Blødt overskyet'; cls = 'light-overcast';
-    tip = 'Skydækket fungerer som en kæmpe softbox. Godt til portrætter, skovfotografering og detaljer uden hårde skygger.';
-  } else if (alt > 50 && clouds < 30) {
-    condition = 'Hårdt middagslys'; cls = 'light-harsh';
-    tip = 'Hårdt lys ovenfra giver stærke skygger. Søg skygge til portrætter, eller brug det kreativt til grafiske skygge-kompositioner.';
-  } else if (clouds > 70) {
-    condition = 'Overskyet'; cls = 'light-overcast';
-    tip = 'Jævnt, diffust lys — ideelt til naturfotografering, vandfald med lang lukkertid og farverig skovbund.';
-  } else {
-    condition = 'Godt dagslys'; cls = 'light-golden';
-    tip = 'Fine lysforhold med en god blanding af sol og skyer. Brug solens retning til at skabe dybde i dine billeder.';
-  }
-  return { condition, cls, tip, sunAlt: alt };
-}
-
-// --- Categories ---
-const categoryMap = {
-  'castle': { label: 'Slot', filter: 'historic' },
-  'ruins': { label: 'Ruin', filter: 'historic' },
-  'monument': { label: 'Monument', filter: 'historic' },
-  'memorial': { label: 'Memorial', filter: 'historic' },
-  'archaeological_site': { label: 'Arkæologi', filter: 'historic' },
-  'church': { label: 'Kirke', filter: 'architecture' },
-  'cathedral': { label: 'Domkirke', filter: 'architecture' },
-  'monastery': { label: 'Kloster', filter: 'architecture' },
-  'tower': { label: 'Tårn', filter: 'architecture' },
-  'lighthouse': { label: 'Fyrtårn', filter: 'architecture' },
-  'bridge': { label: 'Bro', filter: 'architecture' },
-  'windmill': { label: 'Vindmølle', filter: 'architecture' },
-  'watermill': { label: 'Vandmølle', filter: 'architecture' },
-  'viewpoint': { label: 'Udsigt', filter: 'tourism' },
-  'artwork': { label: 'Kunst', filter: 'tourism' },
-  'museum': { label: 'Museum', filter: 'tourism' },
-  'attraction': { label: 'Attraktion', filter: 'tourism' },
-  'theme_park': { label: 'Forlystelse', filter: 'tourism' },
-  'zoo': { label: 'Zoo', filter: 'tourism' },
-  'garden': { label: 'Have', filter: 'natural' },
-  'peak': { label: 'Bjergtop', filter: 'natural' },
-  'cliff': { label: 'Klint', filter: 'natural' },
-  'beach': { label: 'Strand', filter: 'water' },
-  'spring': { label: 'Kilde', filter: 'water' },
-  'waterfall': { label: 'Vandfald', filter: 'water' },
-  'lake': { label: 'Sø', filter: 'water' },
-  'glacier': { label: 'Gletsjer', filter: 'natural' },
-  'cave_entrance': { label: 'Grotte', filter: 'natural' },
-  'nature_reserve': { label: 'Naturreservat', filter: 'natural' },
-  'protected_area': { label: 'Beskyttet', filter: 'natural' },
-  'wood': { label: 'Skov', filter: 'natural' },
-  'wetland': { label: 'Vådområde', filter: 'natural' },
-  'harbour': { label: 'Havn', filter: 'water' },
-  'marina': { label: 'Marina', filter: 'water' },
-};
-
-function categorize(tags) {
-  for (const [key, val] of Object.entries(categoryMap)) {
-    if (tags.tourism === key || tags.historic === key || tags.natural === key ||
-        tags['waterway'] === key || tags['man_made'] === key || tags['leisure'] === key) {
-      return val;
-    }
-  }
-  if (tags.tourism) return { label: tags.tourism.replace(/_/g,' '), filter: 'tourism' };
-  if (tags.historic) return { label: tags.historic.replace(/_/g,' '), filter: 'historic' };
-  if (tags.natural) return { label: tags.natural.replace(/_/g,' '), filter: 'natural' };
-  return { label: 'Sted', filter: 'tourism' };
-}
-
-// --- Geolocation with continuous watching ---
-function startLocationWatch() {
+// --- Geolocation ---
+function getPosition() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error('Geolocation er ikke understøttet'));
+      reject(new Error('Geolocation ikke tilgængelig'));
       return;
     }
-
-    let resolved = false;
-
-    state.watchId = navigator.geolocation.watchPosition(
-      pos => {
-        const newLat = pos.coords.latitude;
-        const newLon = pos.coords.longitude;
-
-        // Check if we've moved significantly (>500m)
-        const moved = state.lat === null || haversine(state.lat, state.lon, newLat, newLon) > 0.5;
-
-        state.lat = newLat;
-        state.lon = newLon;
-
-        if (!resolved) {
-          resolved = true;
-          resolve({ lat: newLat, lon: newLon });
-        } else if (moved) {
-          // Auto-refresh when moved significantly
-          onLocationUpdate();
-        }
-      },
-      err => {
-        if (!resolved) reject(err);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      err => reject(err),
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
     );
   });
-}
-
-async function onLocationUpdate() {
-  const now = Date.now();
-  // Throttle: don't refresh more than once per 2 minutes
-  if (now - state.lastPOIFetch < 120000) return;
-
-  // Update weather if stale (>10 min)
-  if (now - state.lastWeatherFetch > 600000) {
-    try {
-      state.weather = await fetchWeather(state.lat, state.lon);
-      state.lastWeatherFetch = now;
-      renderWeather();
-      renderLight();
-    } catch {}
-  }
-
-  // Refresh POIs
-  await loadPOIs();
-  reverseGeocode(state.lat, state.lon);
-}
-
-// --- Weather (Open-Meteo) ---
-async function fetchWeather(lat, lon) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,cloud_cover,weather_code&timezone=auto`;
-  const res = await fetch(url);
-  const data = await res.json();
-  const c = data.current;
-  return {
-    temp: Math.round(c.temperature_2m),
-    humidity: c.relative_humidity_2m,
-    wind: Math.round(c.wind_speed_10m),
-    cloudcover: c.cloud_cover,
-    code: c.weather_code
-  };
-}
-
-function weatherIcon(code) {
-  if (code <= 1) return '☀️';
-  if (code <= 3) return '⛅';
-  if (code <= 48) return '☁️';
-  if (code <= 67) return '🌧️';
-  if (code <= 77) return '🌨️';
-  if (code <= 82) return '🌧️';
-  if (code <= 86) return '🌨️';
-  return '⛈️';
-}
-
-// --- POIs (Overpass API) ---
-async function fetchPOIs(lat, lon, radiusKm) {
-  const r = radiusKm * 1000;
-  const query = `
-    [out:json][timeout:25];
-    (
-      nwr["tourism"~"attraction|viewpoint|artwork|museum|castle|zoo|theme_park|monument"](around:${r},${lat},${lon});
-      nwr["historic"~"castle|ruins|monument|memorial|archaeological_site|church|monastery|tower|lighthouse|windmill|watermill|bridge"](around:${r},${lat},${lon});
-      nwr["natural"~"peak|cliff|beach|spring|waterfall|lake|glacier|cave_entrance|wood|wetland"](around:${r},${lat},${lon});
-      nwr["leisure"~"nature_reserve|garden|marina"](around:${r},${lat},${lon});
-      nwr["man_made"~"lighthouse|tower|windmill|watermill|bridge"](around:${r},${lat},${lon});
-      nwr["waterway"="waterfall"](around:${r},${lat},${lon});
-    );
-    out center 100;
-  `;
-  const res = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    body: 'data=' + encodeURIComponent(query)
-  });
-  const data = await res.json();
-  const seen = new Set();
-  const pois = [];
-
-  for (const el of data.elements) {
-    const tags = el.tags || {};
-    const name = tags.name || tags['name:da'] || tags['name:en'];
-    if (!name) continue;
-    const key = name.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    const elLat = el.lat || el.center?.lat;
-    const elLon = el.lon || el.center?.lon;
-    if (!elLat || !elLon) continue;
-    const dist = haversine(lat, lon, elLat, elLon);
-    const cat = categorize(tags);
-    pois.push({
-      name, lat: elLat, lon: elLon, dist, tags, category: cat,
-      wikiTitle: tags.wikipedia || tags['wikipedia:da'] || tags['wikipedia:en'] || null,
-      wikidataId: tags.wikidata || null,
-      image: null, description: null
-    });
-  }
-  pois.sort((a, b) => a.dist - b.dist);
-  return pois;
-}
-
-// --- Wikipedia ---
-async function fetchWikiInfo(poi) {
-  let title = null;
-  let lang = 'da';
-
-  if (poi.wikiTitle) {
-    const parts = poi.wikiTitle.split(':');
-    if (parts.length === 2) { lang = parts[0]; title = parts[1]; }
-    else { title = poi.wikiTitle; }
-  } else {
-    title = poi.name;
-  }
-
-  try {
-    const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      if (lang !== 'en') {
-        const res2 = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(poi.name)}`);
-        if (res2.ok) {
-          const data2 = await res2.json();
-          return { image: data2.thumbnail?.source?.replace(/\/\d+px-/, '/800px-') || null, description: data2.extract || null };
-        }
-      }
-      return { image: null, description: null };
-    }
-    const data = await res.json();
-    return { image: data.thumbnail?.source?.replace(/\/\d+px-/, '/800px-') || null, description: data.extract || null };
-  } catch {
-    return { image: null, description: null };
-  }
-}
-
-// --- Rendering ---
-function renderWeather() {
-  const w = state.weather;
-  if (!w) return;
-  document.getElementById('weatherStrip').innerHTML = `
-    <div class="item"><span class="icon">📍</span> <span id="weatherLocation">${state.lat.toFixed(3)}, ${state.lon.toFixed(3)}</span>
-      <span class="gps-indicator"><span class="gps-dot"></span> Live</span>
-    </div>
-    <div class="item"><span class="icon">${weatherIcon(w.code)}</span> ${w.temp}°C</div>
-    <div class="item"><span class="icon">💨</span> ${w.wind} km/t</div>
-    <div class="item"><span class="icon">☁️</span> ${w.cloudcover}%</div>
-  `;
-}
-
-function renderLight() {
-  if (!state.weather) return;
-  const light = getLightCondition(state.lat, state.lon, state.weather);
-  state.lightCondition = light;
-  const badge = document.getElementById('lightBadge');
-  badge.className = `light-badge ${light.cls}`;
-  document.getElementById('lightText').textContent = light.condition;
-  document.getElementById('photoTip').style.display = 'block';
-  document.getElementById('tipText').textContent = light.tip;
-}
-
-function renderCards() {
-  const container = document.getElementById('content');
-  const filtered = state.filter === 'all'
-    ? state.pois
-    : state.pois.filter(p => p.category.filter === state.filter);
-
-  document.getElementById('statusBar').innerHTML = `
-    <span class="count">${filtered.length}</span> fotospots inden for <span class="count">${state.radius} km</span>
-  `;
-
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div style="text-align:center;padding:60px 20px;color:var(--text-dim);">
-        <div style="font-size:48px;margin-bottom:12px;">📷</div>
-        <div style="font-size:15px;">Ingen steder fundet${state.filter !== 'all' ? ' i denne kategori' : ''}.</div>
-        <div style="font-size:13px;margin-top:8px;">Prøv at øge søgeradius eller skift filter.</div>
-      </div>`;
-    return;
-  }
-
-  container.innerHTML = '<div class="cards">' + filtered.map(poi => {
-    const imgHtml = poi.image
-      ? `<img src="${poi.image}" alt="${poi.name}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=\\'no-img\\'>📷</div>'">`
-      : `<div class="no-img">📷</div>`;
-    const desc = poi.description || 'Ingen beskrivelse tilgængelig. Tryk "Læs mere" for at se på Wikipedia.';
-    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${poi.lat},${poi.lon}`;
-    const wikiSearch = `https://da.wikipedia.org/wiki/Special:Search/${encodeURIComponent(poi.name)}`;
-
-    return `
-      <div class="card">
-        <div class="card-img-wrap">
-          ${imgHtml}
-          <div class="card-distance">${formatDist(poi.dist)}</div>
-          <div class="card-category">${poi.category.label}</div>
-        </div>
-        <div class="card-body">
-          <div class="card-name">${poi.name}</div>
-          <div class="card-desc">${desc}</div>
-          <div class="card-footer">
-            <a href="${navUrl}" target="_blank" rel="noopener" class="btn-navigate">📍 Navigér</a>
-            <a href="${wikiSearch}" target="_blank" rel="noopener" class="btn-wiki">📖 Læs mere</a>
-          </div>
-        </div>
-      </div>`;
-  }).join('') + '</div>';
-}
-
-// --- Filters ---
-document.getElementById('filterRow').addEventListener('click', e => {
-  const pill = e.target.closest('.filter-pill');
-  if (!pill) return;
-  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-  pill.classList.add('active');
-  state.filter = pill.dataset.filter;
-  renderCards();
-});
-
-// --- Radius slider ---
-const slider = document.getElementById('radiusSlider');
-const radiusVal = document.getElementById('radiusValue');
-slider.addEventListener('input', () => { radiusVal.textContent = `${parseInt(slider.value)} km`; });
-let debounceTimer;
-slider.addEventListener('change', () => {
-  state.radius = parseInt(slider.value);
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => loadPOIs(), 300);
-});
-
-// --- Refresh ---
-document.getElementById('refreshBtn').addEventListener('click', () => { init(); });
-
-// --- Main flow ---
-async function loadPOIs() {
-  const content = document.getElementById('content');
-  content.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Søger efter fotospots...</div></div>`;
-
-  try {
-    state.pois = await fetchPOIs(state.lat, state.lon, state.radius);
-    state.lastPOIFetch = Date.now();
-    const batch = state.pois.slice(0, 30);
-    const results = await Promise.allSettled(batch.map(poi => fetchWikiInfo(poi)));
-    results.forEach((r, i) => {
-      if (r.status === 'fulfilled' && r.value) {
-        batch[i].image = r.value.image;
-        batch[i].description = r.value.description;
-      }
-    });
-    renderCards();
-  } catch (err) {
-    content.innerHTML = `<div class="error-msg">Kunne ikke hente steder: ${err.message}<br><button onclick="loadPOIs()">Prøv igen</button></div>`;
-  }
 }
 
 async function reverseGeocode(lat, lon) {
   try {
     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=da`);
-    const data = await res.json();
-    const addr = data.address;
-    const loc = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
-    if (loc) {
-      const el = document.getElementById('weatherLocation');
-      if (el) el.textContent = loc;
+    const d = await res.json();
+    const addr = d.address;
+    return addr.city || addr.town || addr.village || addr.municipality || addr.county || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+  } catch {
+    return `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+  }
+}
+
+// --- Load data ---
+async function loadData() {
+  try {
+    const res = await fetch('./data.json?' + Date.now());
+    if (res.ok) {
+      state.data = await res.json();
     }
   } catch {}
+
+  // Check localStorage for newer data
+  const saved = localStorage.getItem('fotoscout-data');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed._modified && parsed.locations) {
+        state.data = parsed;
+      }
+    } catch {}
+  }
 }
 
-async function init() {
-  const btn = document.getElementById('refreshBtn');
-  btn.classList.add('spinning');
-  const content = document.getElementById('content');
-  content.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Finder din position...</div></div>`;
+// --- Build items list ---
+function buildItems() {
+  const items = [];
 
+  for (const loc of state.data.locations) {
+    let dist = null;
+    if (state.lat !== null && loc.lat && loc.lon) {
+      dist = haversine(state.lat, state.lon, loc.lat, loc.lon);
+    }
+    items.push({
+      type: 'location',
+      id: loc.id,
+      name: loc.name,
+      subtitle: loc.address,
+      notes: loc.notes,
+      photos: loc.photos || [],
+      photo: (loc.photos && loc.photos.length > 0) ? loc.photos[0] : '',
+      tags: loc.tags || [],
+      lat: loc.lat,
+      lon: loc.lon,
+      dist,
+      navTarget: loc.address
+    });
+  }
+
+  for (const insp of state.data.inspirations) {
+    let dist = null;
+    if (state.lat !== null && insp.lat && insp.lon) {
+      dist = haversine(state.lat, state.lon, insp.lat, insp.lon);
+    }
+    items.push({
+      type: 'inspiration',
+      id: insp.id,
+      name: insp.title,
+      subtitle: insp.area,
+      notes: insp.notes,
+      photo: insp.photo || '',
+      photos: insp.photo ? [insp.photo] : [],
+      tags: insp.tags || [],
+      lat: insp.lat,
+      lon: insp.lon,
+      dist,
+      navTarget: (insp.lat && insp.lon) ? `${insp.lat},${insp.lon}` : insp.area + ', Danmark'
+    });
+  }
+
+  // Sort: items with distance first (by distance), then items without
+  items.sort((a, b) => {
+    if (a.dist !== null && b.dist !== null) return a.dist - b.dist;
+    if (a.dist !== null) return -1;
+    if (b.dist !== null) return 1;
+    return 0;
+  });
+
+  state.items = items;
+}
+
+// --- Filter ---
+function getFilteredItems() {
+  if (state.filter === 'all') return state.items;
+  if (state.filter === 'locations') return state.items.filter(i => i.type === 'location');
+  if (state.filter === 'inspirations') return state.items.filter(i => i.type === 'inspiration');
+  // Tag filter
+  return state.items.filter(i => i.tags.includes(state.filter));
+}
+
+// --- Render ---
+function render() {
+  const filtered = getFilteredItems();
+  const statusEl = document.getElementById('status');
+  const content = document.getElementById('content');
+
+  const locCount = state.data.locations.length;
+  const inspCount = state.data.inspirations.length;
+  statusEl.innerHTML = `<span class="count">${filtered.length}</span> af ${locCount + inspCount} steder`;
+
+  if (filtered.length === 0) {
+    content.innerHTML = `
+      <div class="empty">
+        <div class="icon">📷</div>
+        <p>Ingen fotospots${state.filter !== 'all' ? ' i dette filter' : ''}</p>
+        <p class="sub">Tilføj lokationer og inspiration via Admin (tandhjulet)</p>
+      </div>`;
+    return;
+  }
+
+  content.innerHTML = '<div class="cards">' + filtered.map(item => {
+    const isLoc = item.type === 'location';
+    const badge = isLoc ? '<span class="card-badge loc">📍 Lokation</span>' : '<span class="card-badge insp">📸 Inspiration</span>';
+    const distHtml = item.dist !== null ? `<span class="card-distance">${formatDist(item.dist)}</span>` : '';
+    const imgHtml = item.photo
+      ? `<img src="${item.photo}" alt="${esc(item.name)}" loading="lazy">`
+      : `<div class="placeholder">${isLoc ? '📍' : '📸'}</div>`;
+    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.navTarget)}`;
+    const tagCls = isLoc ? 'loc' : 'insp';
+    const btnCls = isLoc ? 'btn-nav' : 'btn-nav insp-nav';
+
+    const photoCount = item.photos.length;
+    const countBadge = photoCount > 1 ? `<span style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.7);padding:3px 8px;border-radius:12px;font-size:11px;color:#fff;">${photoCount} billeder</span>` : '';
+
+    return `
+      <div class="card" onclick="openDetail('${item.id}')" style="cursor:pointer">
+        <div class="card-img">
+          ${imgHtml}
+          ${badge}
+          ${distHtml}
+          ${countBadge}
+        </div>
+        <div class="card-body">
+          <div class="card-name">${esc(item.name)}</div>
+          <div class="card-location">${isLoc ? '📍' : '📸'} ${esc(item.subtitle)}</div>
+          ${item.notes ? `<div class="card-notes">${esc(item.notes)}</div>` : ''}
+          ${item.tags.length ? `<div class="card-tags">${item.tags.map(t => `<span class="card-tag ${tagCls}">${esc(t)}</span>`).join('')}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('') + '</div>';
+
+  // Add tag pills to filter
+  renderTagFilters();
+}
+
+function renderTagFilters() {
+  const allTags = new Set();
+  state.items.forEach(i => i.tags.forEach(t => allTags.add(t)));
+
+  const filtersEl = document.getElementById('filters');
+  const basePills = `
+    <button class="pill ${state.filter === 'all' ? 'active' : ''}" data-filter="all">Alle</button>
+    <button class="pill ${state.filter === 'locations' ? 'active-loc' : ''}" data-filter="locations">📍 Lokationer</button>
+    <button class="pill ${state.filter === 'inspirations' ? 'active-insp' : ''}" data-filter="inspirations">📸 Inspiration</button>
+  `;
+
+  const tagPills = [...allTags].sort().map(t =>
+    `<button class="pill ${state.filter === t ? 'active' : ''}" data-filter="${esc(t)}">${esc(t)}</button>`
+  ).join('');
+
+  filtersEl.innerHTML = basePills + tagPills;
+}
+
+// --- Filter click ---
+document.getElementById('filters').addEventListener('click', e => {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  state.filter = pill.dataset.filter;
+  render();
+});
+
+// --- Detail view ---
+function openDetail(id) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+
+  const isLoc = item.type === 'location';
+  const overlay = document.getElementById('detailOverlay');
+  const titleEl = document.getElementById('detailTitle');
+  const badgeEl = document.getElementById('detailBadge');
+  const contentEl = document.getElementById('detailContent');
+
+  titleEl.textContent = item.name;
+  badgeEl.textContent = isLoc ? '📍 Lokation' : '📸 Inspiration';
+  badgeEl.className = `detail-badge ${isLoc ? 'loc' : 'insp'}`;
+
+  // Gallery
+  const photos = item.photos.filter(p => p);
+  let galleryHtml = '';
+  if (photos.length > 0) {
+    galleryHtml = `
+      <div class="gallery" id="gallery" onscroll="updateGalleryDots()">
+        ${photos.map(p => `<div class="gallery-img"><img src="${p}" alt="${esc(item.name)}"></div>`).join('')}
+      </div>
+      ${photos.length > 1 ? `
+        <div class="gallery-dots" id="galleryDots">
+          ${photos.map((_, i) => `<div class="gallery-dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
+        </div>
+      ` : ''}
+    `;
+  } else {
+    galleryHtml = `<div class="gallery-img"><div class="gallery-placeholder">${isLoc ? '📍' : '📸'}</div></div>`;
+  }
+
+  const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.navTarget)}`;
+  const tagCls = isLoc ? 'loc' : 'insp';
+  const btnCls = isLoc ? 'loc' : 'insp';
+
+  contentEl.innerHTML = `
+    ${galleryHtml}
+    <div class="detail-body">
+      <div class="detail-location">
+        ${isLoc ? '📍' : '📸'} ${esc(item.subtitle)}
+        ${item.dist !== null ? `<span class="detail-dist">📏 ${formatDist(item.dist)}</span>` : ''}
+      </div>
+      ${item.notes ? `<div class="detail-notes">${esc(item.notes)}</div>` : ''}
+      ${item.tags.length ? `<div class="detail-tags">${item.tags.map(t => `<span class="detail-tag ${tagCls}">${esc(t)}</span>`).join('')}</div>` : ''}
+      <a href="${navUrl}" target="_blank" rel="noopener" class="detail-nav-btn ${btnCls}">📍 Navigér hertil</a>
+    </div>
+  `;
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function updateGalleryDots() {
+  const gallery = document.getElementById('gallery');
+  const dots = document.querySelectorAll('#galleryDots .gallery-dot');
+  if (!gallery || dots.length === 0) return;
+  const idx = Math.round(gallery.scrollLeft / gallery.offsetWidth);
+  dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+
+// Back button / swipe to close
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDetail();
+});
+
+// --- Init ---
+async function init() {
+  await loadData();
+
+  // Try geolocation
   try {
-    const pos = await startLocationWatch();
+    const pos = await getPosition();
     state.lat = pos.lat;
     state.lon = pos.lon;
-
-    content.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Henter vejrdata...</div></div>`;
-
-    try {
-      state.weather = await fetchWeather(state.lat, state.lon);
-      state.lastWeatherFetch = Date.now();
-      renderWeather();
-      renderLight();
-    } catch (e) { console.warn('Vejrdata fejlede:', e); }
-
-    await loadPOIs();
-    reverseGeocode(state.lat, state.lon);
-
-    // Update light conditions every minute
-    setInterval(() => { if (state.weather) renderLight(); }, 60000);
-
-  } catch (err) {
-    content.innerHTML = `<div class="error-msg">
-      Kunne ikke finde din position. Tillad venligst GPS-adgang i din browser.
-      <br><br><small>${err.message}</small>
-      <br><button onclick="init()">Prøv igen</button></div>`;
+    const name = await reverseGeocode(pos.lat, pos.lon);
+    document.getElementById('locationName').textContent = name;
+  } catch {
+    document.getElementById('locationName').textContent = 'Ingen GPS';
+    document.querySelector('.gps-dot').style.background = '#8b949e';
   }
-  btn.classList.remove('spinning');
+
+  buildItems();
+  render();
 }
 
-// Start!
 init();
 </script>
 </body>

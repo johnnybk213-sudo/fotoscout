@@ -1,14 +1,16 @@
-// FotoScout Service Worker v1
 const CACHE_NAME = 'fotoscout-v1';
-const STATIC_ASSETS = [
+const ASSETS = [
+  './',
   './index.html',
+  './admin.html',
+  './data.json',
   './manifest.json'
 ];
 
-// Install: cache static assets
+// Install: cache core assets
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
   self.skipWaiting();
 });
@@ -23,37 +25,41 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API calls, cache-first for static assets
+// Fetch: network first for data.json, cache first for everything else
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // API calls: network first, no cache
-  if (url.hostname.includes('overpass-api') ||
-      url.hostname.includes('open-meteo') ||
-      url.hostname.includes('wikipedia') ||
-      url.hostname.includes('nominatim')) {
+  // data.json: always try network first (get latest data)
+  if (url.pathname.endsWith('data.json')) {
     event.respondWith(
-      fetch(event.request).catch(() =>
-        new Response(JSON.stringify({ error: 'offline' }), {
-          headers: { 'Content-Type': 'application/json' }
+      fetch(event.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return res;
         })
-      )
+        .catch(() => caches.match(event.request))
     );
     return;
   }
 
-  // Static assets: cache first, then network
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Cache successful responses
-        if (response.ok) {
-          const clone = response.clone();
+  // Photos: cache on first load
+  if (url.pathname.includes('/photos/')) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(res => {
+          const clone = res.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      });
-    })
+          return res;
+        });
+      })
+    );
+    return;
+  }
+
+  // Everything else: cache first, fallback to network
+  event.respondWith(
+    caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });

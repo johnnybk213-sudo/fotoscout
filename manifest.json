@@ -1,20 +1,17 @@
 {
   "name": "FotoScout",
   "short_name": "FotoScout",
-  "description": "Find fotospots i nærheden baseret på din position, vejr og lysforhold",
+  "description": "Personlig foto-planlægger til Vestkysten",
   "start_url": "./index.html",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0d1117",
   "theme_color": "#0d1117",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='108' fill='%230d1117'/%3E%3Ccircle cx='256' cy='240' r='80' fill='none' stroke='%23f0a030' stroke-width='16'/%3E%3Crect x='136' y='160' width='240' height='180' rx='24' fill='none' stroke='%23f0a030' stroke-width='16'/%3E%3Crect x='216' y='140' width='80' height='30' rx='8' fill='%23f0a030'/%3E%3Ccircle cx='256' cy='240' r='40' fill='%23f0a030' opacity='0.3'/%3E%3Ccircle cx='370' y='420' r='50' fill='none' stroke='%23f5c542' stroke-width='10' cx='370' cy='410'/%3E%3Cline x1='370' y1='370' x2='370' y2='390' stroke='%23f5c542' stroke-width='8' stroke-linecap='round'/%3E%3Cline x1='410' y1='410' x2='395' y2='410' stroke='%23f5c542' stroke-width='8' stroke-linecap='round'/%3E%3Cline x1='330' y1='410' x2='345' y2='410' stroke='%23f5c542' stroke-width='8' stroke-linecap='round'/%3E%3Cline x1='370' y1='450' x2='370' y2='435' stroke='%23f5c542' stroke-width='8' stroke-linecap='round'/%3E%3Ctext x='256' y='480' text-anchor='middle' font-family='system-ui' font-weight='800' font-size='60' fill='%23e6edf3'%3EFotoScout%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='108' fill='%230d1117'/%3E%3Ccircle cx='256' cy='230' r='70' fill='none' stroke='%23f0a030' stroke-width='14'/%3E%3Crect x='146' y='160' width='220' height='160' rx='20' fill='none' stroke='%23f0a030' stroke-width='14'/%3E%3Ccircle cx='256' cy='230' r='35' fill='%23f0a030' opacity='0.4'/%3E%3Ctext x='256' y='430' text-anchor='middle' font-family='system-ui' font-weight='800' font-size='72' fill='%23f0a030'%3EFS%3C/text%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ],
-  "categories": ["photography", "utilities"],
-  "lang": "da"
+  ]
 }
