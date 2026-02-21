@@ -1,50 +1,99 @@
 {
   "locations": [
     {
-      "id": "loc-001",
-      "name": "Rubjerg Knude Fyr",
-      "address": "Rubjergvej 2, 9480 Løkken",
-      "lat": 57.4483,
-      "lon": 9.7742,
-      "notes": "Bedst ved solnedgang. Vidvinkel for at fange fyrtårnet med klinten.",
-      "photos": [],
-      "tags": ["fyrtårn", "klint", "nordjylland"],
+      "id": "loc-1771635132178",
+      "name": "Rubjergknude Fyr",
+      "address": "Fyrvejen 110C, Nr Rubjerg, 9800 Hjørring",
+      "lat": 57.449064,
+      "lon": 9.775514,
+      "notes": "",
+      "photos": [
+        "./photos/loc-1771635132178_0.jpg"
+      ],
+      "tags": [
+        "Fyrtårn",
+        "Rubjerg Knude"
+      ],
       "created": "2026-02-21"
     },
     {
-      "id": "loc-002",
-      "name": "Bovbjerg Fyr",
-      "address": "Fyrvej 20, 7620 Lemvig",
-      "lat": 56.5144,
-      "lon": 8.1219,
-      "notes": "Rødt fyrtårn på klinten. Flot ved både solopgang og solnedgang.",
-      "photos": [],
-      "tags": ["fyrtårn", "klint", "vestjylland"],
+      "id": "loc-1771635563194",
+      "name": "Blåvandshuk Fyr",
+      "address": "Fyrvej 106, 6857 Blåvand",
+      "lat": 55.557457,
+      "lon": 8.083508,
+      "notes": "",
+      "photos": [
+        "./photos/loc-1771635563194_0.jpg",
+        "./photos/loc-1771635563194_1.png"
+      ],
+      "tags": [
+        "fyrtårn",
+        "blåvand"
+      ],
       "created": "2026-02-21"
+    },
+    {
+      "id": "loc-1771636098372",
+      "name": "Lillebælt",
+      "address": "Galsklintvej 2, 5500 Middelfart",
+      "lat": 55.511586,
+      "lon": 9.700099,
+      "notes": "lillebælt, bro",
+      "photos": [
+        "./photos/loc-1771636098372_0.jpg",
+        "./photos/loc-1771636098372_1.jpg"
+      ],
+      "tags": [],
+      "created": "2026-02-21"
+    },
+    {
+      "address": "Ukendt adresse i Middelfart",
+      "created": "2026-02-21",
+      "id": "loc-1771663619328",
+      "lat": null,
+      "lon": null,
+      "name": "Middelfart",
+      "notes": "",
+      "photos": [
+        "https://stateofgreen.com/en/wp-content/uploads/2022/11/Middelfart.jpg"
+      ],
+      "tags": [
+        "Middelfart",
+        "Lillebælt",
+        "Kirke"
+      ]
     }
   ],
   "inspirations": [
     {
-      "id": "insp-001",
-      "title": "Dramatisk bølgeslag ved solnedgang",
-      "area": "Strand ved Blokhus",
-      "lat": 57.2600,
-      "lon": 9.5800,
-      "notes": "Lav position tæt på vandkanten, lang lukkertid (1/4 sek), ND-filter.",
-      "photo": "",
-      "tags": ["strand", "solnedgang", "nordjylland"],
+      "id": "insp-1771660210419",
+      "title": "Livreddertårn fra strandklit",
+      "area": "Henne Strand",
+      "lat": null,
+      "lon": null,
+      "notes": "",
+      "photo": "./photos/insp-1771660210419_0.jpg",
+      "tags": [
+        "strand",
+        "livreddertårn",
+        "strandklit"
+      ],
       "created": "2026-02-21"
     },
     {
-      "id": "insp-002",
-      "title": "Bunkerruiner i klitterne",
-      "area": "Houvig, nær Søndervig",
-      "lat": 56.0800,
-      "lon": 8.0900,
-      "notes": "Atlantvoldens bunkere delvist begravet i sand. Sort/hvid konvertering.",
-      "photo": "",
-      "tags": ["bunkere", "klitter", "vestjylland"],
-      "created": "2026-02-21"
+      "area": "Henne Strand",
+      "created": "2026-02-21",
+      "id": "insp-1771663237886",
+      "lat": null,
+      "lon": null,
+      "notes": "",
+      "photo": "./photos/insp-1771663237886_0.jpg",
+      "tags": [
+        "strandbillede",
+        "klitter"
+      ],
+      "title": "henne strand - Google-søgning"
     }
   ]
 }
