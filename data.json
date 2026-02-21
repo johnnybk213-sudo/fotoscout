@@ -25,7 +25,7 @@
       "notes": "",
       "photos": [
         "./photos/loc-1771635563194_0.jpg",
-        "./photos/loc-1771635563194_1.png"
+        "./photos/loc-1771635563194_1.jpg"
       ],
       "tags": [
         "fyrtårn",
@@ -48,21 +48,22 @@
       "created": "2026-02-21"
     },
     {
-      "address": "Ukendt adresse i Middelfart",
-      "created": "2026-02-21",
       "id": "loc-1771663619328",
+      "name": "Middelfart",
+      "address": "Middelfart",
       "lat": null,
       "lon": null,
-      "name": "Middelfart",
       "notes": "",
       "photos": [
-        "https://stateofgreen.com/en/wp-content/uploads/2022/11/Middelfart.jpg"
+        "https://stateofgreen.com/en/wp-content/uploads/2022/11/Middelfart.jpg",
+        "./photos/loc-1771663619328_1.jpg"
       ],
       "tags": [
         "Middelfart",
         "Lillebælt",
         "Kirke"
-      ]
+      ],
+      "created": "2026-02-21"
     }
   ],
   "inspirations": [
