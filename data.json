@@ -51,8 +51,8 @@
       "id": "loc-1771663619328",
       "name": "Middelfart",
       "address": "Middelfart",
-      "lat": null,
-      "lon": null,
+      "lat": 55.5055,
+      "lon": 9.7297,
       "notes": "",
       "photos": [
         "https://stateofgreen.com/en/wp-content/uploads/2022/11/Middelfart.jpg",
@@ -71,8 +71,8 @@
       "id": "insp-1771660210419",
       "title": "Livreddertårn fra strandklit",
       "area": "Henne Strand",
-      "lat": null,
-      "lon": null,
+      "lat": 55.7340,
+      "lon": 8.1290,
       "notes": "",
       "photo": "./photos/insp-1771660210419_0.jpg",
       "tags": [
@@ -86,8 +86,8 @@
       "area": "Henne Strand",
       "created": "2026-02-21",
       "id": "insp-1771663237886",
-      "lat": null,
-      "lon": null,
+      "lat": 55.7340,
+      "lon": 8.1290,
       "notes": "",
       "photo": "./photos/insp-1771663237886_0.jpg",
       "tags": [
