@@ -1,19 +1,19 @@
 {
   "locations": [
     {
-      "address": "Fyrvej 106, 6857 Blåvand",
+      "address": "Fyrvej 106, 6857 BlÃ¥vand",
       "created": "2026-03-15",
       "id": "loc-1773574362847",
       "lat": 55.557457,
       "lon": 8.083508,
-      "name": "blåvand - Google Search",
-      "notes": "Blåvandshuk fyr med solnedgang",
+      "name": "blÃ¥vand - Google Search",
+      "notes": "BlÃ¥vandshuk fyr med solnedgang",
       "photos": [
         "./photos/loc-1773574362847_0.jpg"
       ],
       "tags": [
-        "fyrtårn",
-        "blåvandshuk",
+        "fyrtÃ¥rn",
+        "blÃ¥vandshuk",
         "solnedgang"
       ]
     },
@@ -36,7 +36,7 @@
     {
       "id": "loc-1771635132178",
       "name": "Rubjergknude Fyr",
-      "address": "Fyrvejen 110C, Nr Rubjerg, 9800 Hjørring",
+      "address": "Fyrvejen 110C, Nr Rubjerg, 9800 HjÃ¸rring",
       "lat": 57.449064,
       "lon": 9.775514,
       "notes": "",
@@ -44,15 +44,15 @@
         "./photos/loc-1771635132178_0.jpg"
       ],
       "tags": [
-        "Fyrtårn",
+        "FyrtÃ¥rn",
         "Rubjerg Knude"
       ],
       "created": "2026-02-21"
     },
     {
       "id": "loc-1771635563194",
-      "name": "Blåvandshuk Fyr",
-      "address": "Fyrvej 106, 6857 Blåvand",
+      "name": "BlÃ¥vandshuk Fyr",
+      "address": "Fyrvej 106, 6857 BlÃ¥vand",
       "lat": 55.557457,
       "lon": 8.083508,
       "notes": "",
@@ -61,18 +61,18 @@
         "./photos/loc-1771635563194_1.jpg"
       ],
       "tags": [
-        "fyrtårn",
-        "blåvand"
+        "fyrtÃ¥rn",
+        "blÃ¥vand"
       ],
       "created": "2026-02-21"
     },
     {
       "id": "loc-1771636098372",
-      "name": "Lillebælt",
+      "name": "LillebÃ¦lt",
       "address": "Galsklintvej 2, 5500 Middelfart",
       "lat": 55.511586,
       "lon": 9.700099,
-      "notes": "lillebælt, bro",
+      "notes": "lillebÃ¦lt, bro",
       "photos": [
         "./photos/loc-1771636098372_0.jpg",
         "./photos/loc-1771636098372_1.jpg"
@@ -93,16 +93,31 @@
       ],
       "tags": [
         "Middelfart",
-        "Lillebælt",
+        "LillebÃ¦lt",
         "Kirke"
       ],
       "created": "2026-02-21"
+    },
+    {
+      "id": "loc-1775425268758",
+      "name": "Hvide Sande",
+      "address": "Slusen 1, 6960 Hvide Sande",
+      "lat": 56.004713,
+      "lon": 8.131025,
+      "notes": "Udsigtsoto fra højen",
+      "photos": [
+        "./photos/loc-1775425268758_0.jpg"
+      ],
+      "tags": [
+        "Hvide Sande"
+      ],
+      "created": "2026-04-05"
     }
   ],
   "inspirations": [
     {
       "id": "insp-1771660210419",
-      "title": "Livreddertårn fra strandklit",
+      "title": "LivreddertÃ¥rn fra strandklit",
       "area": "Henne Strand",
       "lat": 55.734,
       "lon": 8.129,
@@ -110,7 +125,7 @@
       "photo": "./photos/insp-1771660210419_0.jpg",
       "tags": [
         "strand",
-        "livreddertårn",
+        "livreddertÃ¥rn",
         "strandklit"
       ],
       "created": "2026-02-21"
@@ -127,7 +142,7 @@
         "strandbillede",
         "klitter"
       ],
-      "title": "henne strand - Google-søgning"
+      "title": "henne strand - Google-sÃ¸gning"
     }
   ]
 }
