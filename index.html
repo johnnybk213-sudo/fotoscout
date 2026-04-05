@@ -506,7 +506,6 @@
 <div class="header">
   <div class="header-top">
     <div class="logo">Foto<span>Scout</span></div>
-    <button id="btnRefresh" onclick="location.reload(true)" style="background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer;">↻</button>
     <div class="location-name">
       <span class="gps-dot"></span>
       <span id="locationName">Finder position...</span>
@@ -538,7 +537,7 @@
   <div id="detailContent"></div>
 </div>
 
-<a href="./admin.html" class="admin-link" title="Admin">&#9881;</a>
+<a href="#" onclick="event.preventDefault();location.reload(true);" class="admin-link" title="Opdatér" style="font-size:24px;color:var(--text-dim);">&#x21bb;</a>
 
 <script>
 // ============================================================
