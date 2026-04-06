@@ -1,19 +1,19 @@
 {
   "locations": [
     {
-      "address": "Fyrvej 106, 6857 BlÃÂÃÂ¥vand",
+      "address": "Fyrvej 106, 6857 BlÃÂÃÂÃÂÃÂ¥vand",
       "created": "2026-03-15",
       "id": "loc-1773574362847",
       "lat": 55.557457,
       "lon": 8.083508,
-      "name": "blÃÂÃÂ¥vand - Google Search",
-      "notes": "BlÃÂÃÂ¥vandshuk fyr med solnedgang",
+      "name": "blÃÂÃÂÃÂÃÂ¥vand - Google Search",
+      "notes": "BlÃÂÃÂÃÂÃÂ¥vandshuk fyr med solnedgang",
       "photos": [
         "./photos/loc-1773574362847_0.jpg"
       ],
       "tags": [
-        "fyrtÃÂÃÂ¥rn",
-        "blÃÂÃÂ¥vandshuk",
+        "fyrtÃÂÃÂÃÂÃÂ¥rn",
+        "blÃÂÃÂÃÂÃÂ¥vandshuk",
         "solnedgang"
       ]
     },
@@ -36,7 +36,7 @@
     {
       "id": "loc-1771635132178",
       "name": "Rubjergknude Fyr",
-      "address": "Fyrvejen 110C, Nr Rubjerg, 9800 HjÃÂÃÂ¸rring",
+      "address": "Fyrvejen 110C, Nr Rubjerg, 9800 HjÃÂÃÂÃÂÃÂ¸rring",
       "lat": 57.449064,
       "lon": 9.775514,
       "notes": "",
@@ -44,15 +44,15 @@
         "./photos/loc-1771635132178_0.jpg"
       ],
       "tags": [
-        "FyrtÃÂÃÂ¥rn",
+        "FyrtÃÂÃÂÃÂÃÂ¥rn",
         "Rubjerg Knude"
       ],
       "created": "2026-02-21"
     },
     {
       "id": "loc-1771635563194",
-      "name": "BlÃÂÃÂ¥vandshuk Fyr",
-      "address": "Fyrvej 106, 6857 BlÃÂÃÂ¥vand",
+      "name": "BlÃÂÃÂÃÂÃÂ¥vandshuk Fyr",
+      "address": "Fyrvej 106, 6857 BlÃÂÃÂÃÂÃÂ¥vand",
       "lat": 55.557457,
       "lon": 8.083508,
       "notes": "",
@@ -61,18 +61,18 @@
         "./photos/loc-1771635563194_1.jpg"
       ],
       "tags": [
-        "fyrtÃÂÃÂ¥rn",
-        "blÃÂÃÂ¥vand"
+        "fyrtÃÂÃÂÃÂÃÂ¥rn",
+        "blÃÂÃÂÃÂÃÂ¥vand"
       ],
       "created": "2026-02-21"
     },
     {
       "id": "loc-1771636098372",
-      "name": "LillebÃÂÃÂ¦lt",
+      "name": "LillebÃÂÃÂÃÂÃÂ¦lt",
       "address": "Galsklintvej 2, 5500 Middelfart",
       "lat": 55.511586,
       "lon": 9.700099,
-      "notes": "lillebÃÂÃÂ¦lt, bro",
+      "notes": "lillebÃÂÃÂÃÂÃÂ¦lt, bro",
       "photos": [
         "./photos/loc-1771636098372_0.jpg",
         "./photos/loc-1771636098372_1.jpg"
@@ -93,7 +93,7 @@
       ],
       "tags": [
         "Middelfart",
-        "LillebÃÂÃÂ¦lt",
+        "LillebÃÂÃÂÃÂÃÂ¦lt",
         "Kirke"
       ],
       "created": "2026-02-21"
@@ -104,7 +104,7 @@
       "address": "Slusen 1, 6960 Hvide Sande",
       "lat": 56.004713,
       "lon": 8.131025,
-      "notes": "Udsigtsoto fra hÃÂ¸jen",
+      "notes": "Udsigtsoto fra hÃÂÃÂ¸jen",
       "photos": [
         "./photos/loc-1775425268758_0.jpg"
       ],
@@ -116,7 +116,7 @@
     {
       "id": "loc-1775426242930",
       "name": "lyngvig fyr - Google Search",
-      "address": "Holmsland Klitvej 114, Klegod, 6950 RingkÃ¸bing",
+      "address": "Holmsland Klitvej 114, Klegod, 6950 RingkÃÂ¸bing",
       "lat": 56.093179,
       "lon": 8.127289,
       "notes": "",
@@ -124,7 +124,7 @@
         "./photos/loc-1775426242930_0.jpg"
       ],
       "tags": [
-        "fyrtÃ¥rn"
+        "fyrtÃÂ¥rn"
       ],
       "created": "2026-04-05"
     },
@@ -140,12 +140,29 @@
       ],
       "tags": [],
       "created": "2026-04-06"
+    },
+    {
+      "id": "loc-1775455826478",
+      "name": "marsktårnet",
+      "address": "Hjemstedvej 60, 6780 Skærbæk",
+      "lat": 55.152885,
+      "lon": 8.741765,
+      "notes": "",
+      "photos": [
+        "./photos/loc-1775455826478_0.jpg"
+      ],
+      "tags": [
+        "Museum",
+        "attraktion",
+        "monument"
+      ],
+      "created": "2026-04-06"
     }
   ],
   "inspirations": [
     {
       "id": "insp-1771660210419",
-      "title": "LivreddertÃÂÃÂ¥rn fra strandklit",
+      "title": "LivreddertÃÂÃÂÃÂÃÂ¥rn fra strandklit",
       "area": "Henne Strand",
       "lat": 55.734,
       "lon": 8.129,
@@ -153,7 +170,7 @@
       "photo": "./photos/insp-1771660210419_0.jpg",
       "tags": [
         "strand",
-        "livreddertÃÂÃÂ¥rn",
+        "livreddertÃÂÃÂÃÂÃÂ¥rn",
         "strandklit"
       ],
       "created": "2026-02-21"
@@ -170,7 +187,7 @@
         "strandbillede",
         "klitter"
       ],
-      "title": "henne strand - Google-sÃÂÃÂ¸gning"
+      "title": "henne strand - Google-sÃÂÃÂÃÂÃÂ¸gning"
     }
   ]
 }
