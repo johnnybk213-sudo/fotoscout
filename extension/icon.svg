@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="24" fill="#0d1117"/>
+  <rect x="30" y="38" width="68" height="52" rx="8" fill="none" stroke="#f0a030" stroke-width="5"/>
+  <circle cx="64" cy="62" r="16" fill="none" stroke="#f0a030" stroke-width="5"/>
+  <circle cx="64" cy="62" r="8" fill="#f0a030" opacity="0.4"/>
+  <rect x="48" y="34" width="16" height="6" rx="2" fill="#f0a030" opacity="0.6"/>
+  <text x="64" y="114" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="18" fill="#f0a030">FS</text>
+</svg>

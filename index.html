@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FotoScout</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FotoScout">
+<meta name="description" content="Personlig foto-planlægger til Vestkysten">
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --text-bright: #ffffff;
+    --border: #30363d;
+    --pin: #4a7fff;
+    --pin-bg: rgba(74,127,255,0.12);
+    --cam: #f0a030;
+    --cam-bg: rgba(240,160,48,0.12);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Header */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,17,23,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 16px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .logo { font-size: 22px; font-weight: 800; }
+  .logo span { color: var(--cam); }
+
+  .location-name {
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .gps-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #3fb950;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .filters::-webkit-scrollbar { display: none; }
+
+  /* Burger-menu */
+  .filter-bar { display: flex; }
+  .menu-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; border-radius: 10px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .menu-btn .burger { font-size: 18px; line-height: 1; }
+  .filters-panel {
+    display: none;
+    margin-top: 10px;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  .filters-panel.open { display: block; }
+
+  .pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .pill.active { background: var(--cam); color: var(--bg); border-color: var(--cam); }
+  .pill.active-loc { background: var(--pin); color: #fff; border-color: var(--pin); }
+  .pill.active-insp { background: var(--cam); color: var(--bg); border-color: var(--cam); }
+
+  /* Status */
+  .status {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .status .count { color: var(--cam); font-weight: 700; }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 80px 20px;
+    gap: 16px;
+  }
+
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--cam);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { font-size: 14px; color: var(--text-dim); }
+
+  /* Cards */
+  .cards {
+    padding: 8px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: transform 0.15s;
+  }
+
+  .card:active { transform: scale(0.98); }
+
+  .card-img {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: #0a0e14;
+    overflow: hidden;
+  }
+
+  .card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-img .placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 48px;
+    opacity: 0.15;
+  }
+
+  .card-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-badge.loc { background: var(--pin); }
+  .card-badge.insp { background: var(--cam); }
+
+  .card-distance {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+
+  .card-body { padding: 14px 16px 16px; }
+
+  .card-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .card-location {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-notes {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .card-tag {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .card-tag.loc { background: var(--pin-bg); color: var(--pin); }
+  .card-tag.insp { background: var(--cam-bg); color: var(--cam); }
+
+  .card-footer { display: flex; gap: 8px; }
+
+  .card-footer a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-nav {
+    background: var(--pin);
+    color: #fff;
+  }
+
+  .btn-nav:active { background: #3a6fee; }
+
+  .btn-nav.insp-nav {
+    background: var(--cam);
+    color: var(--bg);
+  }
+
+  .btn-nav.insp-nav:active { background: #e09020; }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty p { font-size: 15px; line-height: 1.6; }
+  .empty .sub { font-size: 13px; margin-top: 8px; }
+
+  /* Detail overlay */
+  .detail-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    z-index: 200;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .detail-overlay.open { display: block; }
+
+  .detail-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(13,17,23,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 12px 16px;
+    padding-top: max(12px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .detail-back {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .detail-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-bright);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .detail-badge {
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .detail-badge.loc { background: var(--pin); }
+  .detail-badge.insp { background: var(--cam); }
+
+  /* Gallery */
+  .gallery {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .gallery::-webkit-scrollbar { display: none; }
+
+  .gallery-img {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    height: 280px;
+    background: #0a0e14;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gallery-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .gallery-placeholder {
+    font-size: 64px;
+    opacity: 0.15;
+  }
+
+  .gallery-counter {
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .gallery-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .gallery-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+
+  .gallery-dot.active { background: var(--cam); }
+
+  .detail-body {
+    padding: 20px 16px 100px;
+  }
+
+  .detail-location {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .detail-dist {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    margin-left: 8px;
+  }
+
+  .detail-notes {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  .detail-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .detail-tag {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .detail-tag.loc { background: var(--pin-bg); color: var(--pin); }
+  .detail-tag.insp { background: var(--cam-bg); color: var(--cam); }
+
+  .detail-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #fff;
+  }
+
+  .detail-nav-btn.loc { background: var(--pin); }
+  .detail-nav-btn.insp { background: var(--cam); color: var(--bg); }
+
+  /* Admin link */
+  .admin-link {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    text-decoration: none;
+    z-index: 99;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  /* Flickr */
+  .card-badge.flickr { background: #ff5c9e; }
+  .detail-badge.flickr { background: #ff5c9e; }
+  .card-tag.flickr, .detail-tag.flickr { background: rgba(255,92,158,0.12); color: #ff7fb0; }
+  .detail-nav-btn.flickr { background: #ff5c9e; color: #fff; }
+  .pill.flickr-on { background: #ff5c9e; color: #fff; border-color: #ff5c9e; }
+  .flickr-credit { font-size: 12px; color: var(--text-dim); margin: -4px 0 14px; }
+  .flickr-credit a { color: #ff7fb0; text-decoration: none; font-weight: 600; }
+  .card-landmark { font-size: 13px; font-weight: 700; color: #ff7fb0; margin: 2px 0 4px; }
+  .detail-landmark { font-size: 16px; font-weight: 700; color: #ff7fb0; margin: 8px 0 4px; }
+  /* Fase 1: landmark-overblik */
+  .overview { display: flex; flex-direction: column; gap: 14px; padding: 4px 0 24px; }
+  .lm-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+  .lm-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .lm-rank { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: #ff5c9e; color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+  .lm-titles { min-width: 0; }
+  .lm-name { font-size: 16px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lm-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .lm-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .lm-strip img { width: 100%; height: 80px; object-fit: cover; border-radius: 10px; cursor: pointer; background: var(--bg); }
+  .lm-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .lm-btn { flex: 1; text-align: center; padding: 9px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: none; }
+  .lm-btn.nav { background: #ff5c9e; color: #fff; border-color: #ff5c9e; }
+  .back-bar { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: 600; font-size: 14px; cursor: pointer; }
+
+  /* Synes om / skjul / gendan */
+  .card-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .act-btn {
+    flex: 1; padding: 8px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    border: 1px solid var(--border); background: transparent; color: var(--text-dim);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .act-btn.like.on { color: #ff5c9e; border-color: rgba(255,92,158,0.45); }
+  .act-btn.restore { color: #3fb950; border-color: rgba(63,185,80,0.45); }
+  .detail-actions { display: flex; gap: 10px; margin-top: 10px; }
+  .detail-act-btn {
+    flex: 1; padding: 12px; border-radius: 12px;
+    font-size: 14px; font-weight: 600;
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .detail-act-btn.like.on { color: #ff5c9e; border-color: rgba(255,92,158,0.45); }
+
+  /* Begrundelses-ark */
+  .sheet-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 300;
+    align-items: flex-end; justify-content: center;
+  }
+  .sheet-overlay.open { display: flex; }
+  .sheet {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px 18px 0 0;
+    width: 100%; max-width: 520px;
+    padding: 16px 16px max(16px, env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .sheet-title { font-size: 15px; font-weight: 700; color: var(--text-bright); padding: 6px 4px 10px; }
+  .sheet-btn {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+    width: 100%; padding: 14px; border-radius: 12px;
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    font-size: 15px; font-weight: 600; cursor: pointer; text-align: left;
+  }
+  .sheet-btn small { font-size: 12px; font-weight: 400; color: var(--text-dim); }
+  .sheet-cancel {
+    width: 100%; padding: 13px; border-radius: 12px; margin-top: 4px;
+    background: transparent; border: none; color: var(--text-dim);
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">Foto<span>Scout</span></div>
+    <div class="location-name">
+      <span class="gps-dot"></span>
+      <span id="locationName">Finder position...</span>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <button class="menu-btn" id="menuBtn" aria-label="Filtre">
+      <span class="burger">&#9776;</span><span id="activeFilterLabel">Alle</span>
+    </button>
+  </div>
+  <div class="filters-panel" id="filtersPanel">
+    <div class="filters" id="filters">
+      <button class="pill active" data-filter="all">Alle</button>
+    </div>
+  </div>
+</div>
+
+<div class="status" id="status">Indlæser...</div>
+
+<div id="content">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Finder din position...</div>
+  </div>
+</div>
+
+<!-- Detail view -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-header">
+    <button class="detail-back" onclick="closeDetail()">&#8592;</button>
+    <div class="detail-title" id="detailTitle"></div>
+    <span class="detail-badge" id="detailBadge"></span>
+  </div>
+  <div id="detailContent"></div>
+</div>
+
+<!-- Begrundelses-ark ved skjul -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title">Hvorfor skjule billedet?</div>
+    <button class="sheet-btn" onclick="confirmHide('quality')"><span>👎 Dårlig kvalitet</span><small>nedprioriterer fotografen</small></button>
+    <button class="sheet-btn" onclick="confirmHide('motif')"><span>🚫 Ikke relevant motiv</span><small>nedprioriterer motivet (hvis billedet er tagget)</small></button>
+    <button class="sheet-btn" onclick="confirmHide('thisonly')"><span>🙈 Skjul kun denne</span><small>påvirker ikke din smags-profil</small></button>
+    <button class="sheet-cancel" onclick="closeSheet()">Annullér</button>
+  </div>
+</div>
+
+<a href="#" onclick="event.preventDefault();location.reload(true);" class="admin-link" title="Opdatér" style="font-size:24px;color:var(--text-dim);">&#x21bb;</a>
+
+<script>
+// ============================================================
+// FotoScout App
+// ============================================================
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// --- Flickr-konfiguration ---
+const FLICKR_KEY = 'aecfc68f6e3b28420c960420d24caf6e';
+const FLICKR_RADIUS_KM = 8;      // søgeradius omkring byen
+const FLICKR_COUNT = 30;         // antal billeder der vises (max 250)
+const FLICKR_POOL = 60;          // antal der hentes; smags-profilen vælger de bedste FLICKR_COUNT
+
+// --- Lag 1: landmark-kategorier (engelsk-først for bedst Flickr-dækning + danske synonymer) ---
+// Hver kategori-søgning er geo + text=, så billederne både er nær byen OG matcher motivet.
+const FLICKR_CAT_PER = 18;       // billeder hentet pr. kategori (slås sammen + dedupes)
+// Fælles kategori-labels (bruges af både Lag 1 tekst-søgning og Lag 3 OSM-snap)
+const CAT_LABELS = {
+  fyr: '🗼 Fyr', bunker: '🪖 Bunker', havn: '⚓ Havn', kirke: '⛪ Kirke',
+  museum: '🏛️ Museum', bro: '🌉 Bro', slot: '🏰 Slot',
+  forlystelse: '🎢 Forlystelse', mindesmaerke: '🗿 Mindesmærke',
+  attraktion: '📸 Attraktion', andet: '📍 Landmark'
+};
+const FLICKR_CATEGORIES = [
+  { key: 'fyr',    terms: ['lighthouse', 'fyr'] },
+  { key: 'bunker', terms: ['bunker', 'tirpitz', 'atlantikwall'] },
+  { key: 'havn',   terms: ['harbour', 'harbor', 'havn'] },
+  { key: 'kirke',  terms: ['church', 'cathedral', 'kirke'] },
+  { key: 'museum', terms: ['museum'] },
+  { key: 'bro',    terms: ['bridge', 'bro'] },
+  { key: 'slot',   terms: ['castle', 'slot'] }
+].map(c => ({ ...c, label: CAT_LABELS[c.key] }));
+
+// --- Lag 3: OSM/Overpass landmark-navne ---
+const OSM_ENDPOINT = 'https://overpass-api.de/api/interpreter';
+const OSM_SNAP_M = 250;          // maks. afstand foto→landmark for at tilskrive navn (meter)
+const OSM_CACHE_HOURS = 720;     // 30 dage — OSM-data er stabilt
+const OSM_LANDMARK_BOOST = 5;    // navngivne landmarks løftes op i smags-sorteringen
+const NAMED_MAX = 10;            // maks. antal "notable" OSM-landmarks der navne-søges på Flickr
+const NAMED_PER = 12;            // billeder pr. navne-søgning
+const OWNER_AUTOHIDE = 2;        // skjul en fotograf helt når hans vægt når dette (−)
+const LIKE_OWNER = 2, LIKE_TAG = 2;   // "synes om" vægter forholdsmæssigt mere
+const HIDE_REASONS = {
+  quality:  { owner: -1, tag: -1 },   // dårligt billede -> nedprioritér fotografen
+  motif:    { owner: 0,  tag: -2 },   // forkert motiv -> nedprioritér kun motivet
+  thisonly: { owner: 0,  tag: 0  }    // skjul kun denne -> ingen profilpåvirkning
+};
+
+// Indlæs skjulte (id -> begrundelse); migrér gammelt format (kun id'er)
+function loadHidden() {
+  const m = new Map();
+  try {
+    for (const e of JSON.parse(localStorage.getItem('fotoscout-hidden') || '[]')) {
+      if (Array.isArray(e)) m.set(e[0], e[1] || 'thisonly');
+      else m.set(e, 'thisonly');
+    }
+  } catch {}
+  return m;
+}
+const NEAR_THRESHOLD_KM = 15;    // hvor tæt på en by, før Flickr aktiveres
+const FLICKR_CACHE_HOURS = 24;   // cache-levetid
+
+const state = {
+  lat: null,
+  lon: null,
+  data: { locations: [], inspirations: [] },
+  towns: [],
+  flickr: [],
+  flickrEnabled: localStorage.getItem('fotoscout-flickr') !== 'off',
+  flickrLandmarkMode: localStorage.getItem('fotoscout-flickr-lm') !== 'off',  // Lag 1: kategori-søgning
+  hidden: loadHidden(),
+  liked: new Set(JSON.parse(localStorage.getItem('fotoscout-liked') || '[]')),
+  taste: JSON.parse(localStorage.getItem('fotoscout-taste') || '{"owners":{},"tags":{}}'),
+  openDetailId: null,
+  filter: 'all',
+  view: 'overblik',                 // 'overblik' (landmark-grupper) | 'feed' (alle billeder)
+  _groups: [],                      // seneste landmark-grupper (til klik-handlere)
+  items: []
+};
+
+// --- Haversine ---
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function formatDist(km) {
+  if (km === null) return '';
+  return km < 1 ? `${Math.round(km*1000)} m` : `${km.toFixed(1)} km`;
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// --- Geolocation ---
+function getPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation ikke tilgængelig'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      err => reject(err),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 300000 }
+    );
+  });
+}
+
+async function reverseGeocode(lat, lon) {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=da`);
+    const d = await res.json();
+    const addr = d.address;
+    return addr.city || addr.town || addr.village || addr.municipality || addr.county || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+  } catch {
+    return `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+  }
+}
+
+// --- Load data ---
+async function loadData() {
+  try {
+    const res = await fetch('./data.json?' + Date.now());
+    if (res.ok) {
+      state.data = await res.json();
+    }
+  } catch {}
+
+  // Check localStorage for newer data
+  const saved = localStorage.getItem('fotoscout-data');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed._modified && parsed.locations) {
+        state.data = parsed;
+      }
+    } catch {}
+  }
+
+  // Sikr at begge arrays altid findes
+  if (!Array.isArray(state.data.locations)) state.data.locations = [];
+  if (!Array.isArray(state.data.inspirations)) state.data.inspirations = [];
+}
+
+// --- Indlæs by-liste (vestkyst-byer) ---
+async function loadTowns() {
+  try {
+    const res = await fetch('./config/vestkyst-byer.json?' + Date.now());
+    if (res.ok) {
+      const d = await res.json();
+      state.towns = d.towns || [];
+    }
+  } catch {}
+}
+
+// --- Find nærmeste by inden for grænsen ---
+function findNearestTown(lat, lon) {
+  let best = null;
+  for (const t of state.towns) {
+    const d = haversine(lat, lon, t.lat, t.lon);
+    if (best === null || d < best.dist) best = { town: t, dist: d };
+  }
+  return (best && best.dist <= NEAR_THRESHOLD_KM) ? best : null;
+}
+
+// --- Hent Flickr-billeder for en by (med 24t cache) ---
+async function fetchFlickrPhotos(town) {
+  const cacheKey = `flickr-cache-${town.name}-r${FLICKR_RADIUS_KM}-n${FLICKR_POOL}`;
+  try {
+    const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+    if (cached && (Date.now() - cached.ts) < FLICKR_CACHE_HOURS * 3600 * 1000) {
+      return cached.photos;
+    }
+  } catch {}
+
+  const params = new URLSearchParams({
+    method: 'flickr.photos.search',
+    api_key: FLICKR_KEY,
+    lat: town.lat, lon: town.lon,
+    radius: FLICKR_RADIUS_KM, radius_units: 'km',
+    has_geo: 1,
+    sort: 'interestingness-desc',
+    per_page: FLICKR_POOL,
+    extras: 'owner_name,geo,url_q,url_m,url_c,url_l,tags',
+    content_type: 1, media: 'photos', safe_search: 1,
+    format: 'json', nojsoncallback: 1
+  });
+  const url = 'https://api.flickr.com/services/rest/?' + params.toString();
+
+  let photos = [];
+  try {
+    const res = await fetch(url);
+    const d = await res.json();
+    if (d.stat === 'ok' && d.photos && d.photos.photo) {
+      photos = d.photos.photo.map(p => ({
+        id: 'flickr-' + p.id,
+        title: (p.title || '').trim() || 'Flickr-foto',
+        ownername: p.ownername || '',
+        owner: p.owner,
+        thumb: p.url_c || p.url_m || p.url_q || '',
+        large: p.url_l || p.url_c || p.url_m || '',
+        lat: p.latitude ? parseFloat(p.latitude) : null,
+        lon: p.longitude ? parseFloat(p.longitude) : null,
+        page: `https://www.flickr.com/photos/${p.owner}/${p.id}`,
+        town: town.name,
+        tags: (p.tags || '').split(' ').filter(Boolean).slice(0, 12)
+      })).filter(p => p.thumb);
+    }
+  } catch (e) {
+    return [];
+  }
+
+  try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), photos })); } catch {}
+  return photos;
+}
+
+// --- Lag 1: hent landmark-billeder via kategori-søgninger (geo + text=) ---
+// Kører én søgning pr. kategori, mærker hvert billede med sin kategori, og fletter
+// resultaterne (dedup på id — første/stærkeste kategori vinder). 24t cache.
+async function fetchFlickrLandmarks(town) {
+  const cacheKey = `flickr-lm-${town.name}-r${FLICKR_RADIUS_KM}-n${FLICKR_CAT_PER}`;
+  try {
+    const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+    if (cached && (Date.now() - cached.ts) < FLICKR_CACHE_HOURS * 3600 * 1000) return cached.photos;
+  } catch {}
+
+  const fetchCat = async (cat) => {
+    const params = new URLSearchParams({
+      method: 'flickr.photos.search', api_key: FLICKR_KEY,
+      lat: town.lat, lon: town.lon, radius: FLICKR_RADIUS_KM, radius_units: 'km',
+      has_geo: 1, text: cat.terms[0], sort: 'interestingness-desc', per_page: FLICKR_CAT_PER,
+      extras: 'owner_name,geo,url_q,url_m,url_c,url_l,tags',
+      content_type: 1, media: 'photos', safe_search: 1, format: 'json', nojsoncallback: 1
+    });
+    try {
+      const res = await fetch('https://api.flickr.com/services/rest/?' + params.toString());
+      const d = await res.json();
+      if (d.stat === 'ok' && d.photos && d.photos.photo) {
+        return d.photos.photo.map(p => ({
+          id: 'flickr-' + p.id,
+          title: (p.title || '').trim() || 'Flickr-foto',
+          ownername: p.ownername || '', owner: p.owner,
+          thumb: p.url_c || p.url_m || p.url_q || '',
+          large: p.url_l || p.url_c || p.url_m || '',
+          lat: p.latitude ? parseFloat(p.latitude) : null,
+          lon: p.longitude ? parseFloat(p.longitude) : null,
+          page: `https://www.flickr.com/photos/${p.owner}/${p.id}`,
+          town: town.name,
+          tags: (p.tags || '').split(' ').filter(Boolean).slice(0, 12),
+          cat: cat.key, catLabel: cat.label
+        })).filter(p => p.thumb);
+      }
+    } catch (e) {}
+    return [];
+  };
+
+  let photos = [];
+  try {
+    const results = await Promise.all(FLICKR_CATEGORIES.map(fetchCat));
+    const seen = new Set();
+    for (const arr of results) for (const p of arr) {
+      if (seen.has(p.id)) continue;   // dedup på tværs af kategorier
+      seen.add(p.id); photos.push(p);
+    }
+  } catch (e) { return []; }
+
+  try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), photos })); } catch {}
+  return photos;
+}
+
+// --- Lag 3: kategorisér et OSM-element ud fra dets tags ---
+function osmCat(t) {
+  if (t.man_made === 'lighthouse') return 'fyr';
+  if (t.military === 'bunker' || t.historic === 'bunker') return 'bunker';
+  if (t.amenity === 'place_of_worship' || ['church', 'cathedral', 'chapel'].includes(t.building)) return 'kirke';
+  if (t.tourism === 'museum') return 'museum';
+  if (t.historic === 'castle' || t.historic === 'fort') return 'slot';
+  if (t.leisure === 'marina' || t.harbour) return 'havn';
+  if (t.tourism === 'theme_park') return 'forlystelse';
+  if (t.historic === 'memorial' || t.historic === 'monument') return 'mindesmaerke';
+  if (t.tourism === 'attraction') return 'attraktion';
+  return 'andet';
+}
+
+// --- Lag 3: hent navngivne landmarks fra OpenStreetMap (Overpass), 30 dages cache ---
+async function fetchOsmLandmarks(town) {
+  const cacheKey = `osm-lm-${town.name}-r${FLICKR_RADIUS_KM}`;
+  try {
+    const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+    if (cached && (Date.now() - cached.ts) < OSM_CACHE_HOURS * 3600 * 1000) return cached.landmarks;
+  } catch {}
+
+  const r = FLICKR_RADIUS_KM * 1000, lat = town.lat, lon = town.lon;
+  const filters = ['[man_made=lighthouse]', '[military=bunker]', '[historic=bunker]',
+    '[amenity=place_of_worship]', '[tourism=museum]', '[historic~"castle|fort|memorial|monument"]',
+    '[tourism=attraction]', '[tourism=theme_park]', '[leisure=marina]'];
+  const q = `[out:json][timeout:25];(${filters.map(f => `nwr(around:${r},${lat},${lon})${f};`).join('')});out center tags;`;
+
+  let landmarks = [];
+  try {
+    const res = await fetch(OSM_ENDPOINT + '?data=' + encodeURIComponent(q));
+    const d = await res.json();
+    const seen = new Set();
+    for (const el of (d.elements || [])) {
+      const t = el.tags || {};
+      const name = t.name || t['name:da'] || t['name:en'];
+      if (!name || seen.has(name)) continue;
+      const la = el.lat != null ? el.lat : (el.center && el.center.lat);
+      const lo = el.lon != null ? el.lon : (el.center && el.center.lon);
+      if (la == null || lo == null) continue;
+      seen.add(name);
+      landmarks.push({ name, lat: la, lon: lo, cat: osmCat(t), notable: !!(t.wikidata || t.wikipedia) });
+    }
+  } catch (e) { return []; }
+
+  try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), landmarks })); } catch {}
+  return landmarks;
+}
+
+// --- Lag 3+: søg Flickr direkte på de "notable" OSM-landmark-navne (specifik pulje) ---
+// Fanger navngivne attraktioner der IKKE passer i en generisk kategori (fx Legoland inde i landet).
+async function fetchFlickrByLandmarks(town, landmarks) {
+  const notable = landmarks.filter(l => l.notable).slice(0, NAMED_MAX);
+  if (!notable.length) return [];
+  const cacheKey = `flickr-named-${town.name}-n${notable.length}`;
+  try {
+    const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+    if (cached && (Date.now() - cached.ts) < FLICKR_CACHE_HOURS * 3600 * 1000) return cached.photos;
+  } catch {}
+
+  const fetchOne = async (lm) => {
+    const params = new URLSearchParams({
+      method: 'flickr.photos.search', api_key: FLICKR_KEY,
+      lat: town.lat, lon: town.lon, radius: FLICKR_RADIUS_KM, radius_units: 'km',
+      has_geo: 1, text: lm.name, sort: 'interestingness-desc', per_page: NAMED_PER,
+      extras: 'owner_name,geo,url_q,url_m,url_c,url_l,tags',
+      content_type: 1, media: 'photos', safe_search: 1, format: 'json', nojsoncallback: 1
+    });
+    try {
+      const res = await fetch('https://api.flickr.com/services/rest/?' + params.toString());
+      const d = await res.json();
+      if (d.stat === 'ok' && d.photos && d.photos.photo) {
+        const total = parseInt(d.photos.total) || 0;   // hvor mange geotaggede fotos findes for dette landmark (ikonisk-proxy)
+        return d.photos.photo.map(p => ({
+          id: 'flickr-' + p.id,
+          title: (p.title || '').trim() || 'Flickr-foto',
+          ownername: p.ownername || '', owner: p.owner,
+          thumb: p.url_c || p.url_m || p.url_q || '',
+          large: p.url_l || p.url_c || p.url_m || '',
+          lat: p.latitude ? parseFloat(p.latitude) : null,
+          lon: p.longitude ? parseFloat(p.longitude) : null,
+          page: `https://www.flickr.com/photos/${p.owner}/${p.id}`,
+          town: town.name,
+          tags: (p.tags || '').split(' ').filter(Boolean).slice(0, 12),
+          cat: lm.cat, catLabel: CAT_LABELS[lm.cat] || null, landmark: lm.name, pop: total
+        })).filter(p => p.thumb);
+      }
+    } catch (e) {}
+    return [];
+  };
+
+  let photos = [];
+  try {
+    const results = await Promise.all(notable.map(fetchOne));
+    const seen = new Set();
+    for (const arr of results) for (const p of arr) {
+      if (seen.has(p.id)) continue;   // dedup på tværs af landmark-søgninger
+      seen.add(p.id); photos.push(p);
+    }
+  } catch (e) { return []; }
+
+  try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), photos })); } catch {}
+  return photos;
+}
+
+// --- Lag 3: knyt nærmeste navngivne landmark til hvert foto (inden for OSM_SNAP_M) ---
+function snapToLandmarks(photos, landmarks) {
+  if (!landmarks.length) return photos;
+  const maxKm = OSM_SNAP_M / 1000;
+  for (const p of photos) {
+    if (p.landmark) continue;              // allerede navngivet via navne-søgning — overskriv ikke
+    if (p.lat == null || p.lon == null) continue;
+    let best = null, bestD = maxKm;
+    for (const lm of landmarks) {
+      const d = haversine(p.lat, p.lon, lm.lat, lm.lon);
+      if (d < bestD) { bestD = d; best = lm; }
+    }
+    if (best) {
+      p.landmark = best.name;
+      p.cat = best.cat;                 // OSM-kategorien er mere præcis end tekst-søgningens
+      p.catLabel = CAT_LABELS[best.cat] || p.catLabel;
+    }
+  }
+  return photos;
+}
+
+// --- Indlæs Flickr for nuværende position ---
+async function loadFlickr() {
+  state.flickr = [];
+  if (!state.flickrEnabled || state.lat === null) return;
+  const near = findNearestTown(state.lat, state.lon);
+  if (!near) return;  // ikke i nærheden af en vestkyst-by
+  const statusEl = document.getElementById('status');
+  if (statusEl) statusEl.innerHTML += ` &middot; <span style="color:#ff7fb0">henter Flickr…</span>`;
+  if (state.flickrLandmarkMode) {
+    const landmarks = await fetchOsmLandmarks(near.town);
+    const [generic, named] = await Promise.all([
+      fetchFlickrLandmarks(near.town),
+      fetchFlickrByLandmarks(near.town, landmarks)
+    ]);
+    const seen = new Set();
+    const merged = [];
+    for (const p of named.concat(generic)) {   // navne-søgte (specifikke) først → vinder ved dubletter
+      if (seen.has(p.id)) continue;
+      seen.add(p.id); merged.push(p);
+    }
+    state.flickr = snapToLandmarks(merged, landmarks);
+  } else {
+    state.flickr = await fetchFlickrPhotos(near.town);
+  }
+}
+
+// --- Smags-profil (huskes i localStorage) ---
+function saveTaste() {
+  localStorage.setItem('fotoscout-taste', JSON.stringify(state.taste));
+  localStorage.setItem('fotoscout-liked', JSON.stringify([...state.liked]));
+}
+function tasteScore(meta) {
+  let s = 0;
+  if (meta.owner && state.taste.owners[meta.owner]) s += state.taste.owners[meta.owner];
+  for (const t of (meta.tags || [])) if (state.taste.tags[t]) s += state.taste.tags[t];
+  return s;
+}
+function applyTaste(meta, ownerDelta, tagDelta) {
+  if (!meta) return;
+  if (meta.owner && ownerDelta) {
+    state.taste.owners[meta.owner] = (state.taste.owners[meta.owner] || 0) + ownerDelta;
+    if (state.taste.owners[meta.owner] === 0) delete state.taste.owners[meta.owner];
+  }
+  if (tagDelta) for (const t of (meta.tags || [])) {
+    state.taste.tags[t] = (state.taste.tags[t] || 0) + tagDelta;
+    if (state.taste.tags[t] === 0) delete state.taste.tags[t];
+  }
+}
+function hasTaste() {
+  return Object.keys(state.taste.owners).length > 0 || Object.keys(state.taste.tags).length > 0;
+}
+function flickrToItem(f) {
+  let dist = null;
+  if (state.lat !== null && f.lat && f.lon) dist = haversine(state.lat, state.lon, f.lat, f.lon);
+  return {
+    type: 'flickr', id: f.id, name: f.title, subtitle: f.town,
+    notes: f.ownername ? 'Foto: ' + f.ownername : '',
+    photo: f.thumb, photos: [f.large || f.thumb],
+    tags: [], flickrTags: f.tags || [], owner: f.owner, ownername: f.ownername,
+    cat: f.cat || null, catLabel: f.catLabel || null, landmark: f.landmark || null, pop: f.pop || 0,
+    lat: f.lat, lon: f.lon, dist,
+    navTarget: f.landmark ? `${f.landmark}, ${f.town}`
+      : ((f.lat && f.lon) ? `${f.lat},${f.lon}` : f.town + ', Danmark'),
+    flickrPage: f.page,
+    _taste: tasteScore({ owner: f.owner, tags: f.tags || [] }) + (f.landmark ? OSM_LANDMARK_BOOST : 0)
+  };
+}
+function getItemById(id) {
+  const it = state.items.find(i => i.id === id);
+  if (it) return it;
+  const f = state.flickr.find(p => p.id === id);
+  return f ? flickrToItem(f) : null;
+}
+function metaOf(id) {
+  const it = getItemById(id);
+  return it ? { owner: it.owner, tags: it.flickrTags || it.tags || [] } : null;
+}
+
+// --- Build items list ---
+function buildItems() {
+  const items = [];
+  const locations = state.data.locations || [];
+  const inspirations = state.data.inspirations || [];
+
+  for (const loc of locations) {
+    let dist = null;
+    if (state.lat !== null && loc.lat && loc.lon) {
+      dist = haversine(state.lat, state.lon, loc.lat, loc.lon);
+    }
+    items.push({
+      type: 'location',
+      id: loc.id,
+      name: loc.name,
+      subtitle: loc.address,
+      notes: loc.notes,
+      photos: loc.photos || [],
+      photo: (loc.photos && loc.photos.length > 0) ? loc.photos[0] : '',
+      tags: loc.tags || [],
+      lat: loc.lat,
+      lon: loc.lon,
+      dist,
+      navTarget: loc.address
+    });
+  }
+
+  for (const insp of inspirations) {
+    let dist = null;
+    if (state.lat !== null && insp.lat && insp.lon) {
+      dist = haversine(state.lat, state.lon, insp.lat, insp.lon);
+    }
+    items.push({
+      type: 'inspiration',
+      id: insp.id,
+      name: insp.title,
+      subtitle: insp.area,
+      notes: insp.notes,
+      photo: insp.photo || '',
+      photos: insp.photo ? [insp.photo] : [],
+      tags: insp.tags || [],
+      lat: insp.lat,
+      lon: insp.lon,
+      dist,
+      navTarget: (insp.lat && insp.lon) ? `${insp.lat},${insp.lon}` : insp.area + ', Danmark'
+    });
+  }
+
+  // Flickr: byg kandidater, udeluk fravalgte fotografer, vælg de bedste efter smags-profil
+  let flickrCands = state.flickr
+    .map(flickrToItem)
+    .filter(it => (state.taste.owners[it.owner] || 0) > -OWNER_AUTOHIDE)
+    .filter(it => !state.hidden.has(it.id));   // skjulte fjernes FOER udvaelgelsen -> naeste fra puljen rykker ind
+  flickrCands.sort((a, b) => b._taste - a._taste);
+  for (const it of flickrCands.slice(0, FLICKR_COUNT)) items.push(it);
+
+  // Sort: items with distance first (by distance), then items without
+  items.sort((a, b) => {
+    if (a.dist !== null && b.dist !== null) return a.dist - b.dist;
+    if (a.dist !== null) return -1;
+    if (b.dist !== null) return 1;
+    return 0;
+  });
+
+  state.items = items;
+}
+
+// --- Skjul / synes om / gendan (huskes i localStorage) ---
+function saveHidden() {
+  localStorage.setItem('fotoscout-hidden', JSON.stringify([...state.hidden]));
+}
+function hideItem(id, reason) {
+  reason = HIDE_REASONS[reason] ? reason : 'thisonly';
+  const meta = metaOf(id);
+  if (state.liked.has(id)) { state.liked.delete(id); applyTaste(meta, -LIKE_OWNER, -LIKE_TAG); }  // fjern tidligere like
+  if (!state.hidden.has(id)) {
+    state.hidden.set(id, reason);
+    const r = HIDE_REASONS[reason];
+    applyTaste(meta, r.owner, r.tag);            // negativt signal afhængig af begrundelse
+  }
+  saveHidden(); saveTaste(); closeDetail(); render();
+}
+function unhideItem(id) {
+  if (state.hidden.has(id)) {
+    const r = HIDE_REASONS[state.hidden.get(id)] || HIDE_REASONS.thisonly;
+    applyTaste(metaOf(id), -r.owner, -r.tag);    // ophæv præcis det der blev trukket fra
+    state.hidden.delete(id);
+  }
+  saveHidden(); saveTaste();
+  if (state.filter === 'hidden' && getFilteredItems().length === 0) state.filter = 'all';
+  render();
+  if (state.openDetailId === id) openDetail(id);
+}
+function likeItem(id) {
+  const meta = metaOf(id);
+  if (state.liked.has(id)) {
+    state.liked.delete(id); applyTaste(meta, -LIKE_OWNER, -LIKE_TAG);   // slå like fra
+  } else {
+    if (state.hidden.has(id)) {                                          // ophæv et evt. skjul først
+      const r = HIDE_REASONS[state.hidden.get(id)] || HIDE_REASONS.thisonly;
+      applyTaste(meta, -r.owner, -r.tag);
+      state.hidden.delete(id);
+    }
+    state.liked.add(id); applyTaste(meta, LIKE_OWNER, LIKE_TAG);         // positivt signal (vægter mere)
+  }
+  saveHidden(); saveTaste();
+  if (state.filter === 'liked' && state.liked.size === 0) state.filter = 'all';
+  render();
+  if (state.openDetailId === id) openDetail(id);
+}
+// --- Begrundelses-ark ved skjul (kun Flickr; egne spots skjules direkte) ---
+let pendingHideId = null;
+function askHide(id) {
+  const it = getItemById(id);
+  if (!it || it.type !== 'flickr') { hideItem(id, 'thisonly'); return; }
+  pendingHideId = id;
+  document.getElementById('sheetOverlay').classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('sheetOverlay').classList.remove('open');
+  pendingHideId = null;
+}
+function confirmHide(reason) {
+  const id = pendingHideId;
+  closeSheet();
+  if (id) hideItem(id, reason);
+}
+
+// --- Filter ---
+function specialViewItems(predicate) {
+  const out = [], seen = new Set();
+  for (const it of state.items) if (predicate(it.id)) { out.push(it); seen.add(it.id); }
+  for (const f of state.flickr) if (!seen.has(f.id) && predicate(f.id)) out.push(flickrToItem(f));
+  return out;
+}
+function getFilteredItems() {
+  if (state.filter === 'hidden') return specialViewItems(id => state.hidden.has(id));
+  if (state.filter === 'liked')  return specialViewItems(id => state.liked.has(id));
+  if (state.filter.startsWith('lm:')) {                 // alle billeder for ét landmark (ikke begrænset af FLICKR_COUNT)
+    const name = state.filter.slice(3);
+    return state.flickr.map(flickrToItem)
+      .filter(it => it.landmark === name && !state.hidden.has(it.id))
+      .sort((a, b) => b._taste - a._taste);
+  }
+  let list;
+  if (state.filter === 'all') list = state.items;
+  else if (state.filter === 'locations') list = state.items.filter(i => i.type === 'location');
+  else if (state.filter === 'inspirations') list = state.items.filter(i => i.type === 'inspiration');
+  else if (state.filter === 'flickr') list = state.items.filter(i => i.type === 'flickr');
+  else list = state.items.filter(i => i.tags.includes(state.filter));  // tag-filter
+  return list.filter(i => !state.hidden.has(i.id));
+}
+
+// --- Fase 1: gruppér Flickr-billeder pr. navngivet landmark og rangordn efter "fotogen-score" ---
+function buildLandmarkGroups() {
+  const cands = state.flickr
+    .map(flickrToItem)
+    .filter(it => (state.taste.owners[it.owner] || 0) > -OWNER_AUTOHIDE)
+    .filter(it => !state.hidden.has(it.id))
+    .filter(it => it.landmark);            // kun navngivne landmarks hører til i overblikket
+  const map = new Map();
+  for (const it of cands) {
+    let g = map.get(it.landmark);
+    if (!g) { g = { name: it.landmark, cat: it.cat, catLabel: it.catLabel, town: it.subtitle, photos: [], pop: 0, dist: null }; map.set(it.landmark, g); }
+    g.photos.push(it);
+    if (it.pop) g.pop = Math.max(g.pop, it.pop);
+    if (it.dist != null) g.dist = (g.dist == null) ? it.dist : Math.min(g.dist, it.dist);
+  }
+  const groups = [...map.values()];
+  for (const g of groups) {
+    g.photos.sort((a, b) => b._taste - a._taste);
+    g.notable = g.pop > 0;                 // navne-søgte (wikidata-landmarks) har en rigtig foto-total
+    g.score = g.notable ? g.pop : g.photos.length;
+  }
+  // notable først (ikoniske), så efter popularitet, så efter nærhed
+  groups.sort((a, b) => {
+    if (a.notable !== b.notable) return a.notable ? -1 : 1;
+    if (b.score !== a.score) return b.score - a.score;
+    return (a.dist == null ? 1e9 : a.dist) - (b.dist == null ? 1e9 : b.dist);
+  });
+  return groups;
+}
+
+function renderOverview(content, statusEl, groups) {
+  state._groups = groups;
+  const tasteTag = hasTaste() ? ` &middot; <span style="color:#ff7fb0">✨ tilpasset til dig</span>` : '';
+  statusEl.innerHTML = `<span class="count">${groups.length}</span> landmarks i nærheden${tasteTag}`;
+  const lbl = document.getElementById('activeFilterLabel');
+  if (lbl) lbl.textContent = '🧭 Overblik';
+
+  content.innerHTML = '<div class="overview">' + groups.map((g, gi) => {
+    const thumbs = g.photos.slice(0, 6).map(p =>
+      `<img src="${p.photo}" loading="lazy" alt="${esc(g.name)}" onclick="openDetail('${p.id}')">`).join('');
+    const dist = g.dist != null ? formatDist(g.dist) : '';
+    const popTxt = g.notable ? `${g.pop.toLocaleString('da-DK')} fotos` : `${g.photos.length} fotos`;
+    const meta = [esc(g.catLabel || '📍 Landmark'), popTxt, dist].filter(Boolean).join(' · ');
+    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(g.name + ', ' + (g.town || 'Danmark'))}`;
+    return `
+      <div class="lm-card">
+        <div class="lm-head">
+          <span class="lm-rank">${gi + 1}</span>
+          <div class="lm-titles">
+            <div class="lm-name">${esc(g.name)}</div>
+            <div class="lm-meta">${meta}</div>
+          </div>
+        </div>
+        <div class="lm-strip">${thumbs}</div>
+        <div class="lm-actions">
+          <button class="lm-btn" onclick="showLandmarkIdx(${gi})">Se alle ${g.photos.length} →</button>
+          <a class="lm-btn nav" href="${navUrl}" target="_blank" rel="noopener">📍 Navigér</a>
+        </div>
+      </div>`;
+  }).join('') + '</div>';
+}
+
+function showLandmarkIdx(i) {
+  const g = (state._groups || [])[i];
+  if (!g) return;
+  state.view = 'feed';
+  state.filter = 'lm:' + g.name;
+  document.getElementById('filtersPanel').classList.remove('open');
+  render();
+}
+
+function backToOverview() {
+  state.view = 'overblik';
+  state.filter = 'all';
+  render();
+}
+
+// --- Render ---
+function render() {
+  const statusEl = document.getElementById('status');
+  const content = document.getElementById('content');
+  renderTagFilters();
+
+  // Fase 1: landmark-overblik som standard-view (falder tilbage til feed hvis ingen grupper)
+  if (state.view === 'overblik' && state.flickrLandmarkMode && state.flickr.length) {
+    const groups = buildLandmarkGroups();
+    if (groups.length) { renderOverview(content, statusEl, groups); return; }
+  }
+
+  const filtered = getFilteredItems();
+  const tasteTag = hasTaste() ? ` &middot; <span style="color:#ff7fb0">✨ tilpasset til dig</span>` : '';
+  statusEl.innerHTML = `<span class="count">${filtered.length}</span> af ${state.items.length} steder${tasteTag}`;
+  const lbl = document.getElementById('activeFilterLabel');
+  if (lbl) lbl.textContent = filterLabel();
+
+  if (filtered.length === 0) {
+    content.innerHTML = `
+      <div class="empty">
+        <div class="icon">📷</div>
+        <p>Ingen fotospots${state.filter !== 'all' ? ' i dette filter' : ''}</p>
+        <p class="sub">Tilføj lokationer og inspiration via Admin (tandhjulet)</p>
+      </div>`;
+    return;
+  }
+
+  const backBar = state.filter.startsWith('lm:')
+    ? `<button class="back-bar" onclick="backToOverview()">← Overblik</button>` : '';
+  content.innerHTML = backBar + '<div class="cards">' + filtered.map(item => {
+    const isLoc = item.type === 'location';
+    const isFlickr = item.type === 'flickr';
+    const icon = isLoc ? '📍' : isFlickr ? '📷' : '📸';
+    const badge = isLoc ? '<span class="card-badge loc">📍 Lokation</span>'
+      : isFlickr ? `<span class="card-badge flickr">${item.catLabel ? esc(item.catLabel) : '📷 Flickr'}</span>`
+      : '<span class="card-badge insp">📸 Inspiration</span>';
+    const distHtml = item.dist !== null ? `<span class="card-distance">${formatDist(item.dist)}</span>` : '';
+    const imgHtml = item.photo
+      ? `<img src="${item.photo}" alt="${esc(item.name)}" loading="lazy">`
+      : `<div class="placeholder">${icon}</div>`;
+    const tagCls = isLoc ? 'loc' : isFlickr ? 'flickr' : 'insp';
+
+    const photoCount = item.photos.length;
+    const countBadge = photoCount > 1 ? `<span style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.7);padding:3px 8px;border-radius:12px;font-size:11px;color:#fff;">${photoCount} billeder</span>` : '';
+    const inHiddenView = state.filter === 'hidden';
+    const liked = state.liked.has(item.id);
+    const likeBtn = `<button class="act-btn like ${liked ? 'on' : ''}" onclick="event.stopPropagation();likeItem('${item.id}')">${liked ? '❤️' : '🤍'} Synes om</button>`;
+    const hideBtn = inHiddenView
+      ? `<button class="act-btn restore" onclick="event.stopPropagation();unhideItem('${item.id}')">↩ Vis igen</button>`
+      : `<button class="act-btn" onclick="event.stopPropagation();askHide('${item.id}')">✕ Skjul</button>`;
+    const shownTags = isFlickr ? (item.flickrTags || []) : item.tags;
+
+    return `
+      <div class="card" onclick="openDetail('${item.id}')" style="cursor:pointer">
+        <div class="card-img">
+          ${imgHtml}
+          ${badge}
+          ${distHtml}
+          ${countBadge}
+        </div>
+        <div class="card-body">
+          <div class="card-name">${esc(item.name)}</div>
+          ${item.landmark ? `<div class="card-landmark">📍 ${esc(item.landmark)}</div>` : ''}
+          <div class="card-location">${icon} ${esc(item.subtitle)}</div>
+          ${item.notes ? `<div class="card-notes">${esc(item.notes)}</div>` : ''}
+          ${shownTags.length ? `<div class="card-tags">${shownTags.slice(0, 6).map(t => `<span class="card-tag ${tagCls}">${esc(t)}</span>`).join('')}${shownTags.length > 6 ? `<span class="card-tag ${tagCls}">+${shownTags.length - 6}</span>` : ''}</div>` : ''}
+          <div class="card-actions">${likeBtn}${hideBtn}</div>
+        </div>
+      </div>`;
+  }).join('') + '</div>';
+}
+
+function renderTagFilters() {
+  const allTags = new Set();
+  state.items.forEach(i => i.tags.forEach(t => allTags.add(t)));
+
+  const filtersEl = document.getElementById('filters');
+  const flickrFilterPill = state.flickr.length
+    ? `<button class="pill ${state.filter === 'flickr' ? 'flickr-on' : ''}" data-filter="flickr">📷 Flickr</button>`
+    : '';
+  const basePills = `
+    <button class="pill ${state.filter === 'all' ? 'active' : ''}" data-filter="all">Alle</button>
+    <button class="pill ${state.filter === 'locations' ? 'active-loc' : ''}" data-filter="locations">📍 Lokationer</button>
+    <button class="pill ${state.filter === 'inspirations' ? 'active-insp' : ''}" data-filter="inspirations">📸 Inspiration</button>
+    ${flickrFilterPill}
+  `;
+
+  const tagPills = [...allTags].sort().map(t =>
+    `<button class="pill ${state.filter === t ? 'active' : ''}" data-filter="${esc(t)}">${esc(t)}</button>`
+  ).join('');
+
+  const likedCount = state.liked.size;
+  const likedPill = likedCount
+    ? `<button class="pill ${state.filter === 'liked' ? 'active' : ''}" data-filter="liked">❤️ Favoritter (${likedCount})</button>`
+    : '';
+  const hiddenCount = specialViewItems(id => state.hidden.has(id)).length;
+  const hiddenPill = hiddenCount
+    ? `<button class="pill ${state.filter === 'hidden' ? 'active' : ''}" data-filter="hidden">🚫 Skjulte (${hiddenCount})</button>`
+    : '';
+  const togglePill = `<button class="pill ${state.flickrEnabled ? 'flickr-on' : ''}" data-action="toggle-flickr">📷 Flickr ${state.flickrEnabled ? 'til' : 'fra'}</button>`;
+  const landmarkPill = state.flickrEnabled
+    ? `<button class="pill ${state.flickrLandmarkMode ? 'flickr-on' : ''}" data-action="toggle-landmark">🏛️ Landmarks ${state.flickrLandmarkMode ? 'til' : 'fra'}</button>`
+    : '';
+  const viewToggle = (state.flickrEnabled && state.flickrLandmarkMode && state.flickr.length)
+    ? `<button class="pill ${state.view === 'overblik' ? 'active' : ''}" data-action="view-overblik">🧭 Overblik</button>
+       <button class="pill ${state.view === 'feed' ? 'active' : ''}" data-action="view-feed">🖼 Billeder</button>`
+    : '';
+
+  filtersEl.innerHTML = viewToggle + basePills + likedPill + hiddenPill + togglePill + landmarkPill + tagPills;
+}
+
+// --- Filter click ---
+document.getElementById('filters').addEventListener('click', async e => {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  if (pill.dataset.action === 'toggle-flickr') {
+    state.flickrEnabled = !state.flickrEnabled;
+    localStorage.setItem('fotoscout-flickr', state.flickrEnabled ? 'on' : 'off');
+    if (state.flickrEnabled) {
+      await loadFlickr();
+    } else {
+      state.flickr = [];
+      if (state.filter === 'flickr') state.filter = 'all';
+    }
+    buildItems();
+    render();
+    return;
+  }
+  if (pill.dataset.action === 'toggle-landmark') {
+    state.flickrLandmarkMode = !state.flickrLandmarkMode;
+    localStorage.setItem('fotoscout-flickr-lm', state.flickrLandmarkMode ? 'on' : 'off');
+    await loadFlickr();   // genhent med den nye søgemetode
+    buildItems();
+    render();
+    return;
+  }
+  if (pill.dataset.action === 'view-overblik') {
+    state.view = 'overblik'; state.filter = 'all';
+    document.getElementById('filtersPanel').classList.remove('open');
+    render(); return;
+  }
+  if (pill.dataset.action === 'view-feed') {
+    state.view = 'feed';
+    document.getElementById('filtersPanel').classList.remove('open');
+    render(); return;
+  }
+  state.filter = pill.dataset.filter;
+  state.view = 'feed';     // ethvert filter-valg vises i feed'et
+  document.getElementById('filtersPanel').classList.remove('open');
+  render();
+});
+
+// Burger-menu: åbn/luk filter-panelet
+document.getElementById('menuBtn').addEventListener('click', () => {
+  document.getElementById('filtersPanel').classList.toggle('open');
+});
+// Luk panelet ved klik udenfor
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('filtersPanel');
+  const btn = document.getElementById('menuBtn');
+  if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.classList.remove('open');
+  }
+});
+
+function filterLabel() {
+  if (state.filter.startsWith('lm:')) return '📍 ' + state.filter.slice(3);
+  const map = { all: 'Alle', locations: '📍 Lokationer', inspirations: '📸 Inspiration', flickr: '📷 Flickr', hidden: '🚫 Skjulte', liked: '❤️ Favoritter' };
+  return map[state.filter] || ('🏷️ ' + state.filter);
+}
+
+// --- Detail view ---
+function openDetail(id) {
+  const item = getItemById(id);
+  if (!item) return;
+  state.openDetailId = id;
+
+  const isLoc = item.type === 'location';
+  const isFlickr = item.type === 'flickr';
+  const overlay = document.getElementById('detailOverlay');
+  const titleEl = document.getElementById('detailTitle');
+  const badgeEl = document.getElementById('detailBadge');
+  const contentEl = document.getElementById('detailContent');
+
+  titleEl.textContent = item.name;
+  badgeEl.textContent = isLoc ? '📍 Lokation' : isFlickr ? (item.catLabel || '📷 Flickr') : '📸 Inspiration';
+  badgeEl.className = `detail-badge ${isLoc ? 'loc' : isFlickr ? 'flickr' : 'insp'}`;
+
+  // Gallery
+  const photos = item.photos.filter(p => p);
+  let galleryHtml = '';
+  if (photos.length > 0) {
+    galleryHtml = `
+      <div class="gallery" id="gallery" onscroll="updateGalleryDots()">
+        ${photos.map(p => `<div class="gallery-img"><img src="${p}" alt="${esc(item.name)}"></div>`).join('')}
+      </div>
+      ${photos.length > 1 ? `
+        <div class="gallery-dots" id="galleryDots">
+          ${photos.map((_, i) => `<div class="gallery-dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
+        </div>
+      ` : ''}
+    `;
+  } else {
+    galleryHtml = `<div class="gallery-img"><div class="gallery-placeholder">${isLoc ? '📍' : isFlickr ? '📷' : '📸'}</div></div>`;
+  }
+
+  const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.navTarget)}`;
+  const icon = isLoc ? '📍' : isFlickr ? '📷' : '📸';
+  const tagCls = isLoc ? 'loc' : isFlickr ? 'flickr' : 'insp';
+  const btnCls = isLoc ? 'loc' : isFlickr ? 'flickr' : 'insp';
+  const detailTags = isFlickr ? (item.flickrTags || []) : item.tags;
+  const flickrCredit = (isFlickr && item.flickrPage)
+    ? `<div class="flickr-credit">📷 ${esc(item.ownername || 'Ukendt fotograf')} · <a href="${item.flickrPage}" target="_blank" rel="noopener">Se på Flickr ↗</a></div>`
+    : '';
+
+  contentEl.innerHTML = `
+    ${galleryHtml}
+    <div class="detail-body">
+      <div class="detail-location">
+        ${icon} ${esc(item.subtitle)}
+        ${item.dist !== null ? `<span class="detail-dist">📏 ${formatDist(item.dist)}</span>` : ''}
+      </div>
+      ${item.landmark ? `<div class="detail-landmark">📍 ${esc(item.landmark)}</div>` : ''}
+      ${flickrCredit}
+      ${item.notes ? `<div class="detail-notes">${esc(item.notes)}</div>` : ''}
+      ${detailTags.length ? `<div class="detail-tags">${detailTags.map(t => `<span class="detail-tag ${tagCls}">${esc(t)}</span>`).join('')}</div>` : ''}
+      <a href="${navUrl}" target="_blank" rel="noopener" class="detail-nav-btn ${btnCls}">📍 Navigér hertil</a>
+      <div class="detail-actions">
+        <button class="detail-act-btn like ${state.liked.has(item.id) ? 'on' : ''}" onclick="likeItem('${item.id}')">${state.liked.has(item.id) ? '❤️ Synes om' : '🤍 Synes om'}</button>
+        ${state.hidden.has(item.id)
+          ? `<button class="detail-act-btn" onclick="unhideItem('${item.id}')">↩ Vis igen</button>`
+          : `<button class="detail-act-btn" onclick="askHide('${item.id}')">✕ Skjul</button>`}
+      </div>
+    </div>
+  `;
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  state.openDetailId = null;
+}
+
+function updateGalleryDots() {
+  const gallery = document.getElementById('gallery');
+  const dots = document.querySelectorAll('#galleryDots .gallery-dot');
+  if (!gallery || dots.length === 0) return;
+  const idx = Math.round(gallery.scrollLeft / gallery.offsetWidth);
+  dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+
+// Back button / swipe to close
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeSheet(); closeDetail(); }
+});
+
+// --- Init ---
+async function init() {
+  await loadData();
+  await loadTowns();
+
+  // Try geolocation
+  try {
+    const pos = await getPosition();
+    state.lat = pos.lat;
+    state.lon = pos.lon;
+    const name = await reverseGeocode(pos.lat, pos.lon);
+    document.getElementById('locationName').textContent = name;
+  } catch {
+    document.getElementById('locationName').textContent = 'Ingen GPS';
+    document.querySelector('.gps-dot').style.background = '#8b949e';
+  }
+
+  buildItems();
+  render();
+
+  // Hent Flickr-billeder i baggrunden og gen-render
+  await loadFlickr();
+  buildItems();
+  render();
+}
+
+init();
+</script>
+</body>
+</html>

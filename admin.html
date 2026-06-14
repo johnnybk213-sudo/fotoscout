@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FotoScout Admin</title>
+<style>
+  :root {
+    --primary: #4a7fff;
+    --accent: #f0a030;
+    --bg: #f8f9fa;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --text-dim: #6c757d;
+    --border: #dee2e6;
+    --danger: #dc3545;
+    --success: #28a745;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* Header */
+  .header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo { font-size: 22px; font-weight: 800; }
+  .logo .fs { color: var(--primary); }
+  .logo .admin { color: var(--text-dim); font-weight: 400; font-size: 14px; margin-left: 8px; }
+
+  .header-actions { display: flex; gap: 8px; }
+
+  /* Buttons */
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: #3a6fee; color: #fff; }
+  .btn-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-accent:hover { background: #e09020; color: #fff; }
+  .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn-danger:hover { background: #c82333; color: #fff; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 24px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--text-dim);
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active-loc { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab.active-insp { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Main */
+  .main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Stats */
+  .stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-number { font-size: 32px; font-weight: 800; }
+  .stat-number.loc { color: var(--primary); }
+  .stat-number.insp { color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .item-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+
+  .item-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+  .item-card .thumb {
+    height: 160px;
+    background: #eef1f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .item-card .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .item-card .type-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .type-badge.loc { background: var(--primary); }
+  .type-badge.insp { background: var(--accent); }
+
+  .item-card .body { padding: 14px; }
+  .item-card .name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .item-card .address { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+  .item-card .notes { font-size: 13px; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5; }
+
+  .item-card .tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tag {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: #eef1f5;
+    color: var(--text-dim);
+  }
+
+  .item-card .actions { display: flex; gap: 6px; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-header h2 { font-size: 18px; font-weight: 700; }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-dim);
+    padding: 4px;
+  }
+
+  .modal-body { padding: 24px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .form-group textarea { resize: vertical; min-height: 60px; }
+
+  .form-group .help { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+  .geocode-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .geocode-row input { flex: 1; }
+
+  .coords-display {
+    font-size: 12px;
+    color: var(--success);
+    margin-top: 4px;
+  }
+
+  /* DAWA autocomplete dropdown */
+  .autocomplete-wrap { position: relative; flex: 1; }
+
+  .autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    display: none;
+  }
+
+  .autocomplete-list.open { display: block; }
+
+  .autocomplete-item {
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .autocomplete-item:hover { background: #f0f5ff; }
+  .autocomplete-item:last-child { border-bottom: none; }
+
+  /* Drop zone */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--primary);
+    background: rgba(74, 127, 255, 0.05);
+    color: var(--primary);
+  }
+
+  .drop-zone .icon { font-size: 32px; margin-bottom: 8px; }
+
+  .photo-previews {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .photo-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .photo-preview .remove {
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--text);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 300;
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><span class="fs">FotoScout</span><span class="admin">Admin</span></div>
+  <div class="header-actions">
+    <button class="btn" onclick="importData()">Indlæs data.json</button>
+    <button class="btn btn-accent" onclick="mergeImport()">+ Merge import</button>
+    <button class="btn btn-primary" onclick="saveToFolder()">Gem til mappe</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active-loc" data-tab="locations" onclick="switchTab('locations')">Lokationer</button>
+  <button class="tab" data-tab="inspirations" onclick="switchTab('inspirations')">Inspiration</button>
+</div>
+
+<div class="main">
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-number loc" id="locCount">0</div>
+      <div class="stat-label">Lokationer</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number insp" id="inspCount">0</div>
+      <div class="stat-label">Inspirationer</div>
+    </div>
+  </div>
+
+  <!-- Locations panel -->
+  <div class="panel active" id="panel-locations">
+    <button class="btn btn-primary" onclick="openModal('location')">+ Tilføj lokation</button>
+    <div class="grid" id="grid-locations"></div>
+  </div>
+
+  <!-- Inspirations panel -->
+  <div class="panel" id="panel-inspirations">
+    <button class="btn btn-accent" onclick="openModal('inspiration')">+ Tilføj inspiration</button>
+    <div class="grid" id="grid-inspirations"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Tilføj</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Annuller</button>
+      <button class="btn btn-primary" id="modalSave" onclick="saveItem()">Gem</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Hidden file input -->
+<input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleFileImport(event)">
+<input type="file" id="mergeInput" accept=".json" style="display:none" onchange="handleMergeImport(event)">
+<input type="file" id="photoInput" accept="image/*" multiple style="display:none">
+
+<script>
+// ============================================================
+// FotoScout Admin
+// ============================================================
+
+let data = { locations: [], inspirations: [] };
+let currentTab = 'locations';
+let editingId = null;
+let editingType = null;
+let tempPhotos = []; // base64 previews for current modal
+
+// --- Init ---
+async function init() {
+  try {
+    const res = await fetch('./data.json');
+    if (res.ok) {
+      data = await res.json();
+    }
+  } catch (e) {
+    console.log('Ingen eksisterende data.json, starter med tom data');
+  }
+
+  // Also check localStorage for unsaved changes
+  const saved = localStorage.getItem('fotoscout-data');
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (parsed.locations.length > 0 || parsed.inspirations.length > 0) {
+      if (parsed._modified && (!data._modified || parsed._modified > data._modified)) {
+        data = parsed;
+        showToast('Indlæst ugemte ændringer fra sidst');
+      }
+    }
+  }
+
+  render();
+}
+
+// --- Save to localStorage ---
+function saveLocal() {
+  data._modified = Date.now();
+  try {
+    localStorage.setItem('fotoscout-data', JSON.stringify(data));
+  } catch (e) {
+    // localStorage fuld (typisk pga. store base64-billeder)
+    // Gem uden billeder som fallback
+    try {
+      const lite = {
+        ...data,
+        locations: data.locations.map(l => ({ ...l, photos: l.photos.map(p => p.startsWith('data:') ? '' : p) })),
+        inspirations: data.inspirations.map(i => ({ ...i, photo: i.photo?.startsWith('data:') ? '' : i.photo }))
+      };
+      localStorage.setItem('fotoscout-data', JSON.stringify(lite));
+      console.warn('localStorage fuld — billeder gemt kun i hukommelsen. Klik "Gem data.json" for at eksportere.');
+    } catch {
+      console.warn('localStorage utilgængelig');
+    }
+  }
+}
+
+// --- Tabs ---
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.className = 'tab';
+    if (t.dataset.tab === tab) {
+      t.classList.add(tab === 'locations' ? 'active-loc' : 'active-insp');
+    }
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${tab}`).classList.add('active');
+}
+
+// --- Render ---
+function render() {
+  document.getElementById('locCount').textContent = data.locations.length;
+  document.getElementById('inspCount').textContent = data.inspirations.length;
+  renderLocations();
+  renderInspirations();
+}
+
+function renderLocations() {
+  const grid = document.getElementById('grid-locations');
+  if (data.locations.length === 0) {
+    grid.innerHTML = '<div class="empty"><div class="icon">📍</div><p>Ingen lokationer endnu. Tilføj din første!</p></div>';
+    return;
+  }
+  grid.innerHTML = data.locations.map(loc => `
+    <div class="item-card">
+      <div class="thumb">
+        ${loc.photos && loc.photos.length > 0 && loc.photos[0]
+          ? `<img src="${loc.photos[0]}" alt="${loc.name}">`
+          : '📍'}
+        <span class="type-badge loc">Lokation</span>
+      </div>
+      <div class="body">
+        <div class="name">${esc(loc.name)}</div>
+        <div class="address">📍 ${esc(loc.address)}</div>
+        ${loc.notes ? `<div class="notes">${esc(loc.notes)}</div>` : ''}
+        <div class="tags">${(loc.tags||[]).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+        <div class="actions">
+          <button class="btn btn-sm" onclick="editItem('location','${loc.id}')">Redigér</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteItem('location','${loc.id}')">Slet</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderInspirations() {
+  const grid = document.getElementById('grid-inspirations');
+  if (data.inspirations.length === 0) {
+    grid.innerHTML = '<div class="empty"><div class="icon">📸</div><p>Ingen inspirationsbilleder endnu. Tilføj dit første!</p></div>';
+    return;
+  }
+  grid.innerHTML = data.inspirations.map(insp => `
+    <div class="item-card">
+      <div class="thumb">
+        ${insp.photo
+          ? `<img src="${insp.photo}" alt="${insp.title}">`
+          : '📸'}
+        <span class="type-badge insp">Inspiration</span>
+      </div>
+      <div class="body">
+        <div class="name">${esc(insp.title)}</div>
+        <div class="address">📸 ${esc(insp.area)}</div>
+        ${insp.notes ? `<div class="notes">${esc(insp.notes)}</div>` : ''}
+        <div class="tags">${(insp.tags||[]).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+        <div class="actions">
+          <button class="btn btn-sm" onclick="editItem('inspiration','${insp.id}')">Redigér</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteItem('inspiration','${insp.id}')">Slet</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function esc(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// --- Modal ---
+function openModal(type, item = null) {
+  editingType = type;
+  editingId = item ? item.id : null;
+  tempPhotos = [];
+
+  const overlay = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+  const saveBtn = document.getElementById('modalSave');
+
+  if (type === 'location') {
+    title.textContent = item ? 'Redigér lokation' : 'Tilføj lokation';
+    saveBtn.className = 'btn btn-primary';
+    body.innerHTML = `
+      <div class="form-group">
+        <label>Navn *</label>
+        <input type="text" id="f-name" value="${esc(item?.name || '')}" placeholder="F.eks. Rubjerg Knude Fyr">
+      </div>
+      <div class="form-group">
+        <label>Adresse *</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="f-address" value="${esc(item?.address || '')}" placeholder="Begynd at skrive adresse..." autocomplete="off" oninput="dawaAutocomplete(this.value)">
+          <div class="autocomplete-list" id="dawaList"></div>
+        </div>
+        <div class="coords-display" id="f-coords">
+          ${item?.lat ? `✓ ${item.lat.toFixed(4)}, ${item.lon.toFixed(4)}` : 'Vælg fra listen eller skriv manuelt'}
+        </div>
+        <input type="hidden" id="f-lat" value="${item?.lat || ''}">
+        <input type="hidden" id="f-lon" value="${item?.lon || ''}">
+      </div>
+      <div class="form-group">
+        <label>Noter</label>
+        <textarea id="f-notes" placeholder="Fototips, bedste tidspunkt, udstyr...">${item?.notes || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Tags</label>
+        <input type="text" id="f-tags" value="${(item?.tags || []).join(', ')}" placeholder="fyrtårn, klint, nordjylland">
+        <div class="help">Kommaseparerede tags</div>
+      </div>
+      <div class="form-group">
+        <label>Billeder</label>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('photoInput').click()">
+          <div class="icon">📷</div>
+          <div>Klik eller træk billeder hertil</div>
+        </div>
+        <div class="photo-previews" id="photoPreviews"></div>
+      </div>
+    `;
+
+    // Preload existing photos
+    if (item?.photos) {
+      tempPhotos = [...item.photos];
+      renderPhotoPreviews();
+    }
+  } else {
+    title.textContent = item ? 'Redigér inspiration' : 'Tilføj inspiration';
+    saveBtn.className = 'btn btn-accent';
+    body.innerHTML = `
+      <div class="form-group">
+        <label>Titel *</label>
+        <input type="text" id="f-title" value="${esc(item?.title || '')}" placeholder="F.eks. Dramatisk bølgeslag">
+      </div>
+      <div class="form-group">
+        <label>Område / Sted *</label>
+        <div class="geocode-row">
+          <input type="text" id="f-area" value="${esc(item?.area || '')}" placeholder="Strand ved Blokhus">
+          <button class="btn btn-sm" onclick="geocodeArea()">Søg</button>
+        </div>
+        <div class="coords-display" id="f-coords">
+          ${item?.lat ? `✓ ${item.lat.toFixed(4)}, ${item.lon.toFixed(4)}` : 'Valgfrit: Tryk "Søg" for koordinater'}
+        </div>
+        <input type="hidden" id="f-lat" value="${item?.lat || ''}">
+        <input type="hidden" id="f-lon" value="${item?.lon || ''}">
+      </div>
+      <div class="form-group">
+        <label>Noter</label>
+        <textarea id="f-notes" placeholder="Teknik, vinkel, udstyr, tidspunkt...">${item?.notes || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Tags</label>
+        <input type="text" id="f-tags" value="${(item?.tags || []).join(', ')}" placeholder="strand, solnedgang, nordjylland">
+        <div class="help">Kommaseparerede tags</div>
+      </div>
+      <div class="form-group">
+        <label>Billede</label>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('photoInput').click()">
+          <div class="icon">📸</div>
+          <div>Klik eller træk et billede hertil</div>
+        </div>
+        <div class="photo-previews" id="photoPreviews"></div>
+      </div>
+    `;
+
+    if (item?.photo) {
+      tempPhotos = [item.photo];
+      renderPhotoPreviews();
+    }
+  }
+
+  setupDropZone();
+  setupPhotoInput();
+  overlay.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+  editingType = null;
+  tempPhotos = [];
+}
+
+// --- Drop zone + photo input ---
+function setupDropZone() {
+  const dz = document.getElementById('dropZone');
+  if (!dz) return;
+
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+}
+
+function setupPhotoInput() {
+  const input = document.getElementById('photoInput');
+  input.onchange = (e) => {
+    handleFiles(e.target.files);
+    input.value = '';
+  };
+}
+
+function handleFiles(files) {
+  const maxPhotos = editingType === 'inspiration' ? 1 : 10;
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) continue;
+    if (tempPhotos.length >= maxPhotos) break;
+
+    compressImage(file, 1200, 0.82).then(dataUrl => {
+      if (editingType === 'inspiration') {
+        tempPhotos = [dataUrl];
+      } else {
+        tempPhotos.push(dataUrl);
+      }
+      renderPhotoPreviews();
+    });
+  }
+}
+
+// Compress/resize image via canvas
+function compressImage(file, maxWidth, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width;
+      let h = img.height;
+      if (w > maxWidth) {
+        h = Math.round(h * maxWidth / w);
+        w = maxWidth;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function renderPhotoPreviews() {
+  const container = document.getElementById('photoPreviews');
+  if (!container) return;
+  container.innerHTML = tempPhotos.map((src, i) => `
+    <div class="photo-preview">
+      <img src="${src}" alt="Preview">
+      <button class="remove" onclick="removePhoto(${i})">&times;</button>
+    </div>
+  `).join('');
+}
+
+function removePhoto(index) {
+  tempPhotos.splice(index, 1);
+  renderPhotoPreviews();
+}
+
+// --- DAWA Autocomplete (danske adresser) ---
+let dawaTimer = null;
+
+function dawaAutocomplete(query) {
+  clearTimeout(dawaTimer);
+  const list = document.getElementById('dawaList');
+  if (!query || query.length < 2) {
+    list.classList.remove('open');
+    return;
+  }
+  dawaTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`https://api.dataforsyningen.dk/adresser/autocomplete?q=${encodeURIComponent(query)}&per_side=6`);
+      const results = await res.json();
+      if (results.length > 0) {
+        list.innerHTML = results.map(r =>
+          `<div class="autocomplete-item" data-text="${esc(r.tekst)}" data-id="${r.adresse.id}">${esc(r.tekst)}</div>`
+        ).join('');
+        list.classList.add('open');
+      } else {
+        // Fallback: prøv stednavn via Nominatim
+        list.innerHTML = '<div class="autocomplete-item" style="color:var(--text-dim);cursor:default">Ingen adresser fundet — prøv et stednavn</div>';
+        list.classList.add('open');
+      }
+    } catch {
+      list.classList.remove('open');
+    }
+  }, 250);
+}
+
+// Handle click on DAWA suggestion
+document.addEventListener('click', async (e) => {
+  const item = e.target.closest('.autocomplete-item');
+  const list = document.getElementById('dawaList');
+
+  if (item && item.dataset.id) {
+    const addrInput = document.getElementById('f-address');
+    const coordsEl = document.getElementById('f-coords');
+    addrInput.value = item.dataset.text;
+    list.classList.remove('open');
+
+    // Fetch coordinates from DAWA
+    try {
+      coordsEl.textContent = 'Henter koordinater...';
+      const res = await fetch(`https://api.dataforsyningen.dk/adresser/${item.dataset.id}`);
+      const addr = await res.json();
+      if (addr.adgangsadresse?.adgangspunkt?.koordinater) {
+        const [lon, lat] = addr.adgangsadresse.adgangspunkt.koordinater;
+        document.getElementById('f-lat').value = lat.toFixed(6);
+        document.getElementById('f-lon').value = lon.toFixed(6);
+        coordsEl.innerHTML = `✓ ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+        coordsEl.style.color = 'var(--success)';
+      }
+    } catch {
+      coordsEl.textContent = 'Kunne ikke hente koordinater';
+      coordsEl.style.color = 'var(--danger)';
+    }
+  } else if (!e.target.closest('.autocomplete-wrap') && list) {
+    list.classList.remove('open');
+  }
+});
+
+async function geocodeArea() {
+  const input = document.getElementById('f-area');
+  const coordsEl = document.getElementById('f-coords');
+  if (!input.value.trim()) return;
+
+  coordsEl.textContent = 'Søger...';
+  try {
+    const q = input.value + ', Danmark';
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&accept-language=da`);
+    const results = await res.json();
+    if (results.length > 0) {
+      const r = results[0];
+      document.getElementById('f-lat').value = parseFloat(r.lat).toFixed(6);
+      document.getElementById('f-lon').value = parseFloat(r.lon).toFixed(6);
+      coordsEl.innerHTML = `✓ ${parseFloat(r.lat).toFixed(4)}, ${parseFloat(r.lon).toFixed(4)}`;
+    } else {
+      coordsEl.textContent = 'Ingen resultater — du kan tilføje uden koordinater.';
+    }
+  } catch (e) {
+    coordsEl.textContent = 'Geocoding fejlede — du kan tilføje uden koordinater.';
+  }
+}
+
+// --- Save item ---
+async function saveItem() {
+  if (editingType === 'location') {
+    const name = document.getElementById('f-name').value.trim();
+    const address = document.getElementById('f-address').value.trim();
+    if (!name || !address) {
+      showToast('Udfyld venligst navn og adresse');
+      return;
+    }
+
+    let lat = parseFloat(document.getElementById('f-lat').value) || null;
+    let lon = parseFloat(document.getElementById('f-lon').value) || null;
+
+    // Auto-geocode if no coordinates
+    if (!lat || !lon) {
+      const coords = await autoGeocode(address);
+      if (coords) { lat = coords.lat; lon = coords.lon; }
+    }
+
+    const item = {
+      id: editingId || 'loc-' + Date.now(),
+      name,
+      address,
+      lat, lon,
+      notes: document.getElementById('f-notes').value.trim(),
+      photos: tempPhotos,
+      tags: document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+      created: editingId
+        ? data.locations.find(l => l.id === editingId)?.created || today()
+        : today()
+    };
+
+    if (editingId) {
+      const idx = data.locations.findIndex(l => l.id === editingId);
+      if (idx >= 0) data.locations[idx] = item;
+    } else {
+      data.locations.push(item);
+    }
+
+    saveLocal();
+    render();
+    closeModal();
+    showToast(editingId ? 'Lokation opdateret' : 'Lokation tilføjet');
+    return;
+
+  } else {
+    const title = document.getElementById('f-title').value.trim();
+    const area = document.getElementById('f-area').value.trim();
+    if (!title || !area) {
+      showToast('Udfyld venligst titel og område');
+      return;
+    }
+
+    let lat = parseFloat(document.getElementById('f-lat').value) || null;
+    let lon = parseFloat(document.getElementById('f-lon').value) || null;
+
+    // Auto-geocode if no coordinates
+    if (!lat || !lon) {
+      const coords = await autoGeocode(area);
+      if (coords) { lat = coords.lat; lon = coords.lon; }
+    }
+
+    const item = {
+      id: editingId || 'insp-' + Date.now(),
+      title,
+      area,
+      lat, lon,
+      notes: document.getElementById('f-notes').value.trim(),
+      photo: tempPhotos[0] || '',
+      tags: document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+      created: editingId
+        ? data.inspirations.find(i => i.id === editingId)?.created || today()
+        : today()
+    };
+
+    if (editingId) {
+      const idx = data.inspirations.findIndex(i => i.id === editingId);
+      if (idx >= 0) data.inspirations[idx] = item;
+    } else {
+      data.inspirations.push(item);
+    }
+
+    saveLocal();
+    render();
+    closeModal();
+    showToast(editingId ? 'Inspiration opdateret' : 'Inspiration tilføjet');
+    return;
+  }
+}
+
+// Auto-geocode via Nominatim when no coordinates provided
+async function autoGeocode(text) {
+  try {
+    const q = text + ', Danmark';
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&accept-language=da`);
+    const results = await res.json();
+    if (results.length > 0) {
+      return { lat: parseFloat(results[0].lat), lon: parseFloat(results[0].lon) };
+    }
+  } catch {}
+  return null;
+}
+
+// --- Edit / Delete ---
+function editItem(type, id) {
+  if (type === 'location') {
+    const item = data.locations.find(l => l.id === id);
+    if (item) openModal('location', item);
+  } else {
+    const item = data.inspirations.find(i => i.id === id);
+    if (item) openModal('inspiration', item);
+  }
+}
+
+function deleteItem(type, id) {
+  if (!confirm('Er du sikker på du vil slette dette?')) return;
+  if (type === 'location') {
+    data.locations = data.locations.filter(l => l.id !== id);
+  } else {
+    data.inspirations = data.inspirations.filter(i => i.id !== id);
+  }
+  saveLocal();
+  render();
+  showToast('Slettet');
+}
+
+// --- Import / Export ---
+function importData() {
+  document.getElementById('fileInput').click();
+}
+
+function handleFileImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (imported.locations && imported.inspirations) {
+        data = imported;
+        saveLocal();
+        render();
+        showToast(`Indlæst: ${data.locations.length} lokationer, ${data.inspirations.length} inspirationer`);
+      } else {
+        showToast('Ugyldig data.json — mangler locations/inspirations');
+      }
+    } catch (err) {
+      showToast('Fejl ved indlæsning: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// --- Save directly to FotoScout folder ---
+let folderHandle = null; // cached directory handle
+
+async function saveToFolder() {
+  try {
+    // Get folder handle (ask first time, reuse after)
+    if (!folderHandle) {
+      folderHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    }
+
+    // Verify we still have permission
+    if (await folderHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') {
+      await folderHandle.requestPermission({ mode: 'readwrite' });
+    }
+
+    // Create photos/ subdirectory
+    const photosDir = await folderHandle.getDirectoryHandle('photos', { create: true });
+
+    // Deep-clone data for export (don't mutate working data)
+    const exportData = JSON.parse(JSON.stringify({
+      locations: data.locations,
+      inspirations: data.inspirations
+    }));
+
+    // Extract base64 photos to files
+    let savedPhotos = 0;
+
+    for (const loc of exportData.locations) {
+      const newPhotos = [];
+      for (let i = 0; i < (loc.photos || []).length; i++) {
+        const photo = loc.photos[i];
+        if (photo.startsWith('data:')) {
+          const fname = `${loc.id}_${i}.jpg`;
+          await writeBase64ToFile(photosDir, fname, photo);
+          newPhotos.push(`./photos/${fname}`);
+          savedPhotos++;
+        } else {
+          newPhotos.push(photo);
+        }
+      }
+      loc.photos = newPhotos;
+    }
+
+    for (const insp of exportData.inspirations) {
+      if (insp.photo && insp.photo.startsWith('data:')) {
+        const fname = `${insp.id}_0.jpg`;
+        await writeBase64ToFile(photosDir, fname, insp.photo);
+        insp.photo = `./photos/${fname}`;
+        savedPhotos++;
+      }
+    }
+
+    // Write data.json
+    const jsonFile = await folderHandle.getFileHandle('data.json', { create: true });
+    const writable = await jsonFile.createWritable();
+    await writable.write(JSON.stringify(exportData, null, 2));
+    await writable.close();
+
+    // Update working data with file paths (so next save doesn't re-extract)
+    data.locations = exportData.locations;
+    data.inspirations = exportData.inspirations;
+    saveLocal();
+    render();
+
+    showToast(`Gemt! data.json + ${savedPhotos} billeder`);
+  } catch (err) {
+    if (err.name === 'AbortError') return; // user cancelled picker
+    console.error('Gem fejl:', err);
+    showToast('Fejl: ' + err.message);
+  }
+}
+
+async function writeBase64ToFile(dirHandle, filename, dataUrl) {
+  const base64 = dataUrl.split(',')[1];
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(bytes);
+  await writable.close();
+}
+
+// --- Merge Import (from extension export) ---
+function mergeImport() {
+  document.getElementById('mergeInput').click();
+}
+
+function handleMergeImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.locations && !imported.inspirations) {
+        showToast('Ugyldig fil — mangler locations/inspirations');
+        return;
+      }
+
+      const existingLocIds = new Set(data.locations.map(l => l.id));
+      const existingInspIds = new Set(data.inspirations.map(i => i.id));
+      let addedLoc = 0, addedInsp = 0;
+
+      for (const loc of (imported.locations || [])) {
+        if (!existingLocIds.has(loc.id)) {
+          data.locations.push(loc);
+          addedLoc++;
+        }
+      }
+
+      for (const insp of (imported.inspirations || [])) {
+        if (!existingInspIds.has(insp.id)) {
+          data.inspirations.push(insp);
+          addedInsp++;
+        }
+      }
+
+      // Handle additions (photos added to existing posts from extension)
+      let addedPhotos = 0;
+      for (const add of (imported.additions || [])) {
+        const loc = data.locations.find(l => l.id === add.postId);
+        if (loc) {
+          loc.photos = [...(loc.photos || []), ...add.photos];
+          addedPhotos += add.photos.length;
+          continue;
+        }
+        const insp = data.inspirations.find(i => i.id === add.postId);
+        if (insp && add.photos.length > 0) {
+          insp.photo = add.photos[add.photos.length - 1];
+          addedPhotos++;
+        }
+      }
+
+      saveLocal();
+      render();
+      let msg = `Merged: +${addedLoc} lokationer, +${addedInsp} inspirationer`;
+      if (addedPhotos > 0) msg += `, +${addedPhotos} fotos`;
+      showToast(msg);
+    } catch (err) {
+      showToast('Fejl ved merge: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// --- Helpers ---
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Start
+init();
+</script>
+</body>
+</html>

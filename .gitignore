@@ -1,0 +1,9 @@
+# Dev / temp (syntaks-tjek, API-test-scripts)
+_*.py
+_*.js
+*.tmp
+
+# OS-cruft
+Thumbs.db
+desktop.ini
+.DS_Store

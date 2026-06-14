@@ -1,0 +1,862 @@
+{
+  "towns": [
+    {
+      "name": "Skagen",
+      "lat": 57.72597,
+      "lon": 10.58446,
+      "coast": true
+    },
+    {
+      "name": "Kandestederne",
+      "lat": 57.66289,
+      "lon": 10.39495,
+      "coast": true
+    },
+    {
+      "name": "Hulsig",
+      "lat": 57.65969,
+      "lon": 10.46337,
+      "coast": true
+    },
+    {
+      "name": "Hirtshals",
+      "lat": 57.5908,
+      "lon": 9.96497,
+      "coast": true
+    },
+    {
+      "name": "Tornby",
+      "lat": 57.52978,
+      "lon": 9.94475,
+      "coast": true
+    },
+    {
+      "name": "Lønstrup",
+      "lat": 57.46843,
+      "lon": 9.79801,
+      "coast": true
+    },
+    {
+      "name": "Nørlev Strand",
+      "lat": 57.50866,
+      "lon": 9.86324,
+      "coast": true
+    },
+    {
+      "name": "Nr. Lyngby",
+      "lat": 57.39989,
+      "lon": 9.75506,
+      "coast": true
+    },
+    {
+      "name": "Løkken",
+      "lat": 57.37049,
+      "lon": 9.71125,
+      "coast": true
+    },
+    {
+      "name": "Blokhus",
+      "lat": 57.25235,
+      "lon": 9.58423,
+      "coast": true
+    },
+    {
+      "name": "Hune",
+      "lat": 57.24783,
+      "lon": 9.61897,
+      "coast": true
+    },
+    {
+      "name": "Slettestrand",
+      "lat": 57.15155,
+      "lon": 9.36628,
+      "coast": true
+    },
+    {
+      "name": "Svinkløv",
+      "lat": 57.15026,
+      "lon": 9.32437,
+      "coast": true
+    },
+    {
+      "name": "Thorup Strand",
+      "lat": 57.13258,
+      "lon": 9.13291,
+      "coast": true
+    },
+    {
+      "name": "Klim Strand",
+      "lat": 57.09637,
+      "lon": 9.1656,
+      "coast": true
+    },
+    {
+      "name": "Bulbjerg",
+      "lat": 57.15841,
+      "lon": 9.02492,
+      "coast": true
+    },
+    {
+      "name": "Lild Strand",
+      "lat": 57.15236,
+      "lon": 8.96274,
+      "coast": true
+    },
+    {
+      "name": "Vigsø",
+      "lat": 57.1201,
+      "lon": 8.7001,
+      "coast": true
+    },
+    {
+      "name": "Hanstholm",
+      "lat": 57.11502,
+      "lon": 8.61449,
+      "coast": true
+    },
+    {
+      "name": "Klitmøller",
+      "lat": 57.04015,
+      "lon": 8.49851,
+      "coast": true
+    },
+    {
+      "name": "Vangså",
+      "lat": 57.00685,
+      "lon": 8.44787,
+      "coast": true
+    },
+    {
+      "name": "Nr. Vorupør",
+      "lat": 56.95335,
+      "lon": 8.37543,
+      "coast": true
+    },
+    {
+      "name": "Stenbjerg",
+      "lat": 56.92095,
+      "lon": 8.35928,
+      "coast": true
+    },
+    {
+      "name": "Agger",
+      "lat": 56.78239,
+      "lon": 8.24147,
+      "coast": true
+    },
+    {
+      "name": "Thyborøn",
+      "lat": 56.69812,
+      "lon": 8.2118,
+      "coast": true
+    },
+    {
+      "name": "Vrist",
+      "lat": 56.60448,
+      "lon": 8.152,
+      "coast": true
+    },
+    {
+      "name": "Harboøre",
+      "lat": 56.61743,
+      "lon": 8.18069,
+      "coast": true
+    },
+    {
+      "name": "Ferring",
+      "lat": 56.52663,
+      "lon": 8.12215,
+      "coast": true
+    },
+    {
+      "name": "Bøvbjerg",
+      "lat": 56.51318,
+      "lon": 8.11968,
+      "coast": true
+    },
+    {
+      "name": "Trans",
+      "lat": 56.49927,
+      "lon": 8.12247,
+      "coast": true
+    },
+    {
+      "name": "Fjaltring",
+      "lat": 56.47446,
+      "lon": 8.13893,
+      "coast": true
+    },
+    {
+      "name": "Thorsminde",
+      "lat": 56.37453,
+      "lon": 8.12324,
+      "coast": true
+    },
+    {
+      "name": "Husby Klit",
+      "lat": 56.2811,
+      "lon": 8.17544,
+      "coast": true
+    },
+    {
+      "name": "Vedersø Klit",
+      "lat": 56.23501,
+      "lon": 8.20073,
+      "coast": true
+    },
+    {
+      "name": "Søndervig",
+      "lat": 56.11906,
+      "lon": 8.11622,
+      "coast": true
+    },
+    {
+      "name": "Hvide Sande",
+      "lat": 56.00579,
+      "lon": 8.12884,
+      "coast": true
+    },
+    {
+      "name": "Bjerregård",
+      "lat": 55.86602,
+      "lon": 8.16966,
+      "coast": true
+    },
+    {
+      "name": "Haurvig",
+      "lat": 55.93308,
+      "lon": 8.15871,
+      "coast": true
+    },
+    {
+      "name": "Årgab",
+      "lat": 55.98088,
+      "lon": 8.13909,
+      "coast": true
+    },
+    {
+      "name": "Nymindegab",
+      "lat": 55.81573,
+      "lon": 8.19879,
+      "coast": true
+    },
+    {
+      "name": "Houstrup Strand",
+      "lat": 55.76026,
+      "lon": 8.25251,
+      "coast": true
+    },
+    {
+      "name": "Henne Strand",
+      "lat": 55.73789,
+      "lon": 8.18273,
+      "coast": true
+    },
+    {
+      "name": "Henne",
+      "lat": 55.73547,
+      "lon": 8.2167,
+      "coast": true
+    },
+    {
+      "name": "Vejers Strand",
+      "lat": 55.62553,
+      "lon": 8.12996,
+      "coast": true
+    },
+    {
+      "name": "Grærup",
+      "lat": 55.64149,
+      "lon": 8.17748,
+      "coast": true
+    },
+    {
+      "name": "Blåvand",
+      "lat": 55.55509,
+      "lon": 8.10175,
+      "coast": true
+    },
+    {
+      "name": "Oksbøl",
+      "lat": 55.62359,
+      "lon": 8.27817,
+      "coast": true
+    },
+    {
+      "name": "Hjerting",
+      "lat": 55.52569,
+      "lon": 8.36673,
+      "coast": true
+    },
+    {
+      "name": "Esbjerg",
+      "lat": 55.46649,
+      "lon": 8.45208,
+      "coast": true
+    },
+    {
+      "name": "Nordby",
+      "lat": 55.44539,
+      "lon": 8.39612,
+      "coast": true
+    },
+    {
+      "name": "Sønderho",
+      "lat": 55.34856,
+      "lon": 8.46898,
+      "coast": true
+    },
+    {
+      "name": "Vester Vedsted",
+      "lat": 55.2902,
+      "lon": 8.68109,
+      "coast": true
+    },
+    {
+      "name": "Mandø",
+      "lat": 55.28123,
+      "lon": 8.55533,
+      "coast": true
+    },
+    {
+      "name": "Ribe",
+      "lat": 55.3284,
+      "lon": 8.76478,
+      "coast": true
+    },
+    {
+      "name": "Højer",
+      "lat": 54.96388,
+      "lon": 8.69514,
+      "coast": true
+    },
+    {
+      "name": "Rudbøl",
+      "lat": 54.90156,
+      "lon": 8.75352,
+      "coast": true
+    },
+    {
+      "name": "Varde",
+      "lat": 55.61767,
+      "lon": 8.48118,
+      "coast": false
+    },
+    {
+      "name": "Ringkøbing",
+      "lat": 56.09057,
+      "lon": 8.25406,
+      "coast": false
+    },
+    {
+      "name": "Skjern",
+      "lat": 55.94693,
+      "lon": 8.49092,
+      "coast": false
+    },
+    {
+      "name": "Tarm",
+      "lat": 55.90654,
+      "lon": 8.51921,
+      "coast": false
+    },
+    {
+      "name": "Videbæk",
+      "lat": 56.08939,
+      "lon": 8.62952,
+      "coast": false
+    },
+    {
+      "name": "Lemvig",
+      "lat": 56.5487,
+      "lon": 8.30465,
+      "coast": false
+    },
+    {
+      "name": "Struer",
+      "lat": 56.48668,
+      "lon": 8.59514,
+      "coast": false
+    },
+    {
+      "name": "Holstebro",
+      "lat": 56.35903,
+      "lon": 8.61592,
+      "coast": false
+    },
+    {
+      "name": "Thisted",
+      "lat": 56.95621,
+      "lon": 8.68487,
+      "coast": false
+    },
+    {
+      "name": "Hurup Thy",
+      "lat": 56.7507,
+      "lon": 8.41816,
+      "coast": false
+    },
+    {
+      "name": "Nykøbing Mors",
+      "lat": 56.79438,
+      "lon": 8.85948,
+      "coast": false
+    },
+    {
+      "name": "Hjørring",
+      "lat": 57.45718,
+      "lon": 9.9856,
+      "coast": false
+    },
+    {
+      "name": "Frederikshavn",
+      "lat": 57.44121,
+      "lon": 10.53362,
+      "coast": false
+    },
+    {
+      "name": "Brønderslev",
+      "lat": 57.27001,
+      "lon": 9.94486,
+      "coast": false
+    },
+    {
+      "name": "Aalborg",
+      "lat": 57.04626,
+      "lon": 9.92153,
+      "coast": false
+    },
+    {
+      "name": "Nibe",
+      "lat": 56.98238,
+      "lon": 9.64287,
+      "coast": false
+    },
+    {
+      "name": "Løgstør",
+      "lat": 56.96252,
+      "lon": 9.26196,
+      "coast": false
+    },
+    {
+      "name": "Aars",
+      "lat": 56.80338,
+      "lon": 9.5169,
+      "coast": false
+    },
+    {
+      "name": "Hobro",
+      "lat": 56.63718,
+      "lon": 9.79398,
+      "coast": false
+    },
+    {
+      "name": "Mariager",
+      "lat": 56.64888,
+      "lon": 9.97673,
+      "coast": false
+    },
+    {
+      "name": "Viborg",
+      "lat": 56.44691,
+      "lon": 9.40594,
+      "coast": false
+    },
+    {
+      "name": "Skive",
+      "lat": 56.64592,
+      "lon": 8.93273,
+      "coast": false
+    },
+    {
+      "name": "Bjerringbro",
+      "lat": 56.37584,
+      "lon": 9.65658,
+      "coast": false
+    },
+    {
+      "name": "Herning",
+      "lat": 56.13798,
+      "lon": 8.97466,
+      "coast": false
+    },
+    {
+      "name": "Ikast",
+      "lat": 56.13902,
+      "lon": 9.15479,
+      "coast": false
+    },
+    {
+      "name": "Brande",
+      "lat": 55.94455,
+      "lon": 9.12829,
+      "coast": false
+    },
+    {
+      "name": "Grindsted",
+      "lat": 55.75708,
+      "lon": 8.92776,
+      "coast": false
+    },
+    {
+      "name": "Billund",
+      "lat": 55.7247,
+      "lon": 9.11958,
+      "coast": false
+    },
+    {
+      "name": "Give",
+      "lat": 55.84555,
+      "lon": 9.24015,
+      "coast": false
+    },
+    {
+      "name": "Vejle",
+      "lat": 55.70793,
+      "lon": 9.53294,
+      "coast": false
+    },
+    {
+      "name": "Kolding",
+      "lat": 55.4895,
+      "lon": 9.47905,
+      "coast": false
+    },
+    {
+      "name": "Fredericia",
+      "lat": 55.56527,
+      "lon": 9.75622,
+      "coast": false
+    },
+    {
+      "name": "Horsens",
+      "lat": 55.86117,
+      "lon": 9.84448,
+      "coast": false
+    },
+    {
+      "name": "Silkeborg",
+      "lat": 56.16945,
+      "lon": 9.54951,
+      "coast": false
+    },
+    {
+      "name": "Skanderborg",
+      "lat": 56.03519,
+      "lon": 9.93179,
+      "coast": false
+    },
+    {
+      "name": "Aarhus",
+      "lat": 56.14963,
+      "lon": 10.2134,
+      "coast": false
+    },
+    {
+      "name": "Randers",
+      "lat": 56.43554,
+      "lon": 10.0426,
+      "coast": false
+    },
+    {
+      "name": "Grenaa",
+      "lat": 56.41344,
+      "lon": 10.87931,
+      "coast": false
+    },
+    {
+      "name": "Ebeltoft",
+      "lat": 56.19884,
+      "lon": 10.67709,
+      "coast": false
+    },
+    {
+      "name": "Haderslev",
+      "lat": 55.25007,
+      "lon": 9.49979,
+      "coast": false
+    },
+    {
+      "name": "Aabenraa",
+      "lat": 55.04462,
+      "lon": 9.42097,
+      "coast": false
+    },
+    {
+      "name": "Sønderborg",
+      "lat": 54.90892,
+      "lon": 9.7898,
+      "coast": false
+    },
+    {
+      "name": "Tønder",
+      "lat": 54.93806,
+      "lon": 8.86294,
+      "coast": false
+    },
+    {
+      "name": "Bramming",
+      "lat": 55.46559,
+      "lon": 8.70275,
+      "coast": false
+    },
+    {
+      "name": "Vojens",
+      "lat": 55.24643,
+      "lon": 9.30824,
+      "coast": false
+    },
+    {
+      "name": "Grønhøj",
+      "lat": 57.343,
+      "lon": 9.656,
+      "coast": true
+    },
+    {
+      "name": "Ho",
+      "lat": 55.598,
+      "lon": 8.295,
+      "coast": true
+    },
+    {
+      "name": "Havneby",
+      "lat": 55.084,
+      "lon": 8.557,
+      "coast": true
+    },
+    {
+      "name": "Lakolk",
+      "lat": 55.155,
+      "lon": 8.51,
+      "coast": true
+    },
+    {
+      "name": "Odense",
+      "lat": 55.39972,
+      "lon": 10.38521,
+      "coast": false
+    },
+    {
+      "name": "Svendborg",
+      "lat": 55.06366,
+      "lon": 10.60847,
+      "coast": true
+    },
+    {
+      "name": "Nyborg",
+      "lat": 55.30983,
+      "lon": 10.79766,
+      "coast": true
+    },
+    {
+      "name": "Middelfart",
+      "lat": 55.4993,
+      "lon": 9.73922,
+      "coast": true
+    },
+    {
+      "name": "Strib",
+      "lat": 55.53692,
+      "lon": 9.77636,
+      "coast": true
+    },
+    {
+      "name": "Bogense",
+      "lat": 55.56401,
+      "lon": 10.09209,
+      "coast": true
+    },
+    {
+      "name": "Kerteminde",
+      "lat": 55.45328,
+      "lon": 10.65478,
+      "coast": true
+    },
+    {
+      "name": "Faaborg",
+      "lat": 55.09709,
+      "lon": 10.24282,
+      "coast": true
+    },
+    {
+      "name": "Otterup",
+      "lat": 55.51543,
+      "lon": 10.40047,
+      "coast": true
+    },
+    {
+      "name": "Munkebo",
+      "lat": 55.45684,
+      "lon": 10.5537,
+      "coast": true
+    },
+    {
+      "name": "Årslev",
+      "lat": 55.30528,
+      "lon": 10.47118,
+      "coast": false
+    },
+    {
+      "name": "Langeskov",
+      "lat": 55.35822,
+      "lon": 10.58315,
+      "coast": false
+    },
+    {
+      "name": "Ullerslev",
+      "lat": 55.3611,
+      "lon": 10.6611,
+      "coast": false
+    },
+    {
+      "name": "Ørbæk",
+      "lat": 55.25814,
+      "lon": 10.67041,
+      "coast": false
+    },
+    {
+      "name": "Glamsbjerg",
+      "lat": 55.27833,
+      "lon": 10.10874,
+      "coast": false
+    },
+    {
+      "name": "Aarup",
+      "lat": 55.37632,
+      "lon": 10.05106,
+      "coast": false
+    },
+    {
+      "name": "Tommerup",
+      "lat": 55.32054,
+      "lon": 10.20518,
+      "coast": false
+    },
+    {
+      "name": "Vissenbjerg",
+      "lat": 55.3863,
+      "lon": 10.13158,
+      "coast": false
+    },
+    {
+      "name": "Nørre Aaby",
+      "lat": 55.45779,
+      "lon": 9.87853,
+      "coast": false
+    },
+    {
+      "name": "Ejby",
+      "lat": 55.42789,
+      "lon": 9.93049,
+      "coast": false
+    },
+    {
+      "name": "Gelsted",
+      "lat": 55.39755,
+      "lon": 9.97338,
+      "coast": false
+    },
+    {
+      "name": "Stenstrup",
+      "lat": 55.13123,
+      "lon": 10.50555,
+      "coast": false
+    },
+    {
+      "name": "Højby",
+      "lat": 55.33012,
+      "lon": 10.43397,
+      "coast": false
+    },
+    {
+      "name": "Nørre Broby",
+      "lat": 55.25471,
+      "lon": 10.23225,
+      "coast": false
+    },
+    {
+      "name": "Bøjden",
+      "lat": 55.10376,
+      "lon": 10.10521,
+      "coast": true
+    },
+    {
+      "name": "Lundeborg",
+      "lat": 55.13975,
+      "lon": 10.78254,
+      "coast": true
+    },
+    {
+      "name": "Thurø",
+      "lat": 55.04264,
+      "lon": 10.68192,
+      "coast": true
+    },
+    {
+      "name": "Vindeby",
+      "lat": 55.04342,
+      "lon": 10.6127,
+      "coast": true
+    },
+    {
+      "name": "Rudkøbing",
+      "lat": 54.93775,
+      "lon": 10.71676,
+      "coast": true
+    },
+    {
+      "name": "Spodsbjerg",
+      "lat": 54.92999,
+      "lon": 10.82757,
+      "coast": true
+    },
+    {
+      "name": "Bagenkop",
+      "lat": 54.74952,
+      "lon": 10.67517,
+      "coast": true
+    },
+    {
+      "name": "Tranekær",
+      "lat": 54.99743,
+      "lon": 10.84708,
+      "coast": true
+    },
+    {
+      "name": "Ærøskøbing",
+      "lat": 54.88966,
+      "lon": 10.41117,
+      "coast": true
+    },
+    {
+      "name": "Marstal",
+      "lat": 54.85583,
+      "lon": 10.51741,
+      "coast": true
+    },
+    {
+      "name": "Søby",
+      "lat": 54.93933,
+      "lon": 10.2577,
+      "coast": true
+    },
+    {
+      "name": "Assens",
+      "lat": 55.2706,
+      "lon": 9.8999,
+      "coast": true
+    },
+    {
+      "name": "Ringe",
+      "lat": 55.2375,
+      "lon": 10.4853,
+      "coast": false
+    },
+    {
+      "name": "Søndersø",
+      "lat": 55.4636,
+      "lon": 10.2606,
+      "coast": false
+    }
+  ]
+}

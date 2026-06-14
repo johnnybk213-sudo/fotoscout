@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "FotoScout",
+  "short_name": "FotoScout",
+  "version": "1.1",
+  "description": "Tilføj billeder til FotoScout direkte fra browseren",
+  "permissions": ["contextMenus", "storage", "activeTab"],
+  "host_permissions": ["https://api.github.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.svg"
+  },
+  "icons": {
+    "128": "icon.svg"
+  },
+  "content_scripts": [
+    {
+      "matches": ["file:///*FotoScout/admin.html*", "http://*/FotoScout/admin.html*", "https://*/FotoScout/admin.html*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
