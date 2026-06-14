@@ -1645,6 +1645,30 @@ async function init() {
   render();
 }
 
+// --- Android-tilbageknap: naviger inde i appen, bekræft kun ved forlad fra forsiden ---
+function pushBackTrap() { history.pushState({ fsTrap: true }, ''); }
+
+function handleInAppBack() {
+  if (state.openDetailId) { closeDetail(); return true; }              // 1. luk åbent billede
+  const sheet = document.getElementById('sheetOverlay');
+  if (sheet && sheet.classList.contains('open')) { closeSheet(); return true; }   // 2. luk skjul-ark
+  const panel = document.getElementById('filtersPanel');
+  if (panel && panel.classList.contains('open')) { panel.classList.remove('open'); return true; }  // 3. luk menu
+  if (state.view === 'feed') { backToOverview(); return true; }        // 4. feed/landmark -> overblik
+  return false;                                                        // ved overblik-roden
+}
+
+window.addEventListener('popstate', () => {
+  if (handleInAppBack()) { pushBackTrap(); return; }                   // håndteret internt -> gen-arm fælden
+  if (confirm('Vil du forlade FotoScout?')) {
+    history.back();                                                    // bekræftet -> forlad appen
+  } else {
+    pushBackTrap();                                                    // bliv i appen
+  }
+});
+
+pushBackTrap();   // arm fælden ved opstart, så første tilbage-tryk ikke smider dig ud
+
 init();
 </script>
 </body>
