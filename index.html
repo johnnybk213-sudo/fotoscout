@@ -1331,6 +1331,7 @@ function renderOverview(content, statusEl, groups) {
     const popTxt = g.notable ? `${g.pop.toLocaleString('da-DK')} fotos` : `${g.photos.length} fotos`;
     const meta = [esc(g.catLabel || '📍 Landmark'), popTxt, dist].filter(Boolean).join(' · ');
     const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(g.name + ', ' + (g.town || 'Danmark'))}`;
+    const imgUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(g.name + ' ' + (g.town || ''))}`;
     return `
       <div class="lm-card">
         <div class="lm-head">
@@ -1342,7 +1343,8 @@ function renderOverview(content, statusEl, groups) {
         </div>
         <div class="lm-strip">${thumbs}</div>
         <div class="lm-actions">
-          <button class="lm-btn" onclick="showLandmarkIdx(${gi})">Se alle ${g.photos.length} →</button>
+          <button class="lm-btn" onclick="showLandmarkIdx(${gi})">Se alle ${g.photos.length}</button>
+          <a class="lm-btn" href="${imgUrl}" target="fsimg" rel="noopener">🔍 Google</a>
           <a class="lm-btn nav" href="${navUrl}" target="_blank" rel="noopener">📍 Navigér</a>
         </div>
       </div>`;
