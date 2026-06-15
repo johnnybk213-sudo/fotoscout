@@ -539,6 +539,9 @@
   .lm-btn { flex: 1; text-align: center; padding: 9px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: none; }
   .lm-btn.nav { background: #ff5c9e; color: #fff; border-color: #ff5c9e; }
   .back-bar { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: 600; font-size: 14px; cursor: pointer; }
+  .town-picker-wrap { display: flex; flex-direction: column; gap: 4px; width: 100%; margin-bottom: 10px; }
+  .town-picker-lbl { font-size: 12px; font-weight: 700; color: var(--text-dim); }
+  .town-picker { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 15px; font-weight: 600; }
 
   /* Synes om / skjul / gendan */
   .card-actions { display: flex; gap: 8px; margin-top: 12px; }
@@ -724,6 +727,8 @@ const state = {
   filter: 'all',
   view: 'overblik',                 // 'overblik' (landmark-grupper) | 'feed' (alle billeder)
   _groups: [],                      // seneste landmark-grupper (til klik-handlere)
+  manualTown: null,                 // valgt by fra listen (scout hjemmefra) — null = brug GPS
+  gpsLat: null, gpsLon: null, gpsName: null,   // den rigtige GPS-position (så man kan skifte tilbage)
   items: []
 };
 
@@ -1359,6 +1364,39 @@ function backToOverview() {
   render();
 }
 
+// --- Vælg by fra listen (scout hjemmefra), eller tilbage til GPS ---
+async function selectTown(name) {
+  const locEl = document.getElementById('locationName');
+  const statusEl = document.getElementById('status');
+  if (!name) {                                   // tilbage til "Min position"
+    state.manualTown = null;
+    if (state.gpsLat != null) {
+      state.lat = state.gpsLat; state.lon = state.gpsLon;
+      if (locEl) locEl.textContent = state.gpsName || 'Min position';
+    } else {
+      try {                                       // ingen gemt GPS endnu -> prøv at finde den
+        const pos = await getPosition();
+        state.lat = pos.lat; state.lon = pos.lon;
+        state.gpsLat = pos.lat; state.gpsLon = pos.lon;
+        state.gpsName = await reverseGeocode(pos.lat, pos.lon);
+        if (locEl) locEl.textContent = state.gpsName;
+      } catch { if (locEl) locEl.textContent = 'Ingen GPS'; state.lat = null; }
+    }
+  } else {                                        // valgt by fra listen
+    const t = state.towns.find(x => x.name === name);
+    if (!t) return;
+    state.manualTown = name;
+    state.lat = t.lat; state.lon = t.lon;
+    if (locEl) locEl.textContent = name + ' · valgt 🔭';
+  }
+  document.getElementById('filtersPanel').classList.remove('open');
+  state.view = 'overblik'; state.filter = 'all';
+  if (statusEl) statusEl.innerHTML = `<span style="color:#ff7fb0">henter…</span>`;
+  await loadFlickr();
+  buildItems();
+  render();
+}
+
 // --- Render ---
 function render() {
   const statusEl = document.getElementById('status');
@@ -1468,7 +1506,15 @@ function renderTagFilters() {
        <button class="pill ${state.view === 'feed' ? 'active' : ''}" data-action="view-feed">🖼 Billeder</button>`
     : '';
 
-  filtersEl.innerHTML = viewToggle + basePills + likedPill + hiddenPill + togglePill + landmarkPill + tagPills;
+  const townOpts = ['<option value="">📍 Min position (GPS)</option>'].concat(
+    [...state.towns].sort((a, b) => a.name.localeCompare(b.name, 'da')).map(t =>
+      `<option value="${esc(t.name)}" ${state.manualTown === t.name ? 'selected' : ''}>${esc(t.name)}</option>`)
+  ).join('');
+  const townPicker = state.towns.length
+    ? `<div class="town-picker-wrap"><label class="town-picker-lbl">🔭 Scout en by</label><select class="town-picker" onchange="selectTown(this.value)">${townOpts}</select></div>`
+    : '';
+
+  filtersEl.innerHTML = townPicker + viewToggle + basePills + likedPill + hiddenPill + togglePill + landmarkPill + tagPills;
 }
 
 // --- Filter click ---
@@ -1629,7 +1675,9 @@ async function init() {
     const pos = await getPosition();
     state.lat = pos.lat;
     state.lon = pos.lon;
+    state.gpsLat = pos.lat; state.gpsLon = pos.lon;   // gem rigtig GPS til "Min position"
     const name = await reverseGeocode(pos.lat, pos.lon);
+    state.gpsName = name;
     document.getElementById('locationName').textContent = name;
   } catch {
     document.getElementById('locationName').textContent = 'Ingen GPS';
