@@ -1,0 +1,125 @@
+{
+  "locations": [
+    {
+      "id": "loc-fyr-35199",
+      "name": "Sædding Strand Mellemfyr",
+      "address": "Fyrparken 9, 6710 Esbjerg V",
+      "lat": 55.49905,
+      "lon": 8.40588,
+      "notes": "Fyrtårnsrute syd→nord #1. Ydre sømærke.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Vestkysten", "Esbjerg"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35197",
+      "name": "Blåvandshuk Fyr",
+      "address": "Fyrvej 106, 6857 Blåvand",
+      "lat": 55.55783,
+      "lon": 8.08325,
+      "notes": "Fyrtårnsrute syd→nord #2. Kan bestiges (Vardemuseerne). Populær til solnedgang.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Vestkysten", "Blåvand", "bestigbar", "solnedgang"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35202",
+      "name": "Lyngvig Fyr",
+      "address": "Holmsland Klitvej 109, 6960 Hvide Sande",
+      "lat": 56.04972,
+      "lon": 8.10364,
+      "notes": "Fyrtårnsrute syd→nord #3. Kan bestiges (Ringkøbing-Fjord Museer). Højt klitfyr.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Vestkysten", "Hvide Sande", "bestigbar"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35201",
+      "name": "Bovbjerg Fyr",
+      "address": "Fyrvej 27, Ferring, 7620 Lemvig",
+      "lat": 56.51319,
+      "lon": 8.11988,
+      "notes": "Fyrtårnsrute syd→nord #4. Museum + café. Fyr på klint over havet.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Vestkysten", "Ferring", "museum", "café"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35191",
+      "name": "Grisetåodde",
+      "address": "Gl Færgevej 2, 7600 Struer",
+      "lat": 56.58062,
+      "lon": 8.56648,
+      "notes": "Fyrtårnsrute syd→nord #5. Østlig afstikker ved Limfjorden (Thyholm) — ikke på selve vestkysten.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Limfjorden", "Struer", "afstikker"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35192",
+      "name": "Thyborøn Tange Nord Fyr",
+      "address": "Havnegade 3B, 7680 Thyborøn",
+      "lat": 56.70600,
+      "lon": 8.22337,
+      "notes": "Fyrtårnsrute syd→nord #6. Videre til Agger via Thyborøn–Agger-færgen.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Vestkysten", "Thyborøn"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35193",
+      "name": "Agger Tange Forfyr",
+      "address": "Aggervej 36A, 7770 Vestervig",
+      "lat": 56.71617,
+      "lon": 8.23552,
+      "notes": "Fyrtårnsrute syd→nord #7. Nås fra Thyborøn med færgen over Thyborøn Kanal.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Vestkysten", "Agger"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35198",
+      "name": "Lodbjerg Fyr",
+      "address": "Lodbjergvej 33A, 7770 Vestervig",
+      "lat": 56.82345,
+      "lon": 8.26271,
+      "notes": "Fyrtårnsrute syd→nord #8. Nationalpark Thy — kan bestiges. Klitlandskab.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Nationalpark Thy", "bestigbar", "klit"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35194",
+      "name": "Vorupør Bagfyr",
+      "address": "Ørredvej 60, 7700 Thisted",
+      "lat": 56.95798,
+      "lon": 8.37070,
+      "notes": "Fyrtårnsrute syd→nord #9. 100 m fra Vorupør Forfyr.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Vestkysten", "Vorupør"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35195",
+      "name": "Vorupør Forfyr",
+      "address": "Hawblink 3, 7700 Thisted",
+      "lat": 56.95873,
+      "lon": 8.36912,
+      "notes": "Fyrtårnsrute syd→nord #10. 100 m fra Vorupør Bagfyr.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Vestkysten", "Vorupør"],
+      "created": "2026-07-12"
+    },
+    {
+      "id": "loc-fyr-35203",
+      "name": "Hanstholm Fyr",
+      "address": "Tårnvej 7, 7730 Hanstholm",
+      "lat": 57.11271,
+      "lon": 8.59855,
+      "notes": "Fyrtårnsrute syd→nord #11 (nordligste). Museum, kan bestiges. Et af Danmarks kraftigste fyr.",
+      "photos": [],
+      "tags": ["Fyrtårn", "Vestkysten", "Hanstholm", "museum", "bestigbar"],
+      "created": "2026-07-12"
+    }
+  ]
+}
