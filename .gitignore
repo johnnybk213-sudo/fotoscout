@@ -7,3 +7,9 @@ _*.js
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Agent/lokal-only (skal ikke på GitHub Pages)
+.claude/
+logs/
+reports/
+research/
