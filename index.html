@@ -648,6 +648,39 @@
 
 <a href="#" onclick="event.preventDefault();location.reload(true);" class="admin-link" title="Opdatér" style="font-size:24px;color:var(--text-dim);">&#x21bb;</a>
 
+<style>
+/* --- Ruteforslag --- */
+.route-wrap { padding: 12px 16px 40px; }
+.route-intro { color: var(--text-dim); font-size: 13px; line-height: 1.55; margin-bottom: 16px; }
+.route-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; cursor: pointer; transition: transform 0.15s; }
+.route-card:active { transform: scale(0.98); }
+.route-card h3 { font-size: 18px; color: var(--text-bright); margin: 0 0 6px; }
+.route-card p { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin: 0 0 10px; }
+.route-meta { display: flex; gap: 14px; font-size: 12px; color: var(--pin); flex-wrap: wrap; }
+.route-back { background: none; border: none; color: var(--pin); font-size: 15px; padding: 4px 0 12px; cursor: pointer; }
+.route-head h2 { font-size: 20px; color: var(--text-bright); margin: 0 0 4px; }
+.route-head p { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin: 0 0 14px; }
+.route-map-btn { display: block; text-align: center; background: var(--pin); color: #fff; font-weight: 700; padding: 14px; border-radius: var(--radius); text-decoration: none; margin: 0 0 8px; }
+.route-map-note { font-size: 12px; color: var(--text-dim); text-align: center; margin: 0 0 20px; }
+.route-ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+.rt-timeline { position: relative; }
+.rt-stop { position: relative; display: flex; gap: 14px; cursor: pointer; }
+.rt-rail { position: relative; display: flex; flex-direction: column; align-items: center; width: 34px; flex-shrink: 0; }
+.rt-num { width: 34px; height: 34px; border-radius: 50%; background: var(--pin-bg); border: 2px solid var(--pin); color: var(--pin); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; z-index: 1; }
+.rt-line { flex: 1; width: 2px; background: var(--border); margin: 2px 0; min-height: 14px; }
+.rt-stop:last-child .rt-line { display: none; }
+.rt-info { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 10px; transition: transform 0.15s; }
+.rt-stop:active .rt-info { transform: scale(0.99); }
+.rt-name { font-size: 16px; font-weight: 700; color: var(--text-bright); margin-bottom: 3px; }
+.rt-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+.rt-dist { color: var(--pin); }
+.rt-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.rt-go { display: inline-flex; align-items: center; gap: 5px; background: var(--pin); color: #fff; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 8px; text-decoration: none; }
+.rt-go:active { opacity: 0.85; }
+.rt-badge { font-size: 11px; color: var(--cam); background: var(--cam-bg); padding: 3px 9px; border-radius: 10px; }
+.detail-nav-btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); margin-top: 8px; }
+</style>
+
 <script>
 // ============================================================
 // FotoScout App
@@ -698,6 +731,32 @@ const HIDE_REASONS = {
   thisonly: { owner: 0,  tag: 0  }    // skjul kun denne -> ingen profilpåvirkning
 };
 
+// --- Ruteforslag (kuraterede ture langs Vestkysten) ---
+// Selvstændige ruter med egne koordinater pr. stop, så siden virker uafhængigt
+// af data.json/import. "Kør hertil" åbner Google Maps-navigation (projiceres til
+// bilens infotainment via Android Auto).
+const ROUTES = [
+  {
+    id: 'fyrtaarne-syd-nord',
+    name: '🗼 Fyrtårne — syd mod nord',
+    description: 'De 11 fyrtårne i Vestkysten-systemet, sorteret fra Esbjerg i syd til Hanstholm i nord. Ca. 350–400 km — en flot 2-dages tur.',
+    direction: 'Syd → Nord',
+    stops: [
+      { name: 'Sædding Strand Mellemfyr', town: 'Esbjerg V', address: 'Fyrparken 9, 6710 Esbjerg V', lat: 55.49905, lon: 8.40588, info: 'Ydre sømærke ved Sædding Strand. Startpunkt for ruten mod nord.', tags: ['Fyrtårn'] },
+      { name: 'Blåvandshuk Fyr', town: 'Blåvand', address: 'Fyrvej 106, 6857 Blåvand', lat: 55.55783, lon: 8.08325, info: 'Kan bestiges (Vardemuseerne). Danmarks vestligste punkt — populær til solnedgang.', tags: ['Fyrtårn', 'Bestigbar', 'Solnedgang'], badge: '🎟️ Bestigbar' },
+      { name: 'Lyngvig Fyr', town: 'Hvide Sande', address: 'Holmsland Klitvej 109, 6960 Hvide Sande', lat: 56.04972, lon: 8.10364, info: 'Højt klitfyr mellem Ringkøbing Fjord og havet. Kan bestiges (Ringkøbing-Fjord Museer).', tags: ['Fyrtårn', 'Bestigbar'], badge: '🎟️ Bestigbar' },
+      { name: 'Bovbjerg Fyr', town: 'Ferring', address: 'Fyrvej 27, Ferring, 7620 Lemvig', lat: 56.51319, lon: 8.11988, info: 'Rødt fyr på klint højt over havet. Museum og café — flot lys sidst på dagen.', tags: ['Fyrtårn', 'Museum', 'Café'], badge: '☕ Museum + café' },
+      { name: 'Grisetåodde', town: 'Struer', address: 'Gl Færgevej 2, 7600 Struer', lat: 56.58062, lon: 8.56648, info: 'Østlig afstikker ved Limfjorden (Thyholm) — ligger ikke på selve vestkysten. Spring evt. over for en ren kystrute.', tags: ['Fyrtårn', 'Limfjorden', 'Afstikker'], badge: '↪ Afstikker' },
+      { name: 'Thyborøn Tange Nord Fyr', town: 'Thyborøn', address: 'Havnegade 3B, 7680 Thyborøn', lat: 56.70600, lon: 8.22337, info: 'Videre til Agger via Thyborøn–Agger-færgen over Thyborøn Kanal (tjek sejlplan).', tags: ['Fyrtårn'] },
+      { name: 'Agger Tange Forfyr', town: 'Agger', address: 'Aggervej 36A, 7770 Vestervig', lat: 56.71617, lon: 8.23552, info: 'Nås fra Thyborøn med færgen. Herfra ind i Nationalpark Thy.', tags: ['Fyrtårn'], badge: '⛴️ Færge fra Thyborøn' },
+      { name: 'Lodbjerg Fyr', town: 'Nationalpark Thy', address: 'Lodbjergvej 33A, 7770 Vestervig', lat: 56.82345, lon: 8.26271, info: 'Fyr midt i klitlandskabet i Nationalpark Thy. Kan bestiges — vid udsigt over hede og klit.', tags: ['Fyrtårn', 'Nationalpark Thy', 'Bestigbar'], badge: '🎟️ Bestigbar' },
+      { name: 'Vorupør Bagfyr', town: 'Vorupør', address: 'Ørredvej 60, 7700 Thisted', lat: 56.95798, lon: 8.37070, info: 'Bagfyret i Vorupør — ligger 100 m fra forfyret.', tags: ['Fyrtårn'] },
+      { name: 'Vorupør Forfyr', town: 'Vorupør', address: 'Hawblink 3, 7700 Thisted', lat: 56.95873, lon: 8.36912, info: 'Forfyret ved Vorupør, tæt på havet og landingspladsen.', tags: ['Fyrtårn'] },
+      { name: 'Hanstholm Fyr', town: 'Hanstholm', address: 'Tårnvej 7, 7730 Hanstholm', lat: 57.11271, lon: 8.59855, info: 'Rutens nordligste. Et af Danmarks kraftigste fyr — museum, kan bestiges.', tags: ['Fyrtårn', 'Museum', 'Bestigbar'], badge: '🎟️ Museum + bestigbar' }
+    ]
+  }
+];
+
 // Indlæs skjulte (id -> begrundelse); migrér gammelt format (kun id'er)
 function loadHidden() {
   const m = new Map();
@@ -725,7 +784,8 @@ const state = {
   taste: JSON.parse(localStorage.getItem('fotoscout-taste') || '{"owners":{},"tags":{}}'),
   openDetailId: null,
   filter: 'all',
-  view: 'overblik',                 // 'overblik' (landmark-grupper) | 'feed' (alle billeder)
+  view: 'overblik',                 // 'overblik' (landmark-grupper) | 'feed' (alle billeder) | 'ruter'
+  routeId: null,                    // valgt rute i 'ruter'-view (null = rute-liste)
   _groups: [],                      // seneste landmark-grupper (til klik-handlere)
   manualTown: null,                 // valgt by fra listen (scout hjemmefra) — null = brug GPS
   gpsLat: null, gpsLon: null, gpsName: null,   // den rigtige GPS-position (så man kan skifte tilbage)
@@ -1405,6 +1465,9 @@ function render() {
   const content = document.getElementById('content');
   renderTagFilters();
 
+  // Ruteforslag-view (uafhængigt af items/flickr)
+  if (state.view === 'ruter') { renderRuter(content, statusEl); return; }
+
   // Fase 1: landmark-overblik som standard-view (falder tilbage til feed hvis ingen grupper)
   if (state.view === 'overblik' && state.flickrLandmarkMode && state.flickr.length) {
     const groups = buildLandmarkGroups();
@@ -1516,7 +1579,9 @@ function renderTagFilters() {
     ? `<div class="town-picker-wrap"><label class="town-picker-lbl">🔭 Scout en by</label><select class="town-picker" onchange="selectTown(this.value)">${townOpts}</select></div>`
     : '';
 
-  filtersEl.innerHTML = townPicker + viewToggle + basePills + likedPill + hiddenPill + togglePill + landmarkPill + tagPills;
+  const routePill = `<button class="pill ${state.view === 'ruter' ? 'active' : ''}" data-action="view-ruter">🗺️ Ruter</button>`;
+
+  filtersEl.innerHTML = townPicker + routePill + viewToggle + basePills + likedPill + hiddenPill + togglePill + landmarkPill + tagPills;
 }
 
 // --- Filter click ---
@@ -1543,6 +1608,12 @@ document.getElementById('filters').addEventListener('click', async e => {
     buildItems();
     render();
     return;
+  }
+  if (pill.dataset.action === 'view-ruter') {
+    state.view = 'ruter'; state.routeId = null;
+    document.getElementById('filtersPanel').classList.remove('open');
+    window.scrollTo(0, 0);
+    render(); return;
   }
   if (pill.dataset.action === 'view-overblik') {
     state.view = 'overblik'; state.filter = 'all';
@@ -1577,6 +1648,137 @@ function filterLabel() {
   if (state.filter.startsWith('lm:')) return '📍 ' + state.filter.slice(3);
   const map = { all: 'Alle', locations: '📍 Lokationer', inspirations: '📸 Inspiration', flickr: '📷 Flickr', hidden: '🚫 Skjulte', liked: '❤️ Favoritter' };
   return map[state.filter] || ('🏷️ ' + state.filter);
+}
+
+// --- Ruteforslag-view ---
+function effectivePos() {
+  if (state.lat != null && state.lon != null) return { lat: state.lat, lon: state.lon };
+  if (state.gpsLat != null && state.gpsLon != null) return { lat: state.gpsLat, lon: state.gpsLon };
+  return null;
+}
+
+// Google Maps-link til hele ruten (op til 9 mellem-waypoints understøttes).
+function buildFullRouteUrl(route) {
+  const s = route.stops;
+  if (s.length < 2) return `https://www.google.com/maps/dir/?api=1&destination=${s[0].lat},${s[0].lon}&travelmode=driving`;
+  const origin = `${s[0].lat},${s[0].lon}`;
+  const dest = `${s[s.length - 1].lat},${s[s.length - 1].lon}`;
+  let mids = s.slice(1, -1);
+  if (mids.length > 9) {  // udtynd jævnt men bevar rækkefølgen
+    const step = mids.length / 9, picked = [];
+    for (let i = 0; i < 9; i++) picked.push(mids[Math.floor(i * step)]);
+    mids = picked;
+  }
+  const wp = mids.map(p => `${p.lat},${p.lon}`).join('|');
+  return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=driving` +
+    (wp ? `&waypoints=${encodeURIComponent(wp)}` : '');
+}
+
+function renderRuter(content, statusEl) {
+  const lbl = document.getElementById('activeFilterLabel');
+  if (lbl) lbl.textContent = 'Ruter';
+  const pos = effectivePos();
+
+  // Rute-liste
+  if (!state.routeId) {
+    statusEl.innerHTML = `<span class="count">${ROUTES.length}</span> ruteforslag`;
+    content.innerHTML = `<div class="route-wrap">
+      <div class="route-intro">Vælg en rute nedenfor. Tryk på en attraktion for info, og tryk <b>Kør hertil</b> for at sende ruten til Google Maps — den vises på bilens skærm via Android Auto.</div>
+      ${ROUTES.map(r => {
+        let nearest = null;
+        if (pos) nearest = Math.min(...r.stops.map(s => haversine(pos.lat, pos.lon, s.lat, s.lon)));
+        return `<div class="route-card" onclick="openRoute('${r.id}')">
+          <h3>${esc(r.name)}</h3>
+          <p>${esc(r.description)}</p>
+          <div class="route-meta">
+            <span>🗼 ${r.stops.length} stop</span>
+            <span>🧭 ${esc(r.direction)}</span>
+            ${nearest != null ? `<span>📏 nærmeste ${formatDist(nearest)}</span>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+    return;
+  }
+
+  // Rute-detalje (tidslinje af stop)
+  const route = ROUTES.find(r => r.id === state.routeId);
+  if (!route) { state.routeId = null; return renderRuter(content, statusEl); }
+  statusEl.innerHTML = `<span class="count">${route.stops.length}</span> stop · ${esc(route.direction)}`;
+
+  const stopsHtml = route.stops.map((s, i) => {
+    const dist = pos ? haversine(pos.lat, pos.lon, s.lat, s.lon) : null;
+    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lon}&travelmode=driving`;
+    return `<div class="rt-stop" onclick="openRouteStop('${route.id}',${i})">
+      <div class="rt-rail"><div class="rt-num">${i + 1}</div><div class="rt-line"></div></div>
+      <div class="rt-info">
+        <div class="rt-name">${esc(s.name)}</div>
+        <div class="rt-sub">${esc(s.town || s.address || '')}${dist != null ? ` · <span class="rt-dist">📏 ${formatDist(dist)}</span>` : ''}</div>
+        <div class="rt-row">
+          <a class="rt-go" href="${navUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🚗 Kør hertil</a>
+          ${s.badge ? `<span class="rt-badge">${esc(s.badge)}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  content.innerHTML = `<div class="route-wrap">
+    <button class="route-back" onclick="backToRuteList()">← Alle ruter</button>
+    <div class="route-head">
+      <h2>${esc(route.name)}</h2>
+      <p>${esc(route.description)}</p>
+    </div>
+    <a class="route-map-btn" href="${buildFullRouteUrl(route)}" target="_blank" rel="noopener">🗺️ Åbn hele ruten i Google Maps</a>
+    <div class="route-map-note">Viser alle stop på kortet. Til navigation undervejs: vælg ét fyrtårn og tryk “Kør hertil”.</div>
+    <div class="route-ends"><span>▲ Syd (start)</span><span>Nord (slut) ▼</span></div>
+    <div class="rt-timeline">${stopsHtml}</div>
+  </div>`;
+}
+
+function openRoute(id) {
+  state.routeId = id;
+  window.scrollTo(0, 0);
+  render();
+}
+function backToRuteList() {
+  state.routeId = null;
+  window.scrollTo(0, 0);
+  render();
+}
+
+// Åbn en attraktion fra en rute i detalje-overlayet (genbruger detail-view).
+function openRouteStop(routeId, idx) {
+  const route = ROUTES.find(r => r.id === routeId);
+  if (!route) return;
+  const stop = route.stops[idx];
+  if (!stop) return;
+
+  const overlay = document.getElementById('detailOverlay');
+  document.getElementById('detailTitle').textContent = stop.name;
+  const badgeEl = document.getElementById('detailBadge');
+  badgeEl.textContent = '🗼 Fyrtårn';
+  badgeEl.className = 'detail-badge loc';
+
+  const pos = effectivePos();
+  const dist = pos ? haversine(pos.lat, pos.lon, stop.lat, stop.lon) : null;
+  const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lon}&travelmode=driving`;
+  const imgUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(stop.name + ' fyr')}`;
+  const tags = stop.tags || [];
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="gallery-img"><div class="gallery-placeholder">🗼</div></div>
+    <div class="detail-body">
+      <div class="detail-location">📍 ${esc(stop.address || stop.town || '')}
+        ${dist != null ? `<span class="detail-dist">📏 ${formatDist(dist)}</span>` : ''}
+      </div>
+      ${stop.info ? `<div class="detail-notes">${esc(stop.info)}</div>` : ''}
+      ${tags.length ? `<div class="detail-tags">${tags.map(t => `<span class="detail-tag loc">${esc(t)}</span>`).join('')}</div>` : ''}
+      <a href="${navUrl}" target="_blank" rel="noopener" class="detail-nav-btn loc">🚗 Kør hertil</a>
+      <a href="${imgUrl}" target="_blank" rel="noopener" class="detail-nav-btn secondary">🔍 Se fotos af stedet</a>
+    </div>`;
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 // --- Detail view ---
