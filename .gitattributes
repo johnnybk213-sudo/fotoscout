@@ -1,0 +1,16 @@
+# Normalisér linjeskift: tekstfiler gemmes som LF i repoet og tjekkes ud som LF.
+# Stopper CRLF/LF-støjen fra Windows/OneDrive-kopien (filer der viste sig som
+# "modificeret" uden reelle indholdsændringer).
+* text=auto eol=lf
+
+# Binære filer — git må ikke røre linjeskift i disse.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.gif  binary
+*.ico  binary
+*.woff  binary
+*.woff2 binary
+*.ttf  binary
+*.eot  binary
