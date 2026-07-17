@@ -1510,6 +1510,7 @@ const SOL = {
     focal: null,        // valgt brændvidde (mm) via slider; null → default LENS_MAX
     dist: null,         // valgt afstand (m) via slider; null → default (≈60% fyld)
     elev: 0,            // objektets fods højde (m) over fotografens standpunkt (fx fyr på klint)
+    autoElev: true,     // hent terrænhøjde automatisk (Open-Meteo) og udregn elev; manuel indtastning slår det fra
     date: null,         // 'YYYY-MM-DD'
     body: 'sun',        // 'sun' | 'moon'
     side: 'set',        // 'set' (nedgang) | 'rise' (opgang)
@@ -1679,6 +1680,69 @@ const SOL = {
   },
 };
 
+// --- Auto-terræn: hent terrænhøjde for objekt + beregnet standpunkt (Open-Meteo,
+// gratis/ingen nøgle/CORS) og udregn elev = fod-højde over standpunktet. Debounced
+// (kun efter sidste justering), cachet pr. ~100 m gitter, falder pænt tilbage offline.
+SOL.elevCache = {};        // gitter-key → meter (standpunkter)
+SOL.objElevCache = {};     // objekt-key → meter (hentes én gang pr. objekt)
+SOL.elevState = { status: 'idle', msg: '', objM: null, gpM: null, appliedKey: null };
+SOL._elevTimer = null;
+SOL.gridKey = function (lat, lon) { return lat.toFixed(3) + ',' + lon.toFixed(3); };   // ~110 m
+
+SOL.fetchElevBatch = async function (points) {
+  const lat = points.map(p => (+p.lat).toFixed(5)).join(',');
+  const lon = points.map(p => (+p.lon).toFixed(5)).join(',');
+  const url = `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`;
+  const ctrl = new AbortController();
+  const to = setTimeout(() => ctrl.abort(), 6000);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const j = await res.json();
+    if (!j || !Array.isArray(j.elevation)) throw new Error('uventet svar');
+    return j.elevation;
+  } finally { clearTimeout(to); }
+};
+
+SOL.scheduleAutoElev = function (objLat, objLon, objKey, gpLat, gpLon) {
+  clearTimeout(this._elevTimer);
+  this._elevTimer = setTimeout(() => this.runAutoElev(objLat, objLon, objKey, gpLat, gpLon), 900);
+};
+
+SOL.runAutoElev = async function (objLat, objLon, objKey, gpLat, gpLon) {
+  if (!this.cfg.autoElev || typeof state === 'undefined' || state.view !== 'sol') return;
+  const wantKey = objKey + '|' + this.gridKey(gpLat, gpLon);
+  if (this.elevState.appliedKey === wantKey) return;                 // allerede anvendt → undgå løkke
+  let objM = this.objElevCache[objKey];
+  let gpM = this.elevCache[this.gridKey(gpLat, gpLon)];
+  if (objM != null && gpM != null) { this.applyElev(objM, gpM, wantKey); return; }   // ren cache-hit, intet net
+  this.elevState = { ...this.elevState, status: 'loading', msg: 'henter terræn…' };
+  if (state.view === 'sol') render();
+  try {
+    const need = [];
+    if (objM == null) need.push({ lat: objLat, lon: objLon, which: 'obj' });
+    if (gpM == null) need.push({ lat: gpLat, lon: gpLon, which: 'gp' });
+    const got = await this.fetchElevBatch(need);
+    need.forEach((p, i) => {
+      if (p.which === 'obj') { objM = got[i]; this.objElevCache[objKey] = objM; }
+      else { gpM = got[i]; this.elevCache[this.gridKey(gpLat, gpLon)] = gpM; }
+    });
+    if (!isFinite(objM) || !isFinite(gpM)) throw new Error('ufuldstændige data');
+    this.applyElev(objM, gpM, wantKey);
+  } catch (e) {
+    this.elevState = { ...this.elevState, status: 'offline', msg: 'offline' };
+    if (state.view === 'sol') render();                             // ingen appliedKey → prøver igen ved næste justering
+  }
+};
+
+SOL.applyElev = function (objM, gpM, key) {
+  const dh = Math.round(objM - gpM);
+  this.elevState = { status: 'ok', objM, gpM, appliedKey: key,
+    msg: `du ${Math.round(gpM)} m · objektets fod ${Math.round(objM)} m` };
+  this.cfg.elev = dh;
+  if (typeof state !== 'undefined' && state.view === 'sol') render();   // gen-render; appliedKey forhindrer løkke
+};
+
 // Objekt-silhuetter: generiske former tegnet mellem grundlinjen (baseY) og
 // toppen (topY), med halv bredde hw (px). Alle former er centreret om cx.
 const SOL_SHAPES = {
@@ -1829,6 +1893,18 @@ function renderSol(content, statusEl) {
   const objAngVsel = (Math.atan((elev + obj.height) / selDist) - Math.atan(elev / selDist)) * SOL.R2D;
   const effFill = objAngVsel / fovVsel;                                            // objektets andel af billedhøjden (resultat)
 
+  // Auto-terræn status-tekst (Open-Meteo; debounced/cachet; offline → manuel)
+  let elevStatus;
+  if (!c.autoElev) elevStatus = 'manuel — indtast selv';
+  else {
+    const s = SOL.elevState;
+    elevStatus = s.status === 'loading' ? '⏳ henter terræn…'
+      : s.status === 'offline' ? '⚠ offline — indtast ⛰️ manuelt (auto prøver igen ved næste justering)'
+      : s.status === 'ok' ? '✓ ' + s.msg
+      : 'auto til — justér for at hente';
+  }
+  if (elev !== 0) elevStatus += ` · foden ${footAltSel >= 0 ? '+' : ''}${footAltSel.toFixed(2)}° ${footAltSel >= 0 ? 'over' : 'under'} din horisont`;
+
   const objOpts = stops.map((s, i) => `<option value="${i}" ${c.objIdx === i ? 'selected' : ''}>${esc(s.name)}</option>`).join('')
     + `<option value="custom" ${c.objIdx === 'custom' ? 'selected' : ''}>➕ Andet objekt…</option>`;
   const shapeOpts = Object.entries(SOL_SHAPES).map(([k, lbl]) =>
@@ -1864,7 +1940,9 @@ function renderSol(content, statusEl) {
       <div class="sol-row">
         <label>⛰️ Fodens højde over dit standpunkt (m) <span class="sol-dim">+ = fyr på klint, − = du står højt</span>
           <input type="number" step="1" id="sol-elev" value="${elev}" onchange="SOL.on('elev',this.value)"></label>
-        ${elev !== 0 ? `<div class="sol-dim">→ foden står ${footAltSel >= 0 ? '+' : ''}${footAltSel.toFixed(2)}° ${footAltSel >= 0 ? 'over' : 'under'} din horisont${footAltSel > 0 ? ' — havhorisonten ligger under objektets fod' : ''}</div>` : ''}
+        <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;cursor:pointer">
+          <input type="checkbox" ${c.autoElev ? 'checked' : ''} onchange="SOL.on('autoElev',this.checked)"> 🔍 Auto (hent terræn via net)</label>
+        <div class="sol-dim">${elevStatus}</div>
       </div>
       <div class="sol-row two">
         <div class="sol-toggle">
@@ -1961,6 +2039,11 @@ function renderSol(content, statusEl) {
   const previewPlan = SOL.plan(obj, series, selDist, cEff);
   const hasShot = previewPlan && previewPlan.time && previewPlan.gp;
 
+  // Auto-terræn: hent højde for objekt + beregnet standpunkt (debounced, cachet, offline-sikkert)
+  if (c.autoElev && obj.lat != null && obj.lon != null && previewPlan && previewPlan.gp) {
+    SOL.scheduleAutoElev(obj.lat, obj.lon, `${(+obj.lat).toFixed(5)},${(+obj.lon).toFixed(5)}`, previewPlan.gp.lat, previewPlan.gp.lon);
+  }
+
   let widthNote = '';
   if (hasShot) {
     const angH = 2 * Math.atan((+c.width || 8) / (2 * previewPlan.D)) * SOL.R2D;  // objektets vinkelbredde (grader)
@@ -1997,7 +2080,9 @@ function renderSol(content, statusEl) {
 
 SOL.on = function (field, val) {
   if (field === 'objIdx') { this.cfg.objIdx = val === 'custom' ? 'custom' : +val; }
-  else if (field === 'height' || field === 'width' || field === 'focal' || field === 'dist' || field === 'elev') { this.cfg[field] = +val; }
+  else if (field === 'height' || field === 'width' || field === 'focal' || field === 'dist') { this.cfg[field] = +val; }
+  else if (field === 'elev') { this.cfg.elev = +val || 0; this.cfg.autoElev = false; }   // manuel indtastning slår auto fra
+  else if (field === 'autoElev') { this.cfg.autoElev = !!val; if (this.cfg.autoElev) this.elevState.appliedKey = null; }   // slå til → tving et frisk hent
   else if (field === 'fill' || field === 'offX' || field === 'offY') { this.cfg[field] = +val / 100; }
   else if (field === 'lat' || field === 'lon') {
     // Normalisér: dansk komma → punktum, fjern mellemrum. type="text" giver os den rå
