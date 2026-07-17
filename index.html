@@ -1500,13 +1500,15 @@ const SOL = {
   R2D: 180 / Math.PI,
   E: 23.4397 * Math.PI / 180,           // jordaksens hældning
   SENSOR_W: 17.3, SENSOR_H: 13.0,       // M4/3-sensor (mm)
-  LENS_MIN: 150, LENS_MAX: 400,         // din 150-400 mm
+  LENS_MIN: 12, LENS_MAX: 200,          // M43-brændvidder du reelt bruger (12 mm vidvinkel → 200 mm tele)
 
   cfg: {
     objIdx: 1,          // default: Blåvandshuk (populær til solnedgang)
     lat: null, lon: null, height: 30, name: '',
     shape: 'lighthouse',// silhuet-form: lighthouse|house|bridge|church|box
     width: 8,           // objektets bredde (m) — former silhuetten + bredde-aflæsning
+    focal: null,        // valgt brændvidde (mm) via slider; null → default LENS_MAX
+    dist: null,         // valgt afstand (m) via slider; null → default (≈60% fyld)
     date: null,         // 'YYYY-MM-DD'
     body: 'sun',        // 'sun' | 'moon'
     side: 'set',        // 'set' (nedgang) | 'rise' (opgang)
@@ -1515,7 +1517,14 @@ const SOL = {
     offX: 0, offY: 0,   // forskydning i andel af billedet (−0.4..0.4); + = højre / op
   },
   BASE_MARGIN: 0.05,    // objektets fod sidder 5 % oppe fra billedets bund
-  DISTS: [200, 400, 700, 1000, 1500, 2500, 4000],
+
+  // Inverter komposition: hvilken afstand giver netop brændvidden `focal` for
+  // et objekt med `height` (m) der fylder `fill` af billedhøjden?
+  distForFocal(height, fill, focal) {
+    const fovV = 2 * Math.atan(this.SENSOR_H / (2 * focal)) * this.R2D;   // lodret synsfelt (grader)
+    const objAngV = fovV * fill;                                          // objektets ønskede vinkelhøjde
+    return height / (2 * Math.tan(objAngV / 2 * this.D2R));               // afstand (m)
+  },
 
   // --- kerneastronomi ---
   _days(date) { return date.valueOf() / 86400000 - 0.5 + 2440588 - 2451545; },
@@ -1715,19 +1724,22 @@ function solSilhouette(shape, cx, baseY, topY, hw, col) {
 // og sol/måne-prik i korrekt position + relativ størrelse for ét standpunkt.
 function solPreview(c, plan) {
   const W = 400, H = 300, m = SOL.BASE_MARGIN, fill = c.fill;
+  // Canvas med margin rundt om selve billedrammen, så sol/måne kan tegnes UDEN FOR rammen
+  // (scenen fortsætter i den dæmpede margin; den hvide kant markerer kameraets udsnit).
+  const MX = 100, MY = 75, CW = W + 2 * MX, CH = H + 2 * MY;
   const anchorFY = c.anchor === 'base' ? m : c.anchor === 'mid' ? m + fill / 2 : m + fill;
   const bodyFY = anchorFY + c.offY, bodyFX = 0.5 + c.offX;
-  const bx = bodyFX * W, by = (1 - bodyFY) * H;
+  const bx = MX + bodyFX * W, by = MY + (1 - bodyFY) * H;                 // body i canvas-koord
   const br = Math.max(2, plan.bodyFrame / 2 * H);        // px/grad er ens i begge akser (4:3-ramme) → rund
   const horizonY = (1 - m) * H, topY = (1 - (m + fill)) * H;
-  const cx = W / 2;
+  const hzC = MY + horizonY, topYC = MY + topY, cx = MX + W / 2;         // frame-koord → canvas-koord
   // Silhuettens bredde i px: samme vinkelskala som højden (4:3-ramme), så
   // px/meter er ens i begge akser → skalér realbredde mod objektets højde.
   const pxPerM = (horizonY - topY) / Math.max(1, c.height || 1);
   const halfW = Math.min(W * 0.46, Math.max(4, (c.width || 8) * pxPerM / 2));
   const isMoon = c.body === 'moon';
   const gid = 'solsky' + (isMoon ? 'm' : 's');
-  const silhouette = solSilhouette(c.shape, cx, horizonY, topY, halfW, '#0c1118');
+  const silhouette = solSilhouette(c.shape, cx, hzC, topYC, halfW, '#0c1118');
   const sky = isMoon
     ? `<stop offset="0" stop-color="#16223b"/><stop offset="1" stop-color="#2c3e63"/>`
     : `<stop offset="0" stop-color="#2a3a5e"/><stop offset="0.6" stop-color="#e8894a"/><stop offset="1" stop-color="#ffd089"/>`;
@@ -1748,15 +1760,23 @@ function solPreview(c, plan) {
     const lit = `<path d="M ${top} A ${br.toFixed(1)} ${br.toFixed(1)} 0 0 ${limbSweep} ${bot} A ${rx} ${br.toFixed(1)} 0 0 ${termSweep} ${top} Z" fill="${bodyFill}"/>`;
     bodyShape = `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${br.toFixed(1)}" fill="#1c2740"/>${lit}`;
   }
-  return `<svg class="sol-preview" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Forhåndsvisning af komposition">
+  const dim = 'rgba(6,10,18,0.58)';                      // dæmper margin-området, så rammen popper
+  const outFrame = (bx + br < MX || bx - br > MX + W || by + br < MY || by - br > MY + H);
+  const outTag = outFrame ? `<text x="${(MX + W / 2).toFixed(0)}" y="${(MY - 8).toFixed(0)}" text-anchor="middle" fill="#ffd089" font-size="13" font-family="sans-serif">${isMoon ? 'Månen' : 'Solen'} er uden for rammen</text>` : '';
+  return `<svg class="sol-preview" viewBox="0 0 ${CW} ${CH}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Forhåndsvisning af komposition">
     <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">${sky}</linearGradient></defs>
-    <rect x="0" y="0" width="${W}" height="${horizonY}" fill="url(#${gid})"/>
+    <rect x="0" y="0" width="${CW}" height="${hzC}" fill="url(#${gid})"/>
+    <rect x="0" y="${hzC}" width="${CW}" height="${CH - hzC}" fill="${isMoon ? '#0a1220' : '#243247'}"/>
+    <line x1="0" y1="${hzC}" x2="${CW}" y2="${hzC}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+    ${silhouette}
     <circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${(br + 6).toFixed(1)}" fill="${bodyGlow}"/>
     ${bodyShape}
-    <rect x="0" y="${horizonY}" width="${W}" height="${H - horizonY}" fill="${isMoon ? '#0a1220' : '#243247'}"/>
-    <line x1="0" y1="${horizonY}" x2="${W}" y2="${horizonY}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
-    ${silhouette}
-    <rect x="1" y="1" width="${W - 2}" height="${H - 2}" fill="none" stroke="var(--border)" stroke-width="2" rx="6"/>
+    <rect x="0" y="0" width="${CW}" height="${MY}" fill="${dim}"/>
+    <rect x="0" y="${MY + H}" width="${CW}" height="${CH - MY - H}" fill="${dim}"/>
+    <rect x="0" y="${MY}" width="${MX}" height="${H}" fill="${dim}"/>
+    <rect x="${MX + W}" y="${MY}" width="${CW - MX - W}" height="${H}" fill="${dim}"/>
+    <rect x="${MX}" y="${MY}" width="${W}" height="${H}" fill="none" stroke="#ffffff" stroke-width="2"/>
+    ${outTag}
   </svg>`;
 }
 
@@ -1783,6 +1803,18 @@ function renderSol(content, statusEl) {
     obj = { name: s.name, lat: s.lat, lon: s.lon, height: +c.height || 30 };
   }
 
+  // --- Setup: brændvidde + afstand er inputs; objektstørrelse (fill) er resultatet ---
+  const dispD = D => D >= 1000 ? (D / 1000).toFixed(1) + ' km' : Math.round(D) + ' m';
+  const selFocal = Math.max(SOL.LENS_MIN, Math.min(SOL.LENS_MAX, c.focal == null ? SOL.LENS_MAX : c.focal));
+  const fovVsel = 2 * Math.atan(SOL.SENSOR_H / (2 * selFocal)) * SOL.R2D;         // lodret synsfelt (grader)
+  // Afstands-skala uafhængig af valgt brændvidde: dækker hele kittet (12 mm-fyld → 200 mm-lille)
+  const dMin = Math.round(SOL.distForFocal(obj.height, 1.0, SOL.LENS_MIN));       // objektet fylder rammen ved 12 mm
+  const dMax = Math.round(SOL.distForFocal(obj.height, 0.15, SOL.LENS_MAX));      // objektet lille ved 200 mm
+  const selDist = c.dist == null
+    ? Math.max(dMin, Math.min(dMax, Math.round(SOL.distForFocal(obj.height, 0.6, selFocal))))
+    : Math.max(dMin, Math.min(dMax, c.dist));
+  const effFill = (2 * Math.atan(obj.height / (2 * selDist)) * SOL.R2D) / fovVsel; // objektets andel af billedhøjden (resultat)
+
   const objOpts = stops.map((s, i) => `<option value="${i}" ${c.objIdx === i ? 'selected' : ''}>${esc(s.name)}</option>`).join('')
     + `<option value="custom" ${c.objIdx === 'custom' ? 'selected' : ''}>➕ Andet objekt…</option>`;
   const shapeOpts = Object.entries(SOL_SHAPES).map(([k, lbl]) =>
@@ -1798,7 +1830,7 @@ function renderSol(content, statusEl) {
     </div>` : '';
 
   const anchorName = { base: 'foden', mid: 'midten', top: 'toppen' }[c.anchor];
-  const ohX = c.offX / c.fill, ohY = c.offY / c.fill;   // forskydning i objekt-højder
+  const ohX = c.offX / effFill, ohY = c.offY / effFill;   // forskydning i objekt-højder
   const readX = c.offX === 0 ? 'centreret' : `${ohX > 0 ? '+' : ''}${ohX.toFixed(2)} obj.-højder mod ${c.offX > 0 ? 'højre' : 'venstre'}`;
   const readY = c.offY === 0 ? `ved ${anchorName}` : `${ohY > 0 ? '+' : ''}${ohY.toFixed(2)} obj.-højder ${c.offY > 0 ? 'over' : 'under'} ${anchorName}`;
 
@@ -1826,8 +1858,15 @@ function renderSol(content, statusEl) {
         </div>
       </div>
       <div class="sol-row">
-        <label>Objektets størrelse i billedet: <b>${Math.round(c.fill * 100)}%</b> <span class="sol-dim">af højden</span>
-          <input type="range" min="25" max="85" step="5" value="${Math.round(c.fill * 100)}" oninput="SOL.on('fill',this.value)"></label>
+        <label>🔭 Brændvidde: <b>${Math.round(selFocal)} mm</b>
+          <input type="range" min="${SOL.LENS_MIN}" max="${SOL.LENS_MAX}" step="1" value="${Math.round(selFocal)}" oninput="SOL.on('focal',this.value)"></label>
+      </div>
+      <div class="sol-row">
+        <label>📏 Afstand (hvor du står): <b>${dispD(selDist)}</b>
+          <input type="range" min="${dMin}" max="${dMax}" step="5" value="${selDist}" oninput="SOL.on('dist',this.value)"></label>
+      </div>
+      <div class="sol-row">
+        <div class="sol-dim">→ Objektet fylder <b>${Math.round(effFill * 100)}%</b> af billedhøjden${effFill > 1 ? ' ⚠ (større end rammen — gå længere væk)' : ''}</div>
       </div>
       <div class="sol-row">
         <label>Forskydningens nulpunkt
@@ -1840,11 +1879,11 @@ function renderSol(content, statusEl) {
       </div>
       <div class="sol-row">
         <label>↔ Vandret forskydning: <b>${c.offX > 0 ? '+' : ''}${Math.round(c.offX * 100)}%</b> <span class="sol-dim">(${readX})</span>
-          <input type="range" min="-40" max="40" step="5" value="${Math.round(c.offX * 100)}" oninput="SOL.on('offX',this.value)"></label>
+          <input type="range" min="-60" max="60" step="5" value="${Math.round(c.offX * 100)}" oninput="SOL.on('offX',this.value)"></label>
       </div>
       <div class="sol-row">
         <label>↕ Lodret forskydning: <b>${c.offY > 0 ? '+' : ''}${Math.round(c.offY * 100)}%</b> <span class="sol-dim">(${readY})</span>
-          <input type="range" min="-40" max="40" step="5" value="${Math.round(c.offY * 100)}" oninput="SOL.on('offY',this.value)"></label>
+          <input type="range" min="-60" max="60" step="5" value="${Math.round(c.offY * 100)}" oninput="SOL.on('offY',this.value)"></label>
       </div>
     </div>`;
 
@@ -1875,50 +1914,53 @@ function renderSol(content, statusEl) {
     : `<tr><td colspan="4">${bodyLabel} står ikke op/ned dette døgn.</td></tr>`;
   if (peak.t) evHtml += `<tr><td>Kulmination</td><td>${fmt(peak.t)}</td><td>${Math.round(peak.az)}° ${SOL.compassName(peak.az)}</td><td>${peak.alt.toFixed(1)}°</td></tr>`;
 
-  // Alignment: ét standpunkt pr. afstand, der giver den ønskede komposition
-  const dispD = D => D >= 1000 ? (D / 1000).toFixed(1) + ' km' : D + ' m';
+  // Tabel: 7 afstande (geometrisk fordelt over skalaen) ved den VALGTE brændvidde.
+  // Objektstørrelsen (fill) er nu et resultat af (brændvidde, afstand), ikke et input.
   const series = SOL.daySeries(c.date, obj.lat, obj.lon, c.body);
-  const plans = SOL.DISTS.map(D => SOL.plan(obj, series, D, c));
+  const fillAt = D => (2 * Math.atan(obj.height / (2 * D)) * SOL.R2D) / fovVsel;   // objektfyld ved afstand D
+  const planAt = D => SOL.plan(obj, series, D, { ...c, fill: fillAt(D) });
+  const distSteps = Array.from({ length: 7 }, (_, i) => Math.round(dMin * Math.pow(dMax / dMin, i / 6)));
+  const plans = distSteps.map(planAt);
+  const selStepIdx = distSteps.reduce((b, D, i) => Math.abs(D - selDist) < Math.abs(distSteps[b] - selDist) ? i : b, 0);
 
-  const rows = plans.map(r => {
-    if (!r.time) return `<tr class="no"><td>${dispD(r.D)}</td><td colspan="4">${r.note || '—'}</td></tr>`;
+  const rows = plans.map((r, i) => {
+    const D = distSteps[i];
+    const dcol = `${dispD(D)}${i === selStepIdx ? ' ◀' : ''}`;
+    const mark = i === selStepIdx ? ' style="font-weight:600"' : '';
+    if (!r.time) return `<tr class="no"${mark}><td>${dcol}</td><td colspan="4">${r.note || '—'}</td></tr>`;
     const cls = r.ok ? 'ok' : 'no';
-    return `<tr class="${cls}">
-      <td>${dispD(r.D)}</td>
+    return `<tr class="${cls}"${mark}>
+      <td>${dcol}</td>
+      <td>${Math.round(fillAt(D) * 100)}%</td>
       <td>${fmt(r.time)}</td>
-      <td>${Math.round(r.focal)} mm${r.inRange ? '' : ' ✗'}</td>
       <td>${Math.round(r.bodyFrame * 100)}%</td>
       <td>${Math.round(r.bodyVsObj * 100)}%${r.note ? ' · ' + r.note : ''}</td></tr>`;
   }).join('');
 
-  // bedste standpunkt: gyldigt (i ramme + i linse-interval), tættest på 400 mm = mest komprimering
-  const feas = plans.filter(r => r.ok);
-  const bandDist = f => f < SOL.LENS_MIN ? SOL.LENS_MIN - f : f > SOL.LENS_MAX ? f - SOL.LENS_MAX : 0;
-  // hvilket standpunkt skal previewes: bedste gyldige, ellers det tættest på linse-intervallet
-  const previewPlan = feas.length
-    ? feas.reduce((a, b) => Math.abs(b.focal - 400) < Math.abs(a.focal - 400) ? b : a)
-    : plans.filter(r => r.time).sort((a, b) => bandDist(a.focal) - bandDist(b.focal))[0];
+  // Preview = dit valgte setup: brændvidde (effFill) + afstand.
+  const cEff = { ...c, fill: effFill };
+  const previewPlan = SOL.plan(obj, series, selDist, cEff);
+  const hasShot = previewPlan && previewPlan.time && previewPlan.gp;
+
   let widthNote = '';
-  if (previewPlan) {
+  if (hasShot) {
     const angH = 2 * Math.atan((+c.width || 8) / (2 * previewPlan.D)) * SOL.R2D;  // objektets vinkelbredde (grader)
     const bodyDiam = SOL.position(previewPlan.time, obj.lat, obj.lon, c.body).diam;
     const pct = Math.round(bodyDiam / angH * 100);
     widthNote = `<div class="sol-dim" style="text-align:center;margin-top:2px">Bredde ~${angH.toFixed(2)}° · ${bodyLabel.toLowerCase()} (${bodyDiam.toFixed(2)}°) fylder ${pct}%${pct > 100 ? ' — bredere end objektet' : ' af bredden'}</div>`;
   }
-  const previewHtml = previewPlan ? `<div class="sol-preview-wrap">
-      ${solPreview(c, previewPlan)}
-      <div class="sol-dim" style="text-align:center;margin-top:6px">Ved ${dispD(previewPlan.D)} · ${Math.round(previewPlan.focal)} mm · kl. ${fmt(previewPlan.time)}${feas.length ? '' : ' · (nærmeste — ikke helt i 150–400 mm/ramme)'}</div>
+  const previewHtml = hasShot ? `<div class="sol-preview-wrap">
+      ${solPreview(cEff, previewPlan)}
+      <div class="sol-dim" style="text-align:center;margin-top:6px">${Math.round(selFocal)} mm · stå ${dispD(selDist)} væk · objektet ${Math.round(effFill * 100)}% · kl. ${fmt(previewPlan.time)}</div>
       ${widthNote}
-    </div>` : '';
-  let mapBtn;
-  if (feas.length) {
+    </div>` : `<div class="sol-note">Med ${Math.round(selFocal)} mm på ${dispD(selDist)} når ${bodyLabel.toLowerCase()} ikke den valgte position (${previewPlan && previewPlan.note ? previewPlan.note : 'uden for rækkevidde'}). Prøv en anden afstand, brændvidde, forskydning eller dato/side.</div>`;
+  let mapBtn = '';
+  if (hasShot) {
     const best = previewPlan;
-    mapBtn = `<div class="sol-dim" style="margin:10px 0 4px">Bedste: stå <b>${dispD(best.D)}</b> mod <b>${SOL.compassName(best.back)}</b> (${Math.round(best.back)}°) for objektet, kl. <b>${fmt(best.time)}</b>, brændvidde <b>${Math.round(best.focal)} mm</b>.</div>
+    mapBtn = `<div class="sol-dim" style="margin:10px 0 4px">Dit setup: <b>${Math.round(selFocal)} mm</b> · stå <b>${dispD(selDist)}</b> mod <b>${SOL.compassName(best.back)}</b> (${Math.round(best.back)}°) for objektet, kl. <b>${fmt(best.time)}</b>.</div>
       <a class="route-map-btn" target="_blank" rel="noopener"
         href="https://www.google.com/maps/dir/?api=1&destination=${best.gp.lat.toFixed(5)},${best.gp.lon.toFixed(5)}&travelmode=driving">
-        🚗 Kør til foreslået standpunkt</a>`;
-  } else {
-    mapBtn = `<div class="sol-note" style="margin-top:8px">Ingen afstand giver en komposition der passer i både billedrammen og 150–400 mm. Prøv mindre objektstørrelse, mindre forskydning, eller en anden dato/side.</div>`;
+        🚗 Kør til dette standpunkt</a>`;
   }
 
   statusEl.innerHTML = `Sol & Måne · ${esc(obj.name)}`;
@@ -1926,17 +1968,17 @@ function renderSol(content, statusEl) {
     ${inputsHtml}
     ${moonHtml}
     <table class="sol-table sol-events"><thead><tr><th>Hændelse</th><th>Tid</th><th>Retning</th><th>Højde</th></tr></thead><tbody>${evHtml}</tbody></table>
-    <h3 class="sol-h3">📐 Hvor skal du stå?</h3>
+    <h3 class="sol-h3">📐 Dit setup</h3>
     ${previewHtml}
-    <table class="sol-table"><thead><tr><th>Afstand</th><th>Tid</th><th>Brændvidde</th><th>${bodyLabel} i billedet</th><th>${bodyLabel} vs. objekt</th></tr></thead><tbody>${rows}</tbody></table>
+    <table class="sol-table"><thead><tr><th>Afstand</th><th>Objekt fylder</th><th>Tid</th><th>${bodyLabel} i billedet</th><th>${bodyLabel} vs. objekt</th></tr></thead><tbody>${rows}</tbody></table>
     ${mapBtn}
-    <div class="sol-note">Hver række er ét standpunkt langs "stå-her-linjen". <b>Grøn</b> = passer i både rammen og din 150–400 mm. Tiden er hvornår ${bodyLabel.toLowerCase()} rammer den valgte position (${c.side === 'set' ? 'på vej ned' : 'på vej op'}). Jo længere væk, jo større virker ${bodyLabel.toLowerCase()} (komprimering). Horisont antaget ved havoverfladen (0°) — terræn foran indgår ikke endnu.</div>
+    <div class="sol-note">Skru på <b>🔭 brændvidde</b> + <b>📏 afstand</b> (og ↔/↕ placering) for at afprøve setups — objektstørrelsen er resultatet. Tabellen viser afstande ved din valgte brændvidde: tættere på = objektet fylder mere + ${bodyLabel.toLowerCase()} en lille prik; længere væk = komprimering (${bodyLabel.toLowerCase()} stor). Tiden er hvornår ${bodyLabel.toLowerCase()} rammer positionen (${c.side === 'set' ? 'på vej ned' : 'på vej op'}). Horisont antaget ved havoverfladen (0°) — terræn foran indgår ikke endnu.</div>
   </div>`;
 }
 
 SOL.on = function (field, val) {
   if (field === 'objIdx') { this.cfg.objIdx = val === 'custom' ? 'custom' : +val; }
-  else if (field === 'height' || field === 'width') { this.cfg[field] = +val; }
+  else if (field === 'height' || field === 'width' || field === 'focal' || field === 'dist') { this.cfg[field] = +val; }
   else if (field === 'fill' || field === 'offX' || field === 'offY') { this.cfg[field] = +val / 100; }
   else if (field === 'lat' || field === 'lon') {
     // Normalisér: dansk komma → punktum, fjern mellemrum. type="text" giver os den rå
