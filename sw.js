@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fotoscout-v18';
+const CACHE_NAME = 'fotoscout-v19';
 const ASSETS = [
   './',
   './index.html',
@@ -34,6 +34,18 @@ self.addEventListener('fetch', event => {
         cache: 'no-store'
       })
       .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Leaflet fra CDN: cache-first, så kortet virker offline efter første indlæsning
+  if (url.host === 'unpkg.com') {
+    event.respondWith(
+      caches.match(event.request).then(cached => cached || fetch(event.request).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        return res;
+      }))
     );
     return;
   }

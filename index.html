@@ -592,7 +592,20 @@
     background: transparent; border: none; color: var(--text-dim);
     font-size: 15px; font-weight: 600; cursor: pointer;
   }
+.sol-layout { display: flex; gap: 16px; align-items: flex-start; }
+.sol-controls { flex: 1 1 55%; min-width: 0; }
+.sol-mapwrap { flex: 1 1 45%; position: sticky; top: 12px; }
+#sol-map { height: 460px; width: 100%; border-radius: 8px; z-index: 0; background: var(--card); }
+.sol-pin-obj, .sol-pin-stand { font-size: 20px; text-align: center; line-height: 1; background: none; border: none; }
+.sol-map-note { margin-top: 6px; }
+@media (max-width: 860px) {
+  .sol-layout { flex-direction: column; }
+  .sol-mapwrap { position: static; width: 100%; }
+  #sol-map { height: 300px; }
+}
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -1743,6 +1756,78 @@ SOL.applyElev = function (objM, gpM, key) {
   if (typeof state !== 'undefined' && state.view === 'sol') render();   // gen-render; appliedKey forhindrer løkke
 };
 
+// --- Interaktivt kort (Leaflet): objekt-markør + træk-bar standpunkt-pin langs
+// "stå-her-linjen". Træk ind/ud = afstand → opdaterer preview/tabel/terræn live.
+SOL.distBetween = function (la1, lo1, la2, lo2) {
+  const R = 6371000, d2r = this.D2R;
+  const dLa = (la2 - la1) * d2r, dLo = (lo2 - lo1) * d2r;
+  const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * d2r) * Math.cos(la2 * d2r) * Math.sin(dLo / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+};
+
+SOL.initMap = function () {
+  if (typeof L === 'undefined') return;                 // Leaflet ikke indlæst (offline første gang) → spring over
+  if (this._map) { try { this._map.remove(); } catch (e) {} this._map = null; }
+  const el = document.getElementById('sol-map');
+  if (!el) return;
+  const map = L.map(el, { zoomControl: true }).setView([56.0, 8.3], 8);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  const objIcon = L.divIcon({ className: 'sol-pin-obj', html: '🗼', iconSize: [24, 24], iconAnchor: [12, 20] });
+  const standIcon = L.divIcon({ className: 'sol-pin-stand', html: '📍', iconSize: [24, 24], iconAnchor: [12, 22] });
+  this._objMarker = L.marker([56, 8.3], { icon: objIcon, interactive: false }).addTo(map);
+  this._line = L.polyline([], { color: '#ff9d3c', weight: 3, dashArray: '6 5', opacity: 0.9 }).addTo(map);
+  this._standMarker = L.marker([56, 8.3], { icon: standIcon, draggable: true }).addTo(map);
+  this._standMarker.on('dragstart', () => { this._dragging = true; });
+  this._standMarker.on('drag', () => this.onPinDrag());
+  this._standMarker.on('dragend', () => { this._dragging = false; if (typeof render === 'function') render(); });
+  this._map = map;
+  this._fitted = false;
+};
+
+SOL.updateMap = function (objLat, objLon, gp, back, dMin, dMax) {
+  this._dragCtx = { objLat, objLon, dMin, dMax };
+  const note = document.getElementById('sol-map-note');
+  if (!this._map) { if (note) note.textContent = typeof L === 'undefined' ? '🗺️ Kort kræver net ved første indlæsning — resten virker offline.' : ''; return; }
+  this._objMarker.setLatLng([objLat, objLon]);
+  if (back != null) {
+    const near = this.dest(objLat, objLon, back, dMin), far = this.dest(objLat, objLon, back, dMax);
+    this._line.setLatLngs([[near.lat, near.lon], [far.lat, far.lon]]);
+  }
+  if (gp && !this._dragging) this._standMarker.setLatLng([gp.lat, gp.lon]);
+  this._standMarker.setOpacity(gp ? 1 : 0.4);
+  if (!this._fitted && gp) {
+    this._map.fitBounds([[objLat, objLon], [gp.lat, gp.lon]], { padding: [40, 40], maxZoom: 15 });
+    this._fitted = true;
+    setTimeout(() => { if (this._map) this._map.invalidateSize(); }, 0);
+  }
+  if (note) note.textContent = '📍 Træk pin\'en ind/ud langs den orange linje for at ændre afstanden.';
+};
+
+SOL.onPinDrag = function () {
+  const ctx = this._dragCtx;
+  if (!ctx || !this._standMarker) return;
+  const p = this._standMarker.getLatLng();
+  const d = this.distBetween(ctx.objLat, ctx.objLon, p.lat, p.lng);
+  this.cfg.dist = Math.max(ctx.dMin, Math.min(ctx.dMax, Math.round(d)));
+  if (this._dragRAF) return;                            // throttle til én render pr. frame (glidende træk)
+  this._dragRAF = requestAnimationFrame(() => { this._dragRAF = null; if (typeof render === 'function') render(); });
+};
+
+// Monter persistent shell (kontroller + kort side-om-side/under); kortet må IKKE
+// ligge i den del der genskrives på hver render, ellers ødelægges Leaflet-instansen.
+SOL.mount = function (content, controlsHtml) {
+  let ctrl = document.getElementById('sol-controls');
+  if (!ctrl) {
+    content.innerHTML = `<div class="sol-layout">
+      <div id="sol-controls" class="sol-controls"></div>
+      <div class="sol-mapwrap"><div id="sol-map"></div><div class="sol-dim sol-map-note" id="sol-map-note"></div></div>
+    </div>`;
+    ctrl = document.getElementById('sol-controls');
+    this.initMap();
+  }
+  ctrl.innerHTML = controlsHtml;
+};
+
 // Objekt-silhuetter: generiske former tegnet mellem grundlinjen (baseY) og
 // toppen (topY), med halv bredde hw (px). Alle former er centreret om cx.
 const SOL_SHAPES = {
@@ -1987,8 +2072,8 @@ function renderSol(content, statusEl) {
   // Validér position
   if (obj.lat == null || obj.lon == null || isNaN(obj.lat) || isNaN(obj.lon)) {
     statusEl.innerHTML = 'Sol & Måne';
-    content.innerHTML = `<div class="sol-wrap">${inputsHtml}
-      <div class="sol-note">Indtast objektets koordinater for at beregne.</div></div>`;
+    SOL.mount(content, `<div class="sol-wrap">${inputsHtml}
+      <div class="sol-note">Indtast objektets koordinater for at beregne.</div></div>`);
     return;
   }
 
@@ -2066,7 +2151,7 @@ function renderSol(content, statusEl) {
   }
 
   statusEl.innerHTML = `Sol & Måne · ${esc(obj.name)}`;
-  content.innerHTML = `<div class="sol-wrap">
+  SOL.mount(content, `<div class="sol-wrap">
     ${inputsHtml}
     ${moonHtml}
     <table class="sol-table sol-events"><thead><tr><th>Hændelse</th><th>Tid</th><th>Retning</th><th>Højde</th></tr></thead><tbody>${evHtml}</tbody></table>
@@ -2075,7 +2160,8 @@ function renderSol(content, statusEl) {
     <table class="sol-table"><thead><tr><th>Afstand</th><th>Objekt fylder</th><th>Tid</th><th>${bodyLabel} i billedet</th><th>${bodyLabel} vs. objekt</th></tr></thead><tbody>${rows}</tbody></table>
     ${mapBtn}
     <div class="sol-note">Skru på <b>🔭 brændvidde</b> + <b>📏 afstand</b> (og ↔/↕ placering) for at afprøve setups — objektstørrelsen er resultatet. Tabellen viser afstande ved din valgte brændvidde: tættere på = objektet fylder mere + ${bodyLabel.toLowerCase()} en lille prik; længere væk = komprimering (${bodyLabel.toLowerCase()} stor). Tiden er hvornår ${bodyLabel.toLowerCase()} rammer positionen (${c.side === 'set' ? 'på vej ned' : 'på vej op'}). ⛰️-feltet retter for objektets fod-højde over dit standpunkt (fx fyr på klint). Bakker der skjuler den lave ${bodyLabel.toLowerCase()} bag objektet indgår ikke endnu.</div>
-  </div>`;
+  </div>`);
+  SOL.updateMap(obj.lat, obj.lon, hasShot ? previewPlan.gp : null, hasShot ? previewPlan.back : null, dMin, dMax);
 }
 
 SOL.on = function (field, val) {
