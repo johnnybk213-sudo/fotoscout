@@ -1509,6 +1509,7 @@ const SOL = {
     width: 8,           // objektets bredde (m) — former silhuetten + bredde-aflæsning
     focal: null,        // valgt brændvidde (mm) via slider; null → default LENS_MAX
     dist: null,         // valgt afstand (m) via slider; null → default (≈60% fyld)
+    elev: 0,            // objektets fods højde (m) over fotografens standpunkt (fx fyr på klint)
     date: null,         // 'YYYY-MM-DD'
     body: 'sun',        // 'sun' | 'moon'
     side: 'set',        // 'set' (nedgang) | 'rise' (opgang)
@@ -1641,9 +1642,12 @@ const SOL = {
     return fallback;
   },
 
-  // Beregn ét standpunkt for en given afstand + ønsket komposition
+  // Beregn ét standpunkt for en given afstand + ønsket komposition.
+  // c.elev = objektets fods højde (m) over fotografens standpunkt (0 = samme niveau).
   plan(obj, series, D, c) {
-    const objAngV = 2 * Math.atan(obj.height / (2 * D)) * this.R2D;   // objektets vinkelhøjde (grader)
+    const elev = +c.elev || 0;
+    const footAlt = Math.atan(elev / D) * this.R2D;                  // objektets fod over din horisont (grader)
+    const objAngV = (Math.atan((elev + obj.height) / D) - Math.atan(elev / D)) * this.R2D;  // objektets vinkelhøjde (grader)
     const fovV = objAngV / c.fill;                                     // lodret synsfelt for ønsket objektstørrelse
     const focal = this.SENSOR_H / (2 * Math.tan(fovV / 2 * this.D2R)); // nødvendig brændvidde (mm)
     const fovH = 2 * Math.atan(this.SENSOR_W / (2 * focal)) * this.R2D;
@@ -1653,8 +1657,8 @@ const SOL = {
       : c.anchor === 'mid' ? this.BASE_MARGIN + c.fill / 2
       : this.BASE_MARGIN + c.fill;
     const bodyFY = anchorFY + c.offY, bodyFX = 0.5 + c.offX;
-    const targetAlt = fovV * (bodyFY - this.BASE_MARGIN);              // objektets fod = 0° (havhorisont)
-    const r = { D, focal, inRange, objAngV, fovV, note: '', ok: false };
+    const targetAlt = footAlt + fovV * (bodyFY - this.BASE_MARGIN);   // fod ved footAlt (havhorisont = 0°, kan ligge lavere)
+    const r = { D, focal, inRange, objAngV, fovV, footAlt, seaFy: this.BASE_MARGIN - footAlt / fovV, note: '', ok: false };
     if (targetAlt < -0.2) { r.note = 'under horisont'; return r; }
     const cross = this.findCrossing(series, targetAlt, c.side);
     if (!cross) { r.note = 'når ikke højden'; return r; }
@@ -1761,6 +1765,12 @@ function solPreview(c, plan) {
     bodyShape = `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${br.toFixed(1)}" fill="#1c2740"/>${lit}`;
   }
   const dim = 'rgba(6,10,18,0.58)';                      // dæmper margin-området, så rammen popper
+  // Havhorisont-reference (0°): kun når højdeforskel rykker den ind i billedet, væk fra objektets fod
+  const seaFy = plan.seaFy == null ? m : plan.seaFy;
+  const ySeaC = MY + (1 - seaFy) * H;
+  const seaLine = (Math.abs(seaFy - m) > 0.002 && ySeaC >= MY && ySeaC <= MY + H)
+    ? `<line x1="${MX}" y1="${ySeaC.toFixed(1)}" x2="${MX + W}" y2="${ySeaC.toFixed(1)}" stroke="rgba(120,180,255,0.75)" stroke-width="1" stroke-dasharray="5 4"/><text x="${(MX + 5)}" y="${(ySeaC - 4).toFixed(1)}" fill="rgba(170,205,255,0.95)" font-size="11" font-family="sans-serif">havhorisont 0°</text>`
+    : '';
   const outFrame = (bx + br < MX || bx - br > MX + W || by + br < MY || by - br > MY + H);
   const outTag = outFrame ? `<text x="${(MX + W / 2).toFixed(0)}" y="${(MY - 8).toFixed(0)}" text-anchor="middle" fill="#ffd089" font-size="13" font-family="sans-serif">${isMoon ? 'Månen' : 'Solen'} er uden for rammen</text>` : '';
   return `<svg class="sol-preview" viewBox="0 0 ${CW} ${CH}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Forhåndsvisning af komposition">
@@ -1768,6 +1778,7 @@ function solPreview(c, plan) {
     <rect x="0" y="0" width="${CW}" height="${hzC}" fill="url(#${gid})"/>
     <rect x="0" y="${hzC}" width="${CW}" height="${CH - hzC}" fill="${isMoon ? '#0a1220' : '#243247'}"/>
     <line x1="0" y1="${hzC}" x2="${CW}" y2="${hzC}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+    ${seaLine}
     ${silhouette}
     <circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${(br + 6).toFixed(1)}" fill="${bodyGlow}"/>
     ${bodyShape}
@@ -1813,7 +1824,10 @@ function renderSol(content, statusEl) {
   const selDist = c.dist == null
     ? Math.max(dMin, Math.min(dMax, Math.round(SOL.distForFocal(obj.height, 0.6, selFocal))))
     : Math.max(dMin, Math.min(dMax, c.dist));
-  const effFill = (2 * Math.atan(obj.height / (2 * selDist)) * SOL.R2D) / fovVsel; // objektets andel af billedhøjden (resultat)
+  const elev = +c.elev || 0;                                                       // objektets fod over dit standpunkt (m)
+  const footAltSel = Math.atan(elev / selDist) * SOL.R2D;                          // fodens vinkel over din horisont (grader)
+  const objAngVsel = (Math.atan((elev + obj.height) / selDist) - Math.atan(elev / selDist)) * SOL.R2D;
+  const effFill = objAngVsel / fovVsel;                                            // objektets andel af billedhøjden (resultat)
 
   const objOpts = stops.map((s, i) => `<option value="${i}" ${c.objIdx === i ? 'selected' : ''}>${esc(s.name)}</option>`).join('')
     + `<option value="custom" ${c.objIdx === 'custom' ? 'selected' : ''}>➕ Andet objekt…</option>`;
@@ -1846,6 +1860,11 @@ function renderSol(content, statusEl) {
       <div class="sol-row two">
         <label>Objektets højde (m)<input type="number" step="1" min="1" id="sol-h" value="${c.height}" onchange="SOL.on('height',this.value)"></label>
         <label>Objektets bredde (m)<input type="number" step="1" min="1" id="sol-w" value="${c.width}" onchange="SOL.on('width',this.value)"></label>
+      </div>
+      <div class="sol-row">
+        <label>⛰️ Fodens højde over dit standpunkt (m) <span class="sol-dim">+ = fyr på klint, − = du står højt</span>
+          <input type="number" step="1" id="sol-elev" value="${elev}" onchange="SOL.on('elev',this.value)"></label>
+        ${elev !== 0 ? `<div class="sol-dim">→ foden står ${footAltSel >= 0 ? '+' : ''}${footAltSel.toFixed(2)}° ${footAltSel >= 0 ? 'over' : 'under'} din horisont${footAltSel > 0 ? ' — havhorisonten ligger under objektets fod' : ''}</div>` : ''}
       </div>
       <div class="sol-row two">
         <div class="sol-toggle">
@@ -1917,7 +1936,7 @@ function renderSol(content, statusEl) {
   // Tabel: 7 afstande (geometrisk fordelt over skalaen) ved den VALGTE brændvidde.
   // Objektstørrelsen (fill) er nu et resultat af (brændvidde, afstand), ikke et input.
   const series = SOL.daySeries(c.date, obj.lat, obj.lon, c.body);
-  const fillAt = D => (2 * Math.atan(obj.height / (2 * D)) * SOL.R2D) / fovVsel;   // objektfyld ved afstand D
+  const fillAt = D => ((Math.atan((elev + obj.height) / D) - Math.atan(elev / D)) * SOL.R2D) / fovVsel;   // objektfyld ved afstand D
   const planAt = D => SOL.plan(obj, series, D, { ...c, fill: fillAt(D) });
   const distSteps = Array.from({ length: 7 }, (_, i) => Math.round(dMin * Math.pow(dMax / dMin, i / 6)));
   const plans = distSteps.map(planAt);
@@ -1972,13 +1991,13 @@ function renderSol(content, statusEl) {
     ${previewHtml}
     <table class="sol-table"><thead><tr><th>Afstand</th><th>Objekt fylder</th><th>Tid</th><th>${bodyLabel} i billedet</th><th>${bodyLabel} vs. objekt</th></tr></thead><tbody>${rows}</tbody></table>
     ${mapBtn}
-    <div class="sol-note">Skru på <b>🔭 brændvidde</b> + <b>📏 afstand</b> (og ↔/↕ placering) for at afprøve setups — objektstørrelsen er resultatet. Tabellen viser afstande ved din valgte brændvidde: tættere på = objektet fylder mere + ${bodyLabel.toLowerCase()} en lille prik; længere væk = komprimering (${bodyLabel.toLowerCase()} stor). Tiden er hvornår ${bodyLabel.toLowerCase()} rammer positionen (${c.side === 'set' ? 'på vej ned' : 'på vej op'}). Horisont antaget ved havoverfladen (0°) — terræn foran indgår ikke endnu.</div>
+    <div class="sol-note">Skru på <b>🔭 brændvidde</b> + <b>📏 afstand</b> (og ↔/↕ placering) for at afprøve setups — objektstørrelsen er resultatet. Tabellen viser afstande ved din valgte brændvidde: tættere på = objektet fylder mere + ${bodyLabel.toLowerCase()} en lille prik; længere væk = komprimering (${bodyLabel.toLowerCase()} stor). Tiden er hvornår ${bodyLabel.toLowerCase()} rammer positionen (${c.side === 'set' ? 'på vej ned' : 'på vej op'}). ⛰️-feltet retter for objektets fod-højde over dit standpunkt (fx fyr på klint). Bakker der skjuler den lave ${bodyLabel.toLowerCase()} bag objektet indgår ikke endnu.</div>
   </div>`;
 }
 
 SOL.on = function (field, val) {
   if (field === 'objIdx') { this.cfg.objIdx = val === 'custom' ? 'custom' : +val; }
-  else if (field === 'height' || field === 'width' || field === 'focal' || field === 'dist') { this.cfg[field] = +val; }
+  else if (field === 'height' || field === 'width' || field === 'focal' || field === 'dist' || field === 'elev') { this.cfg[field] = +val; }
   else if (field === 'fill' || field === 'offX' || field === 'offY') { this.cfg[field] = +val / 100; }
   else if (field === 'lat' || field === 'lon') {
     // Normalisér: dansk komma → punktum, fjern mellemrum. type="text" giver os den rå
