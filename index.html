@@ -1505,6 +1505,8 @@ const SOL = {
   cfg: {
     objIdx: 1,          // default: Blåvandshuk (populær til solnedgang)
     lat: null, lon: null, height: 30, name: '',
+    shape: 'lighthouse',// silhuet-form: lighthouse|house|bridge|church|box
+    width: 8,           // objektets bredde (m) — former silhuetten + bredde-aflæsning
     date: null,         // 'YYYY-MM-DD'
     body: 'sun',        // 'sun' | 'moon'
     side: 'set',        // 'set' (nedgang) | 'rise' (opgang)
@@ -1664,6 +1666,51 @@ const SOL = {
   },
 };
 
+// Objekt-silhuetter: generiske former tegnet mellem grundlinjen (baseY) og
+// toppen (topY), med halv bredde hw (px). Alle former er centreret om cx.
+const SOL_SHAPES = {
+  lighthouse: '🗼 Fyrtårn', house: '🏠 Hus', bridge: '🌉 Bro',
+  church: '⛪ Kirke', box: '⬛ Kasse',
+};
+function solSilhouette(shape, cx, baseY, topY, hw, col) {
+  const objH = baseY - topY;
+  const L = (x) => x.toFixed(1);
+  if (shape === 'house') {
+    const wallTopY = topY + objH * 0.42;               // tag = øverste 42 %
+    const eave = hw * 1.12;                             // tagudhæng
+    return `<rect x="${L(cx - hw)}" y="${L(wallTopY)}" width="${L(hw * 2)}" height="${L(baseY - wallTopY)}" fill="${col}"/>`
+      + `<polygon points="${L(cx - eave)},${L(wallTopY)} ${L(cx)},${L(topY)} ${L(cx + eave)},${L(wallTopY)}" fill="${col}"/>`;
+  }
+  if (shape === 'box') {
+    return `<rect x="${L(cx - hw)}" y="${L(topY)}" width="${L(hw * 2)}" height="${L(objH)}" fill="${col}"/>`;
+  }
+  if (shape === 'bridge') {
+    const deckY = topY + objH * 0.55, deckH = Math.max(4, objH * 0.1);
+    const pW = Math.max(3, hw * 0.1), pOff = hw * 0.6;
+    return `<rect x="${L(cx - hw)}" y="${L(deckY)}" width="${L(hw * 2)}" height="${L(deckH)}" fill="${col}"/>`   // dæk
+      + `<rect x="${L(cx - pOff - pW / 2)}" y="${L(topY)}" width="${L(pW)}" height="${L(deckY + deckH - topY)}" fill="${col}"/>` // venstre pylon
+      + `<rect x="${L(cx + pOff - pW / 2)}" y="${L(topY)}" width="${L(pW)}" height="${L(deckY + deckH - topY)}" fill="${col}"/>` // højre pylon
+      + `<path d="M ${L(cx - pOff)},${L(topY)} Q ${L(cx)},${L(deckY)} ${L(cx + pOff)},${L(topY)}" fill="none" stroke="${col}" stroke-width="2"/>` // kabel
+      + `<rect x="${L(cx - pOff - pW / 2)}" y="${L(deckY + deckH)}" width="${L(pW)}" height="${L(baseY - deckY - deckH)}" fill="${col}"/>`   // venstre pille
+      + `<rect x="${L(cx + pOff - pW / 2)}" y="${L(deckY + deckH)}" width="${L(pW)}" height="${L(baseY - deckY - deckH)}" fill="${col}"/>`;  // højre pille
+  }
+  if (shape === 'church') {
+    const th = Math.max(6, hw * 0.42);                 // tårnets halve bredde
+    const naveTopY = topY + objH * 0.55, naveLeft = cx - th * 0.2, naveRight = cx + hw;
+    const spireBaseY = topY + objH * 0.28, towerL = cx - hw, towerR = cx - hw + th * 2, spireX = cx - hw + th;
+    return `<rect x="${L(naveLeft)}" y="${L(naveTopY)}" width="${L(naveRight - naveLeft)}" height="${L(baseY - naveTopY)}" fill="${col}"/>` // skib
+      + `<polygon points="${L(naveLeft)},${L(naveTopY)} ${L((naveLeft + naveRight) / 2)},${L(naveTopY - objH * 0.12)} ${L(naveRight)},${L(naveTopY)}" fill="${col}"/>` // skibets tag
+      + `<rect x="${L(towerL)}" y="${L(spireBaseY)}" width="${L(th * 2)}" height="${L(baseY - spireBaseY)}" fill="${col}"/>` // tårn
+      + `<polygon points="${L(towerL)},${L(spireBaseY)} ${L(spireX)},${L(topY)} ${L(towerR)},${L(spireBaseY)}" fill="${col}"/>` // spir
+      + `<rect x="${L(spireX - 1)}" y="${L(topY - 9)}" width="2" height="9" fill="${col}"/><rect x="${L(spireX - 3)}" y="${L(topY - 6)}" width="6" height="2" fill="${col}"/>`; // kors
+  }
+  // lighthouse (default): trapez-tårn + lanterne-hoved
+  const th = Math.max(4, hw * 0.55);
+  return `<polygon points="${L(cx - hw)},${L(baseY)} ${L(cx - th)},${L(topY + 10)} ${L(cx + th)},${L(topY + 10)} ${L(cx + hw)},${L(baseY)}" fill="${col}"/>`
+    + `<rect x="${L(cx - th - 2)}" y="${L(topY + 3)}" width="${L((th + 2) * 2)}" height="8" fill="${col}"/>`
+    + `<rect x="${L(cx - th + 2)}" y="${L(topY - 3)}" width="${L((th - 2) * 2)}" height="7" fill="${col}"/>`;
+}
+
 // Visuelt preview: 4:3-ramme (sensor-proportion) med horisont, objekt-silhuet
 // og sol/måne-prik i korrekt position + relativ størrelse for ét standpunkt.
 function solPreview(c, plan) {
@@ -1673,13 +1720,14 @@ function solPreview(c, plan) {
   const bx = bodyFX * W, by = (1 - bodyFY) * H;
   const br = Math.max(2, plan.bodyFrame / 2 * H);        // px/grad er ens i begge akser (4:3-ramme) → rund
   const horizonY = (1 - m) * H, topY = (1 - (m + fill)) * H;
-  const cx = W / 2, baseHalf = 15, topHalf = 8;
+  const cx = W / 2;
+  // Silhuettens bredde i px: samme vinkelskala som højden (4:3-ramme), så
+  // px/meter er ens i begge akser → skalér realbredde mod objektets højde.
+  const pxPerM = (horizonY - topY) / Math.max(1, c.height || 1);
+  const halfW = Math.min(W * 0.46, Math.max(4, (c.width || 8) * pxPerM / 2));
   const isMoon = c.body === 'moon';
   const gid = 'solsky' + (isMoon ? 'm' : 's');
-  // fyr-silhuet: tårn (trapez) + lanterne-hoved
-  const tower = `${cx - baseHalf},${horizonY} ${cx - topHalf},${topY + 10} ${cx + topHalf},${topY + 10} ${cx + baseHalf},${horizonY}`;
-  const lantern = `<rect x="${cx - topHalf - 2}" y="${topY + 3}" width="${(topHalf + 2) * 2}" height="8" fill="#0c1118"/>
-    <rect x="${cx - topHalf + 2}" y="${topY - 3}" width="${(topHalf - 2) * 2}" height="7" fill="#0c1118"/>`;
+  const silhouette = solSilhouette(c.shape, cx, horizonY, topY, halfW, '#0c1118');
   const sky = isMoon
     ? `<stop offset="0" stop-color="#16223b"/><stop offset="1" stop-color="#2c3e63"/>`
     : `<stop offset="0" stop-color="#2a3a5e"/><stop offset="0.6" stop-color="#e8894a"/><stop offset="1" stop-color="#ffd089"/>`;
@@ -1707,7 +1755,7 @@ function solPreview(c, plan) {
     ${bodyShape}
     <rect x="0" y="${horizonY}" width="${W}" height="${H - horizonY}" fill="${isMoon ? '#0a1220' : '#243247'}"/>
     <line x1="0" y1="${horizonY}" x2="${W}" y2="${horizonY}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
-    <polygon points="${tower}" fill="#0c1118"/>${lantern}
+    ${silhouette}
     <rect x="1" y="1" width="${W - 2}" height="${H - 2}" fill="none" stroke="var(--border)" stroke-width="2" rx="6"/>
   </svg>`;
 }
@@ -1737,6 +1785,8 @@ function renderSol(content, statusEl) {
 
   const objOpts = stops.map((s, i) => `<option value="${i}" ${c.objIdx === i ? 'selected' : ''}>${esc(s.name)}</option>`).join('')
     + `<option value="custom" ${c.objIdx === 'custom' ? 'selected' : ''}>➕ Andet objekt…</option>`;
+  const shapeOpts = Object.entries(SOL_SHAPES).map(([k, lbl]) =>
+    `<option value="${k}" ${c.shape === k ? 'selected' : ''}>${lbl}</option>`).join('');
 
   const customFields = c.objIdx === 'custom' ? `
     <div class="sol-row">
@@ -1758,8 +1808,12 @@ function renderSol(content, statusEl) {
         <select id="sol-obj" onchange="SOL.on('objIdx',this.value)">${objOpts}</select></label></div>
       ${customFields}
       <div class="sol-row two">
-        <label>Objektets højde (m)<input type="number" step="1" min="1" id="sol-h" value="${c.height}" onchange="SOL.on('height',this.value)"></label>
+        <label>Form<select id="sol-shape" onchange="SOL.on('shape',this.value)">${shapeOpts}</select></label>
         <label>Dato<input type="date" id="sol-date" value="${c.date}" onchange="SOL.on('date',this.value)"></label>
+      </div>
+      <div class="sol-row two">
+        <label>Objektets højde (m)<input type="number" step="1" min="1" id="sol-h" value="${c.height}" onchange="SOL.on('height',this.value)"></label>
+        <label>Objektets bredde (m)<input type="number" step="1" min="1" id="sol-w" value="${c.width}" onchange="SOL.on('width',this.value)"></label>
       </div>
       <div class="sol-row two">
         <div class="sol-toggle">
@@ -1844,9 +1898,17 @@ function renderSol(content, statusEl) {
   const previewPlan = feas.length
     ? feas.reduce((a, b) => Math.abs(b.focal - 400) < Math.abs(a.focal - 400) ? b : a)
     : plans.filter(r => r.time).sort((a, b) => bandDist(a.focal) - bandDist(b.focal))[0];
+  let widthNote = '';
+  if (previewPlan) {
+    const angH = 2 * Math.atan((+c.width || 8) / (2 * previewPlan.D)) * SOL.R2D;  // objektets vinkelbredde (grader)
+    const bodyDiam = SOL.position(previewPlan.time, obj.lat, obj.lon, c.body).diam;
+    const pct = Math.round(bodyDiam / angH * 100);
+    widthNote = `<div class="sol-dim" style="text-align:center;margin-top:2px">Bredde ~${angH.toFixed(2)}° · ${bodyLabel.toLowerCase()} (${bodyDiam.toFixed(2)}°) fylder ${pct}%${pct > 100 ? ' — bredere end objektet' : ' af bredden'}</div>`;
+  }
   const previewHtml = previewPlan ? `<div class="sol-preview-wrap">
       ${solPreview(c, previewPlan)}
       <div class="sol-dim" style="text-align:center;margin-top:6px">Ved ${dispD(previewPlan.D)} · ${Math.round(previewPlan.focal)} mm · kl. ${fmt(previewPlan.time)}${feas.length ? '' : ' · (nærmeste — ikke helt i 150–400 mm/ramme)'}</div>
+      ${widthNote}
     </div>` : '';
   let mapBtn;
   if (feas.length) {
@@ -1874,7 +1936,7 @@ function renderSol(content, statusEl) {
 
 SOL.on = function (field, val) {
   if (field === 'objIdx') { this.cfg.objIdx = val === 'custom' ? 'custom' : +val; }
-  else if (field === 'height') { this.cfg.height = +val; }
+  else if (field === 'height' || field === 'width') { this.cfg[field] = +val; }
   else if (field === 'fill' || field === 'offX' || field === 'offY') { this.cfg[field] = +val / 100; }
   else if (field === 'lat' || field === 'lon') {
     // Normalisér: dansk komma → punktum, fjern mellemrum. type="text" giver os den rå
