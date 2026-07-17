@@ -679,6 +679,35 @@
 .rt-go:active { opacity: 0.85; }
 .rt-badge { font-size: 11px; color: var(--cam); background: var(--cam-bg); padding: 3px 9px; border-radius: 10px; }
 .detail-nav-btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); margin-top: 8px; }
+
+/* Sol & Måne-planlægger */
+.sol-wrap { padding: 12px 16px 48px; }
+.sol-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+.sol-row { margin-bottom: 12px; }
+.sol-row:last-child { margin-bottom: 0; }
+.sol-row.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sol-row label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--text-dim); font-weight: 600; }
+.sol-row input, .sol-row select { padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 15px; font-weight: 600; }
+.sol-row input[type=range] { padding: 0; }
+.sol-dim { color: var(--text-dim); font-weight: 400; font-size: 12px; }
+.sol-toggle { display: flex; gap: 8px; }
+.sol-toggle button { flex: 1; padding: 10px; border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-size: 15px; font-weight: 700; cursor: pointer; }
+.sol-toggle button.on { background: var(--pin); color: #fff; border-color: var(--pin); }
+.sol-phase { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; font-size: 15px; }
+.sol-h3 { font-size: 16px; color: var(--text-bright); margin: 20px 0 10px; }
+.sol-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 6px 0; }
+.sol-table th { text-align: left; color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.sol-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+.sol-events { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.sol-events th, .sol-events td { padding-left: 12px; padding-right: 12px; }
+.sol-align { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+.sol-align-head { font-size: 14px; font-weight: 700; color: var(--text-bright); }
+.sol-table tr.ok td { color: var(--text-bright); }
+.sol-table tr.ok td:nth-child(2) { color: #4ade80; font-weight: 700; }
+.sol-table tr.no td { color: var(--text-dim); }
+.sol-note { font-size: 12px; color: var(--text-dim); line-height: 1.5; margin-top: 10px; }
+.sol-preview-wrap { margin: 4px 0 14px; }
+.sol-preview { display: block; width: 100%; max-width: 460px; margin: 0 auto; height: auto; border-radius: 8px; background: var(--card); }
 </style>
 
 <script>
@@ -1460,6 +1489,405 @@ async function selectTown(name) {
 }
 
 // --- Render ---
+// ============================================================
+// Sol & Måne-planlægger (Lag: astronomi)
+// Beregner sol/måne-position (azimut + højde) offline via SunCalc-
+// algoritmen (V. Agafonkin, MIT). Finder hvornår sol/måne står bag
+// et objekt set fra fotografen, og foreslår standpunkter + brændvidde.
+// ============================================================
+const SOL = {
+  D2R: Math.PI / 180,
+  R2D: 180 / Math.PI,
+  E: 23.4397 * Math.PI / 180,           // jordaksens hældning
+  SENSOR_W: 17.3, SENSOR_H: 13.0,       // M4/3-sensor (mm)
+  LENS_MIN: 150, LENS_MAX: 400,         // din 150-400 mm
+
+  cfg: {
+    objIdx: 1,          // default: Blåvandshuk (populær til solnedgang)
+    lat: null, lon: null, height: 30, name: '',
+    date: null,         // 'YYYY-MM-DD'
+    body: 'sun',        // 'sun' | 'moon'
+    side: 'set',        // 'set' (nedgang) | 'rise' (opgang)
+    anchor: 'top',      // 'base' | 'mid' | 'top' — hvor forskydningens nulpunkt sidder
+    fill: 0.60,         // objektets andel af billedhøjden
+    offX: 0, offY: 0,   // forskydning i andel af billedet (−0.4..0.4); + = højre / op
+  },
+  BASE_MARGIN: 0.05,    // objektets fod sidder 5 % oppe fra billedets bund
+  DISTS: [200, 400, 700, 1000, 1500, 2500, 4000],
+
+  // --- kerneastronomi ---
+  _days(date) { return date.valueOf() / 86400000 - 0.5 + 2440588 - 2451545; },
+  _ra(l, b) { return Math.atan2(Math.sin(l) * Math.cos(this.E) - Math.tan(b) * Math.sin(this.E), Math.cos(l)); },
+  _dec(l, b) { return Math.asin(Math.sin(b) * Math.cos(this.E) + Math.cos(b) * Math.sin(this.E) * Math.sin(l)); },
+  _sidereal(d, lw) { return this.D2R * (280.16 + 360.9856235 * d) - lw; },
+  _az(H, phi, dec) { return Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)); },
+  _alt(H, phi, dec) { return Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H)); },
+  _refract(h) { if (h < 0) h = 0; return 0.0002967 / Math.tan(h + 0.00312536 / (h + 0.08901179)); },
+
+  _sunCoords(d) {
+    const M = this.D2R * (357.5291 + 0.98560028 * d);
+    const C = this.D2R * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
+    const L = M + C + this.D2R * 102.9372 + Math.PI;
+    return { dec: this._dec(L, 0), ra: this._ra(L, 0) };
+  },
+  _moonCoords(d) {
+    const L = this.D2R * (218.316 + 13.176396 * d),
+          M = this.D2R * (134.963 + 13.064993 * d),
+          F = this.D2R * (93.272 + 13.229350 * d),
+          l = L + this.D2R * 6.289 * Math.sin(M),
+          b = this.D2R * 5.128 * Math.sin(F),
+          dt = 385001 - 20905 * Math.cos(M);        // afstand (km)
+    return { ra: this._ra(l, b), dec: this._dec(l, b), dist: dt };
+  },
+
+  // Returnér {az, alt} i grader (az: kompas, 0=N, 90=Ø, 180=S, 270=V) + evt. vinkeldiameter
+  position(date, lat, lon, body) {
+    const lw = this.D2R * -lon, phi = this.D2R * lat, d = this._days(date);
+    const c = body === 'moon' ? this._moonCoords(d) : this._sunCoords(d);
+    const H = this._sidereal(d, lw) - c.ra;
+    let alt = this._alt(H, phi, c.dec);
+    alt += this._refract(alt);
+    let az = this._az(H, phi, c.dec) + Math.PI;      // fra syd → kompas fra nord
+    az = ((az * this.R2D) % 360 + 360) % 360;
+    const out = { az, alt: alt * this.R2D };
+    out.diam = body === 'moon' ? 2 * Math.atan(1737.4 / c.dist) * this.R2D : 0.533;
+    return out;
+  },
+
+  moonIllum(date) {
+    const d = this._days(date), s = this._sunCoords(d), m = this._moonCoords(d), sd = 149598000;
+    const phi = Math.acos(Math.sin(s.dec) * Math.sin(m.dec) + Math.cos(s.dec) * Math.cos(m.dec) * Math.cos(s.ra - m.ra));
+    const inc = Math.atan2(sd * Math.sin(phi), m.dist - sd * Math.cos(phi));
+    const angle = Math.atan2(Math.cos(s.dec) * Math.sin(s.ra - m.ra),
+      Math.sin(s.dec) * Math.cos(m.dec) - Math.cos(s.dec) * Math.sin(m.dec) * Math.cos(s.ra - m.ra));
+    return { fraction: (1 + Math.cos(inc)) / 2, phase: 0.5 + 0.5 * inc * (angle < 0 ? -1 : 1) / Math.PI };
+  },
+  phaseLabel(ph) {
+    const p = ((ph % 1) + 1) % 1;
+    const t = [[0.02, '🌑', 'Nymåne'], [0.24, '🌒', 'Tiltagende måne'], [0.26, '🌓', 'Første kvarter'],
+      [0.49, '🌔', 'Tiltagende (gibbous)'], [0.51, '🌕', 'Fuldmåne'], [0.74, '🌖', 'Aftagende (gibbous)'],
+      [0.76, '🌗', 'Sidste kvarter'], [0.99, '🌘', 'Aftagende måne'], [1.01, '🌑', 'Nymåne']];
+    for (const [lim, emo, name] of t) if (p <= lim) return { emoji: emo, name };
+    return { emoji: '🌑', name: 'Nymåne' };
+  },
+
+  // Projicér et punkt: fra (lat,lon) i retning brng° over distance d (m) → nyt punkt
+  dest(lat, lon, brng, d) {
+    const R = 6371000, a = brng * this.D2R, p1 = lat * this.D2R, l1 = lon * this.D2R, dr = d / R;
+    const p2 = Math.asin(Math.sin(p1) * Math.cos(dr) + Math.cos(p1) * Math.sin(dr) * Math.cos(a));
+    const l2 = l1 + Math.atan2(Math.sin(a) * Math.sin(dr) * Math.cos(p1), Math.cos(dr) - Math.sin(p1) * Math.sin(p2));
+    return { lat: p2 * this.R2D, lon: l2 * this.R2D };
+  },
+  compassName(deg) {
+    return ['N', 'NØ', 'Ø', 'SØ', 'S', 'SV', 'V', 'NV'][Math.round((((deg % 360) + 360) % 360) / 45) % 8];
+  },
+
+  // Scan et lokalt døgn og find op-/nedgang + kulmination for body
+  dayEvents(dateStr, lat, lon, body) {
+    const [y, mo, da] = dateStr.split('-').map(Number);
+    const thr = body === 'moon' ? 0.125 : -0.833;       // horisont-tærskel (grader)
+    let prev = null, events = [], peak = { alt: -99, t: null, az: 0 };
+    for (let min = 0; min <= 1440; min++) {
+      const t = new Date(y, mo - 1, da, 0, min, 0);
+      const p = this.position(t, lat, lon, body);
+      if (p.alt > peak.alt) peak = { alt: p.alt, t, az: p.az };
+      if (prev) {
+        if (prev.alt < thr && p.alt >= thr) events.push({ type: 'rise', t, az: p.az, alt: p.alt });
+        if (prev.alt >= thr && p.alt < thr) events.push({ type: 'set', t: prev.t, az: prev.az, alt: prev.alt });
+      }
+      prev = { alt: p.alt, t, az: p.az };
+    }
+    return { events, peak };
+  },
+
+  // Højde+azimut for hele døgnet (1-min opløsning) — genbruges på tværs af afstande
+  daySeries(dateStr, lat, lon, body) {
+    const [y, mo, da] = dateStr.split('-').map(Number);
+    const s = [];
+    for (let m = 0; m <= 1440; m++) {
+      const t = new Date(y, mo - 1, da, 0, m, 0);
+      const p = this.position(t, lat, lon, body);
+      s.push({ t, alt: p.alt, az: p.az });
+    }
+    return s;
+  },
+  // Find tidspunkt hvor højden krydser target-højden på ønsket side
+  // ('rise' = på vej op, 'set' = på vej ned). Falder tilbage til modsat side.
+  findCrossing(series, target, side) {
+    let fallback = null;
+    for (let i = 1; i < series.length; i++) {
+      const a = series[i - 1].alt, b = series[i].alt;
+      const up = a < target && b >= target, down = a >= target && b < target;
+      if (!up && !down) continue;
+      const f = (target - a) / (b - a);
+      const hit = {
+        t: new Date(series[i - 1].t.getTime() + f * (series[i].t - series[i - 1].t)),
+        az: series[i].az, side: up ? 'rise' : 'set',
+      };
+      if ((side === 'rise' && up) || (side === 'set' && down)) return hit;
+      if (!fallback) fallback = hit;
+    }
+    return fallback;
+  },
+
+  // Beregn ét standpunkt for en given afstand + ønsket komposition
+  plan(obj, series, D, c) {
+    const objAngV = 2 * Math.atan(obj.height / (2 * D)) * this.R2D;   // objektets vinkelhøjde (grader)
+    const fovV = objAngV / c.fill;                                     // lodret synsfelt for ønsket objektstørrelse
+    const focal = this.SENSOR_H / (2 * Math.tan(fovV / 2 * this.D2R)); // nødvendig brændvidde (mm)
+    const fovH = 2 * Math.atan(this.SENSOR_W / (2 * focal)) * this.R2D;
+    const inRange = focal >= this.LENS_MIN && focal <= this.LENS_MAX;
+    // ankerpunktets placering i billedet (andel fra bunden) + forskydning
+    const anchorFY = c.anchor === 'base' ? this.BASE_MARGIN
+      : c.anchor === 'mid' ? this.BASE_MARGIN + c.fill / 2
+      : this.BASE_MARGIN + c.fill;
+    const bodyFY = anchorFY + c.offY, bodyFX = 0.5 + c.offX;
+    const targetAlt = fovV * (bodyFY - this.BASE_MARGIN);              // objektets fod = 0° (havhorisont)
+    const r = { D, focal, inRange, objAngV, fovV, note: '', ok: false };
+    if (targetAlt < -0.2) { r.note = 'under horisont'; return r; }
+    const cross = this.findCrossing(series, targetAlt, c.side);
+    if (!cross) { r.note = 'når ikke højden'; return r; }
+    const p = this.position(cross.t, obj.lat, obj.lon, c.body);
+    const dAz = (c.offX * fovH) / Math.max(0.3, Math.cos(targetAlt * this.D2R));
+    const aObj = ((cross.az - dAz) % 360 + 360) % 360;                // objektets retning fra fotograf
+    r.back = (aObj + 180) % 360;                                      // fotografens retning fra objekt
+    r.gp = this.dest(obj.lat, obj.lon, r.back, D);
+    r.time = cross.t;
+    r.bodyVsObj = p.diam / objAngV;
+    r.bodyFrame = p.diam / fovV;
+    const rY = p.diam / fovV / 2, rX = p.diam / fovH / 2;
+    r.fits = bodyFY - rY >= 0 && bodyFY + rY <= 1 && bodyFX - rX >= 0 && bodyFX + rX <= 1;
+    if (cross.side !== c.side) r.note = cross.side === 'rise' ? 'kun v. opgang' : 'kun v. nedgang';
+    if (!r.fits) r.note = r.note ? r.note + ' · uden for ramme' : 'uden for ramme';
+    r.ok = inRange && r.fits;
+    return r;
+  },
+};
+
+// Visuelt preview: 4:3-ramme (sensor-proportion) med horisont, objekt-silhuet
+// og sol/måne-prik i korrekt position + relativ størrelse for ét standpunkt.
+function solPreview(c, plan) {
+  const W = 400, H = 300, m = SOL.BASE_MARGIN, fill = c.fill;
+  const anchorFY = c.anchor === 'base' ? m : c.anchor === 'mid' ? m + fill / 2 : m + fill;
+  const bodyFY = anchorFY + c.offY, bodyFX = 0.5 + c.offX;
+  const bx = bodyFX * W, by = (1 - bodyFY) * H;
+  const br = Math.max(2, plan.bodyFrame / 2 * H);        // px/grad er ens i begge akser (4:3-ramme) → rund
+  const horizonY = (1 - m) * H, topY = (1 - (m + fill)) * H;
+  const cx = W / 2, baseHalf = 15, topHalf = 8;
+  const isMoon = c.body === 'moon';
+  const gid = 'solsky' + (isMoon ? 'm' : 's');
+  // fyr-silhuet: tårn (trapez) + lanterne-hoved
+  const tower = `${cx - baseHalf},${horizonY} ${cx - topHalf},${topY + 10} ${cx + topHalf},${topY + 10} ${cx + baseHalf},${horizonY}`;
+  const lantern = `<rect x="${cx - topHalf - 2}" y="${topY + 3}" width="${(topHalf + 2) * 2}" height="8" fill="#0c1118"/>
+    <rect x="${cx - topHalf + 2}" y="${topY - 3}" width="${(topHalf - 2) * 2}" height="7" fill="#0c1118"/>`;
+  const sky = isMoon
+    ? `<stop offset="0" stop-color="#16223b"/><stop offset="1" stop-color="#2c3e63"/>`
+    : `<stop offset="0" stop-color="#2a3a5e"/><stop offset="0.6" stop-color="#e8894a"/><stop offset="1" stop-color="#ffd089"/>`;
+  const bodyFill = isMoon ? '#eef2fb' : '#fff2c4';
+  const bodyGlow = isMoon ? 'rgba(200,215,255,0.35)' : 'rgba(255,200,110,0.55)';
+  // Sol: fyldt skive. Måne: mørk skive + oplyst del tegnet efter fase (terminator-ellipse).
+  let bodyShape;
+  if (!isMoon) {
+    bodyShape = `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${br.toFixed(1)}" fill="${bodyFill}"/>`;
+  } else {
+    const il = SOL.moonIllum(plan.time);
+    const f = Math.max(0, Math.min(1, il.fraction));
+    const waxing = ((il.phase % 1) + 1) % 1 < 0.5;       // tiltagende = oplyst på højre side (nordlig halvkugle)
+    const rx = (br * Math.abs(1 - 2 * f)).toFixed(1);
+    const top = `${bx.toFixed(1)},${(by - br).toFixed(1)}`, bot = `${bx.toFixed(1)},${(by + br).toFixed(1)}`;
+    const limbSweep = waxing ? 1 : 0;                    // oplyst limbus: højre (tiltagende) / venstre (aftagende)
+    const termSweep = waxing ? (f > 0.5 ? 1 : 0) : (f > 0.5 ? 0 : 1);
+    const lit = `<path d="M ${top} A ${br.toFixed(1)} ${br.toFixed(1)} 0 0 ${limbSweep} ${bot} A ${rx} ${br.toFixed(1)} 0 0 ${termSweep} ${top} Z" fill="${bodyFill}"/>`;
+    bodyShape = `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${br.toFixed(1)}" fill="#1c2740"/>${lit}`;
+  }
+  return `<svg class="sol-preview" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Forhåndsvisning af komposition">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">${sky}</linearGradient></defs>
+    <rect x="0" y="0" width="${W}" height="${horizonY}" fill="url(#${gid})"/>
+    <circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${(br + 6).toFixed(1)}" fill="${bodyGlow}"/>
+    ${bodyShape}
+    <rect x="0" y="${horizonY}" width="${W}" height="${H - horizonY}" fill="${isMoon ? '#0a1220' : '#243247'}"/>
+    <line x1="0" y1="${horizonY}" x2="${W}" y2="${horizonY}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+    <polygon points="${tower}" fill="#0c1118"/>${lantern}
+    <rect x="1" y="1" width="${W - 2}" height="${H - 2}" fill="none" stroke="var(--border)" stroke-width="2" rx="6"/>
+  </svg>`;
+}
+
+function renderSol(content, statusEl) {
+  const lbl = document.getElementById('activeFilterLabel');
+  if (lbl) lbl.textContent = 'Sol & Måne';
+  const c = SOL.cfg;
+
+  // Objektkatalog: alle fyr fra ruterne (dedup på navn) + "Andet objekt"
+  const stops = [];
+  const seen = new Set();
+  for (const r of ROUTES) for (const s of (r.stops || [])) {
+    if (seen.has(s.name)) continue; seen.add(s.name);
+    stops.push({ name: s.name, lat: s.lat, lon: s.lon });
+  }
+  if (c.date == null) { const n = new Date(); c.date = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; }
+
+  // Afled objekt-position
+  let obj;
+  if (c.objIdx === 'custom') {
+    obj = { name: c.name || 'Eget objekt', lat: c.lat, lon: c.lon, height: +c.height || 30 };
+  } else {
+    const s = stops[c.objIdx] || stops[0];
+    obj = { name: s.name, lat: s.lat, lon: s.lon, height: +c.height || 30 };
+  }
+
+  const objOpts = stops.map((s, i) => `<option value="${i}" ${c.objIdx === i ? 'selected' : ''}>${esc(s.name)}</option>`).join('')
+    + `<option value="custom" ${c.objIdx === 'custom' ? 'selected' : ''}>➕ Andet objekt…</option>`;
+
+  const customFields = c.objIdx === 'custom' ? `
+    <div class="sol-row">
+      <label>Objekt-navn<input type="text" id="sol-name" value="${esc(c.name || '')}" onchange="SOL.on('name',this.value)" placeholder="fx Rubjerg Knude"></label>
+    </div>
+    <div class="sol-row two">
+      <label>Bredde (lat)<input type="text" inputmode="decimal" id="sol-lat" value="${c.lat ?? ''}" onchange="SOL.on('lat',this.value)" placeholder="56.xxxxx (komma el. punktum)"></label>
+      <label>Længde (lon)<input type="text" inputmode="decimal" id="sol-lon" value="${c.lon ?? ''}" onchange="SOL.on('lon',this.value)" placeholder="8.xxxxx (komma el. punktum)"></label>
+    </div>` : '';
+
+  const anchorName = { base: 'foden', mid: 'midten', top: 'toppen' }[c.anchor];
+  const ohX = c.offX / c.fill, ohY = c.offY / c.fill;   // forskydning i objekt-højder
+  const readX = c.offX === 0 ? 'centreret' : `${ohX > 0 ? '+' : ''}${ohX.toFixed(2)} obj.-højder mod ${c.offX > 0 ? 'højre' : 'venstre'}`;
+  const readY = c.offY === 0 ? `ved ${anchorName}` : `${ohY > 0 ? '+' : ''}${ohY.toFixed(2)} obj.-højder ${c.offY > 0 ? 'over' : 'under'} ${anchorName}`;
+
+  let inputsHtml = `
+    <div class="sol-card">
+      <div class="sol-row"><label>Objekt
+        <select id="sol-obj" onchange="SOL.on('objIdx',this.value)">${objOpts}</select></label></div>
+      ${customFields}
+      <div class="sol-row two">
+        <label>Objektets højde (m)<input type="number" step="1" min="1" id="sol-h" value="${c.height}" onchange="SOL.on('height',this.value)"></label>
+        <label>Dato<input type="date" id="sol-date" value="${c.date}" onchange="SOL.on('date',this.value)"></label>
+      </div>
+      <div class="sol-row two">
+        <div class="sol-toggle">
+          <button class="${c.body === 'sun' ? 'on' : ''}" onclick="SOL.on('body','sun')">☀️ Sol</button>
+          <button class="${c.body === 'moon' ? 'on' : ''}" onclick="SOL.on('body','moon')">🌙 Måne</button>
+        </div>
+        <div class="sol-toggle">
+          <button class="${c.side === 'rise' ? 'on' : ''}" onclick="SOL.on('side','rise')">↗ Opgang</button>
+          <button class="${c.side === 'set' ? 'on' : ''}" onclick="SOL.on('side','set')">↘ Nedgang</button>
+        </div>
+      </div>
+      <div class="sol-row">
+        <label>Objektets størrelse i billedet: <b>${Math.round(c.fill * 100)}%</b> <span class="sol-dim">af højden</span>
+          <input type="range" min="25" max="85" step="5" value="${Math.round(c.fill * 100)}" oninput="SOL.on('fill',this.value)"></label>
+      </div>
+      <div class="sol-row">
+        <label>Forskydningens nulpunkt
+          <div class="sol-toggle">
+            <button class="${c.anchor === 'base' ? 'on' : ''}" onclick="SOL.on('anchor','base')">Fod</button>
+            <button class="${c.anchor === 'mid' ? 'on' : ''}" onclick="SOL.on('anchor','mid')">Midte</button>
+            <button class="${c.anchor === 'top' ? 'on' : ''}" onclick="SOL.on('anchor','top')">Top</button>
+          </div>
+        </label>
+      </div>
+      <div class="sol-row">
+        <label>↔ Vandret forskydning: <b>${c.offX > 0 ? '+' : ''}${Math.round(c.offX * 100)}%</b> <span class="sol-dim">(${readX})</span>
+          <input type="range" min="-40" max="40" step="5" value="${Math.round(c.offX * 100)}" oninput="SOL.on('offX',this.value)"></label>
+      </div>
+      <div class="sol-row">
+        <label>↕ Lodret forskydning: <b>${c.offY > 0 ? '+' : ''}${Math.round(c.offY * 100)}%</b> <span class="sol-dim">(${readY})</span>
+          <input type="range" min="-40" max="40" step="5" value="${Math.round(c.offY * 100)}" oninput="SOL.on('offY',this.value)"></label>
+      </div>
+    </div>`;
+
+  // Validér position
+  if (obj.lat == null || obj.lon == null || isNaN(obj.lat) || isNaN(obj.lon)) {
+    statusEl.innerHTML = 'Sol & Måne';
+    content.innerHTML = `<div class="sol-wrap">${inputsHtml}
+      <div class="sol-note">Indtast objektets koordinater for at beregne.</div></div>`;
+    return;
+  }
+
+  // Beregn
+  const { events, peak } = SOL.dayEvents(c.date, obj.lat, obj.lon, c.body);
+  const fmt = t => `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+  const bodyLabel = c.body === 'moon' ? 'Månen' : 'Solen';
+
+  let moonHtml = '';
+  if (c.body === 'moon') {
+    const noon = new Date(...c.date.split('-').map((v, i) => i === 1 ? v - 1 : +v), 12, 0);
+    const il = SOL.moonIllum(noon), ph = SOL.phaseLabel(il.phase);
+    moonHtml = `<div class="sol-phase">${ph.emoji} <b>${ph.name}</b> · ${Math.round(il.fraction * 100)}% belyst</div>`;
+  }
+
+  // Op-/nedgang + kulmination
+  const evName = { rise: c.body === 'moon' ? 'Måneopgang' : 'Solopgang', set: c.body === 'moon' ? 'Månenedgang' : 'Solnedgang' };
+  let evHtml = events.length
+    ? events.map(e => `<tr><td>${evName[e.type]}</td><td>${fmt(e.t)}</td><td>${Math.round(e.az)}° ${SOL.compassName(e.az)}</td><td>${e.alt.toFixed(1)}°</td></tr>`).join('')
+    : `<tr><td colspan="4">${bodyLabel} står ikke op/ned dette døgn.</td></tr>`;
+  if (peak.t) evHtml += `<tr><td>Kulmination</td><td>${fmt(peak.t)}</td><td>${Math.round(peak.az)}° ${SOL.compassName(peak.az)}</td><td>${peak.alt.toFixed(1)}°</td></tr>`;
+
+  // Alignment: ét standpunkt pr. afstand, der giver den ønskede komposition
+  const dispD = D => D >= 1000 ? (D / 1000).toFixed(1) + ' km' : D + ' m';
+  const series = SOL.daySeries(c.date, obj.lat, obj.lon, c.body);
+  const plans = SOL.DISTS.map(D => SOL.plan(obj, series, D, c));
+
+  const rows = plans.map(r => {
+    if (!r.time) return `<tr class="no"><td>${dispD(r.D)}</td><td colspan="4">${r.note || '—'}</td></tr>`;
+    const cls = r.ok ? 'ok' : 'no';
+    return `<tr class="${cls}">
+      <td>${dispD(r.D)}</td>
+      <td>${fmt(r.time)}</td>
+      <td>${Math.round(r.focal)} mm${r.inRange ? '' : ' ✗'}</td>
+      <td>${Math.round(r.bodyFrame * 100)}%</td>
+      <td>${Math.round(r.bodyVsObj * 100)}%${r.note ? ' · ' + r.note : ''}</td></tr>`;
+  }).join('');
+
+  // bedste standpunkt: gyldigt (i ramme + i linse-interval), tættest på 400 mm = mest komprimering
+  const feas = plans.filter(r => r.ok);
+  const bandDist = f => f < SOL.LENS_MIN ? SOL.LENS_MIN - f : f > SOL.LENS_MAX ? f - SOL.LENS_MAX : 0;
+  // hvilket standpunkt skal previewes: bedste gyldige, ellers det tættest på linse-intervallet
+  const previewPlan = feas.length
+    ? feas.reduce((a, b) => Math.abs(b.focal - 400) < Math.abs(a.focal - 400) ? b : a)
+    : plans.filter(r => r.time).sort((a, b) => bandDist(a.focal) - bandDist(b.focal))[0];
+  const previewHtml = previewPlan ? `<div class="sol-preview-wrap">
+      ${solPreview(c, previewPlan)}
+      <div class="sol-dim" style="text-align:center;margin-top:6px">Ved ${dispD(previewPlan.D)} · ${Math.round(previewPlan.focal)} mm · kl. ${fmt(previewPlan.time)}${feas.length ? '' : ' · (nærmeste — ikke helt i 150–400 mm/ramme)'}</div>
+    </div>` : '';
+  let mapBtn;
+  if (feas.length) {
+    const best = previewPlan;
+    mapBtn = `<div class="sol-dim" style="margin:10px 0 4px">Bedste: stå <b>${dispD(best.D)}</b> mod <b>${SOL.compassName(best.back)}</b> (${Math.round(best.back)}°) for objektet, kl. <b>${fmt(best.time)}</b>, brændvidde <b>${Math.round(best.focal)} mm</b>.</div>
+      <a class="route-map-btn" target="_blank" rel="noopener"
+        href="https://www.google.com/maps/dir/?api=1&destination=${best.gp.lat.toFixed(5)},${best.gp.lon.toFixed(5)}&travelmode=driving">
+        🚗 Kør til foreslået standpunkt</a>`;
+  } else {
+    mapBtn = `<div class="sol-note" style="margin-top:8px">Ingen afstand giver en komposition der passer i både billedrammen og 150–400 mm. Prøv mindre objektstørrelse, mindre forskydning, eller en anden dato/side.</div>`;
+  }
+
+  statusEl.innerHTML = `Sol & Måne · ${esc(obj.name)}`;
+  content.innerHTML = `<div class="sol-wrap">
+    ${inputsHtml}
+    ${moonHtml}
+    <table class="sol-table sol-events"><thead><tr><th>Hændelse</th><th>Tid</th><th>Retning</th><th>Højde</th></tr></thead><tbody>${evHtml}</tbody></table>
+    <h3 class="sol-h3">📐 Hvor skal du stå?</h3>
+    ${previewHtml}
+    <table class="sol-table"><thead><tr><th>Afstand</th><th>Tid</th><th>Brændvidde</th><th>${bodyLabel} i billedet</th><th>${bodyLabel} vs. objekt</th></tr></thead><tbody>${rows}</tbody></table>
+    ${mapBtn}
+    <div class="sol-note">Hver række er ét standpunkt langs "stå-her-linjen". <b>Grøn</b> = passer i både rammen og din 150–400 mm. Tiden er hvornår ${bodyLabel.toLowerCase()} rammer den valgte position (${c.side === 'set' ? 'på vej ned' : 'på vej op'}). Jo længere væk, jo større virker ${bodyLabel.toLowerCase()} (komprimering). Horisont antaget ved havoverfladen (0°) — terræn foran indgår ikke endnu.</div>
+  </div>`;
+}
+
+SOL.on = function (field, val) {
+  if (field === 'objIdx') { this.cfg.objIdx = val === 'custom' ? 'custom' : +val; }
+  else if (field === 'height') { this.cfg.height = +val; }
+  else if (field === 'fill' || field === 'offX' || field === 'offY') { this.cfg[field] = +val / 100; }
+  else if (field === 'lat' || field === 'lon') {
+    // Normalisér: dansk komma → punktum, fjern mellemrum. type="text" giver os den rå
+    // streng (type="number" ville have strippet kommaet som tusind-separator → skrald-værdi).
+    const s = String(val).trim().replace(/\s+/g, '').replace(',', '.');
+    const n = parseFloat(s);
+    const limit = field === 'lat' ? 90 : 180;   // afvis værdier uden for gyldigt interval
+    this.cfg[field] = (s === '' || !isFinite(n) || Math.abs(n) > limit) ? null : n;
+  }
+  else { this.cfg[field] = val; }   // objIdx=custom, body, side, anchor, date, name
+  render();
+};
+
 function render() {
   const statusEl = document.getElementById('status');
   const content = document.getElementById('content');
@@ -1467,6 +1895,9 @@ function render() {
 
   // Ruteforslag-view (uafhængigt af items/flickr)
   if (state.view === 'ruter') { renderRuter(content, statusEl); return; }
+
+  // Sol & Måne-planlægger (uafhængigt af items/flickr)
+  if (state.view === 'sol') { renderSol(content, statusEl); return; }
 
   // Fase 1: landmark-overblik som standard-view (falder tilbage til feed hvis ingen grupper)
   if (state.view === 'overblik' && state.flickrLandmarkMode && state.flickr.length) {
@@ -1580,8 +2011,9 @@ function renderTagFilters() {
     : '';
 
   const routePill = `<button class="pill ${state.view === 'ruter' ? 'active' : ''}" data-action="view-ruter">🗺️ Ruter</button>`;
+  const solPill = `<button class="pill ${state.view === 'sol' ? 'active' : ''}" data-action="view-sol">🌅 Sol & Måne</button>`;
 
-  filtersEl.innerHTML = townPicker + routePill + viewToggle + basePills + likedPill + hiddenPill + togglePill + landmarkPill + tagPills;
+  filtersEl.innerHTML = townPicker + routePill + solPill + viewToggle + basePills + likedPill + hiddenPill + togglePill + landmarkPill + tagPills;
 }
 
 // --- Filter click ---
@@ -1611,6 +2043,12 @@ document.getElementById('filters').addEventListener('click', async e => {
   }
   if (pill.dataset.action === 'view-ruter') {
     state.view = 'ruter'; state.routeId = null;
+    document.getElementById('filtersPanel').classList.remove('open');
+    window.scrollTo(0, 0);
+    render(); return;
+  }
+  if (pill.dataset.action === 'view-sol') {
+    state.view = 'sol';
     document.getElementById('filtersPanel').classList.remove('open');
     window.scrollTo(0, 0);
     render(); return;
@@ -1837,6 +2275,7 @@ function openDetail(id) {
       ${item.notes ? `<div class="detail-notes">${esc(item.notes)}</div>` : ''}
       ${detailTags.length ? `<div class="detail-tags">${detailTags.map(t => `<span class="detail-tag ${tagCls}">${esc(t)}</span>`).join('')}</div>` : ''}
       <a href="${navUrl}" target="_blank" rel="noopener" class="detail-nav-btn ${btnCls}">📍 Navigér hertil</a>
+      ${!isFlickr ? `<a href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(item.name)}" target="fsimg" rel="noopener" class="detail-nav-btn ${btnCls}" style="background:none;border:1px solid var(--border,#dee2e6);color:inherit;">🔍 Se flere billeder på Google</a>` : ''}
       <div class="detail-actions">
         <button class="detail-act-btn like ${state.liked.has(item.id) ? 'on' : ''}" onclick="likeItem('${item.id}')">${state.liked.has(item.id) ? '❤️ Synes om' : '🤍 Synes om'}</button>
         ${state.hidden.has(item.id)
