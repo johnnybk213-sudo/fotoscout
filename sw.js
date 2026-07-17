@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fotoscout-v20';
+const CACHE_NAME = 'fotoscout-v21';
 const ASSETS = [
   './',
   './index.html',

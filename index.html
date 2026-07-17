@@ -1524,6 +1524,7 @@ const SOL = {
     dist: null,         // valgt afstand (m) via slider; null → default (≈60% fyld)
     elev: 0,            // objektets fods højde (m) over fotografens standpunkt (fx fyr på klint)
     autoElev: true,     // hent terrænhøjde automatisk (Open-Meteo) og udregn elev; manuel indtastning slår det fra
+    tilt: 0,            // kamerahældning (grader); + = vip op → objekt+sol panorerer ned i rammen (re-aim, ikke tid)
     date: null,         // 'YYYY-MM-DD'
     body: 'sun',        // 'sun' | 'moon'
     side: 'set',        // 'set' (nedgang) | 'rise' (opgang)
@@ -1685,7 +1686,8 @@ const SOL = {
     r.bodyVsObj = p.diam / objAngV;
     r.bodyFrame = p.diam / fovV;
     const rY = p.diam / fovV / 2, rX = p.diam / fovH / 2;
-    r.fits = bodyFY - rY >= 0 && bodyFY + rY <= 1 && bodyFX - rX >= 0 && bodyFX + rX <= 1;
+    const drawFY = bodyFY - (+c.tilt || 0) / fovV;                    // hældning panorerer den tegnede sol-position
+    r.fits = drawFY - rY >= 0 && drawFY + rY <= 1 && bodyFX - rX >= 0 && bodyFX + rX <= 1;
     if (cross.side !== c.side) r.note = cross.side === 'rise' ? 'kun v. opgang' : 'kun v. nedgang';
     if (!r.fits) r.note = r.note ? r.note + ' · uden for ramme' : 'uden for ramme';
     r.ok = inRange && r.fits;
@@ -1899,10 +1901,11 @@ function solPreview(c, plan) {
   const MX = 100, MY = 75, CW = W + 2 * MX, CH = H + 2 * MY;
   const anchorFY = c.anchor === 'base' ? m : c.anchor === 'mid' ? m + fill / 2 : m + fill;
   const bodyFY = anchorFY + c.offY, bodyFX = 0.5 + c.offX;
-  const bx = MX + bodyFX * W, by = MY + (1 - bodyFY) * H;                 // body i canvas-koord
+  const pan = plan.fovV ? ((+c.tilt || 0) / plan.fovV) * H : 0;           // kamerahældning: pan hele scenen ned (op-vip)
+  const bx = MX + bodyFX * W, by = MY + (1 - bodyFY) * H + pan;           // body i canvas-koord
   const br = Math.max(2, plan.bodyFrame / 2 * H);        // px/grad er ens i begge akser (4:3-ramme) → rund
   const horizonY = (1 - m) * H, topY = (1 - (m + fill)) * H;
-  const hzC = MY + horizonY, topYC = MY + topY, cx = MX + W / 2;         // frame-koord → canvas-koord
+  const hzC = MY + horizonY + pan, topYC = MY + topY + pan, cx = MX + W / 2;   // frame-koord → canvas-koord (+ hældning)
   // Silhuettens bredde i px: samme vinkelskala som højden (4:3-ramme), så
   // px/meter er ens i begge akser → skalér realbredde mod objektets højde.
   const pxPerM = (horizonY - topY) / Math.max(1, c.height || 1);
@@ -1933,7 +1936,7 @@ function solPreview(c, plan) {
   const dim = 'rgba(6,10,18,0.58)';                      // dæmper margin-området, så rammen popper
   // Havhorisont-reference (0°): kun når højdeforskel rykker den ind i billedet, væk fra objektets fod
   const seaFy = plan.seaFy == null ? m : plan.seaFy;
-  const ySeaC = MY + (1 - seaFy) * H;
+  const ySeaC = MY + (1 - seaFy) * H + pan;
   const seaLine = (Math.abs(seaFy - m) > 0.002 && ySeaC >= MY && ySeaC <= MY + H)
     ? `<line x1="${MX}" y1="${ySeaC.toFixed(1)}" x2="${MX + W}" y2="${ySeaC.toFixed(1)}" stroke="rgba(120,180,255,0.75)" stroke-width="1" stroke-dasharray="5 4"/><text x="${(MX + 5)}" y="${(ySeaC - 4).toFixed(1)}" fill="rgba(170,205,255,0.95)" font-size="11" font-family="sans-serif">havhorisont 0°</text>`
     : '';
@@ -2084,6 +2087,10 @@ function renderSol(content, statusEl) {
         <label>↕ Lodret forskydning: <b>${c.offY > 0 ? '+' : ''}${Math.round(c.offY * 100)}%</b> <span class="sol-dim">(${readY})</span>
           <input type="range" min="-60" max="60" step="5" value="${Math.round(c.offY * 100)}" oninput="SOL.on('offY',this.value)"></label>
       </div>
+      <div class="sol-row">
+        <label>📐 Kamerahældning: <b>${(+c.tilt || 0) > 0 ? '+' : ''}${+c.tilt || 0}°</b> <span class="sol-dim">(+ = vip op, fanger en høj sol/måne — objektets fod ryger ud i bunden)</span>
+          <input type="range" min="-30" max="30" step="1" value="${+c.tilt || 0}" oninput="SOL.on('tilt',this.value)"></label>
+      </div>
     </div>`;
 
   // Validér position
@@ -2183,7 +2190,7 @@ function renderSol(content, statusEl) {
 
 SOL.on = function (field, val) {
   if (field === 'objIdx') { this.cfg.objIdx = val === 'custom' ? 'custom' : +val; }
-  else if (field === 'height' || field === 'width' || field === 'focal' || field === 'dist') { this.cfg[field] = +val; }
+  else if (field === 'height' || field === 'width' || field === 'focal' || field === 'dist' || field === 'tilt') { this.cfg[field] = +val; }
   else if (field === 'elev') { this.cfg.elev = +val || 0; this.cfg.autoElev = false; }   // manuel indtastning slår auto fra
   else if (field === 'autoElev') { this.cfg.autoElev = !!val; if (this.cfg.autoElev) this.elevState.appliedKey = null; }   // slå til → tving et frisk hent
   else if (field === 'fill' || field === 'offX' || field === 'offY') { this.cfg[field] = +val / 100; }
