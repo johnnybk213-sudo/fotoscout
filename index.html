@@ -1512,8 +1512,13 @@ const SOL = {
   D2R: Math.PI / 180,
   R2D: 180 / Math.PI,
   E: 23.4397 * Math.PI / 180,           // jordaksens hældning
-  SENSOR_W: 17.3, SENSOR_H: 13.0,       // M4/3-sensor (mm)
-  LENS_MIN: 12, LENS_MAX: 200,          // M43-brændvidder du reelt bruger (12 mm vidvinkel → 200 mm tele)
+  SENSORS: {                            // sensor-formater (w/h i mm, crop ift. fuldformat)
+    m43:  { w: 17.3, h: 13.0, crop: 2.0,  label: 'M4/3' },
+    apsc: { w: 23.5, h: 15.6, crop: 1.53, label: 'APS-C' },   // Sony/Nikon/Fuji (Canon=1.6×)
+    ff:   { w: 36.0, h: 24.0, crop: 1.0,  label: 'Fuldformat' },
+  },
+  sensorDims() { return this.SENSORS[this.cfg.sensor] || this.SENSORS.m43; },  // aktiv sensor
+  LENS_MIN: 12, LENS_MAX: 200,          // brændvidde-slider (mm som trykt på objektivet; telefon: basis×zoom med Fuldformat valgt)
 
   cfg: {
     objIdx: 1,          // default: Blåvandshuk (populær til solnedgang)
@@ -1521,6 +1526,7 @@ const SOL = {
     shape: 'lighthouse',// silhuet-form: lighthouse|house|bridge|church|box
     width: 8,           // objektets bredde (m) — former silhuetten + bredde-aflæsning
     focal: null,        // valgt brændvidde (mm) via slider; null → default LENS_MAX
+    sensor: 'm43',      // sensor-format: m43|apsc|ff — bestemmer synsfeltet for en given brændvidde
     dist: null,         // valgt afstand (m) via slider; null → default (≈60% fyld)
     elev: 0,            // objektets fods højde (m) over fotografens standpunkt (fx fyr på klint)
     autoElev: true,     // hent terrænhøjde automatisk (Open-Meteo) og udregn elev; manuel indtastning slår det fra
@@ -1532,12 +1538,40 @@ const SOL = {
     fill: 0.60,         // objektets andel af billedhøjden
     offX: 0, offY: 0,   // forskydning i andel af billedet (−0.4..0.4); + = højre / op
   },
+
+  // Brugerens egne "Andet objekt" — persisteret i localStorage, så de kan genbruges.
+  OBJ_KEY: 'fotoscout-sol-objects',
+  savedObjects: (function () {
+    try { return JSON.parse(localStorage.getItem('fotoscout-sol-objects') || '[]'); } catch { return []; }
+  })(),
+  saveObjects() { try { localStorage.setItem(this.OBJ_KEY, JSON.stringify(this.savedObjects)); } catch {} },
+  // Upsert (nøgle = navn, case-insensitivt) af det aktuelle custom-objekt, når det er komplet.
+  persistCustom() {
+    const c = this.cfg;
+    if (c.objIdx !== 'custom') return;
+    const name = (c.name || '').trim();
+    if (!name || c.lat == null || c.lon == null) return;   // kræver navn + gyldige koordinater
+    const rec = { name, lat: c.lat, lon: c.lon, height: +c.height || 30, width: +c.width || 8 };
+    const i = this.savedObjects.findIndex(o => o.name.toLowerCase() === name.toLowerCase());
+    if (i >= 0) this.savedObjects[i] = rec; else this.savedObjects.push(rec);
+    this.saveObjects();
+  },
+  deleteObj(val) {
+    const i = +String(val).slice(6);   // 'saved:N' → N
+    if (i >= 0 && i < this.savedObjects.length) {
+      this.savedObjects.splice(i, 1);
+      this.saveObjects();
+      this.cfg.objIdx = 1;             // tilbage til default
+    }
+    render();
+  },
+
   BASE_MARGIN: 0.05,    // objektets fod sidder 5 % oppe fra billedets bund
 
   // Inverter komposition: hvilken afstand giver netop brændvidden `focal` for
   // et objekt med `height` (m) der fylder `fill` af billedhøjden?
   distForFocal(height, fill, focal) {
-    const fovV = 2 * Math.atan(this.SENSOR_H / (2 * focal)) * this.R2D;   // lodret synsfelt (grader)
+    const fovV = 2 * Math.atan(this.sensorDims().h / (2 * focal)) * this.R2D;   // lodret synsfelt (grader)
     const objAngV = fovV * fill;                                          // objektets ønskede vinkelhøjde
     return height / (2 * Math.tan(objAngV / 2 * this.D2R));               // afstand (m)
   },
@@ -1664,8 +1698,8 @@ const SOL = {
     const footAlt = Math.atan(elev / D) * this.R2D;                  // objektets fod over din horisont (grader)
     const objAngV = (Math.atan((elev + obj.height) / D) - Math.atan(elev / D)) * this.R2D;  // objektets vinkelhøjde (grader)
     const fovV = objAngV / c.fill;                                     // lodret synsfelt for ønsket objektstørrelse
-    const focal = this.SENSOR_H / (2 * Math.tan(fovV / 2 * this.D2R)); // nødvendig brændvidde (mm)
-    const fovH = 2 * Math.atan(this.SENSOR_W / (2 * focal)) * this.R2D;
+    const focal = this.sensorDims().h / (2 * Math.tan(fovV / 2 * this.D2R)); // nødvendig brændvidde (mm)
+    const fovH = 2 * Math.atan(this.sensorDims().w / (2 * focal)) * this.R2D;
     const inRange = focal >= this.LENS_MIN && focal <= this.LENS_MAX;
     // ankerpunktets placering i billedet (andel fra bunden) + forskydning
     const anchorFY = c.anchor === 'base' ? this.BASE_MARGIN
@@ -1978,6 +2012,9 @@ function renderSol(content, statusEl) {
   let obj;
   if (c.objIdx === 'custom') {
     obj = { name: c.name || 'Eget objekt', lat: c.lat, lon: c.lon, height: +c.height || 30 };
+  } else if (typeof c.objIdx === 'string' && c.objIdx.startsWith('saved:')) {
+    const so = SOL.savedObjects[+c.objIdx.slice(6)] || stops[0];
+    obj = { name: so.name, lat: so.lat, lon: so.lon, height: +c.height || 30 };
   } else {
     const s = stops[c.objIdx] || stops[0];
     obj = { name: s.name, lat: s.lat, lon: s.lon, height: +c.height || 30 };
@@ -1986,7 +2023,7 @@ function renderSol(content, statusEl) {
   // --- Setup: brændvidde + afstand er inputs; objektstørrelse (fill) er resultatet ---
   const dispD = D => D >= 1000 ? (D / 1000).toFixed(1) + ' km' : Math.round(D) + ' m';
   const selFocal = Math.max(SOL.LENS_MIN, Math.min(SOL.LENS_MAX, c.focal == null ? SOL.LENS_MAX : c.focal));
-  const fovVsel = 2 * Math.atan(SOL.SENSOR_H / (2 * selFocal)) * SOL.R2D;         // lodret synsfelt (grader)
+  const fovVsel = 2 * Math.atan(SOL.sensorDims().h / (2 * selFocal)) * SOL.R2D;         // lodret synsfelt (grader)
   // Afstands-skala uafhængig af valgt brændvidde: dækker hele kittet (12 mm-fyld → 200 mm-lille)
   const dMin = Math.round(SOL.distForFocal(obj.height, 1.0, SOL.LENS_MIN));       // objektet fylder rammen ved 12 mm
   const dMax = Math.round(SOL.distForFocal(obj.height, 0.15, SOL.LENS_MAX));      // objektet lille ved 200 mm
@@ -2011,7 +2048,9 @@ function renderSol(content, statusEl) {
   if (elev !== 0) elevStatus += ` · foden ${footAltSel >= 0 ? '+' : ''}${footAltSel.toFixed(2)}° ${footAltSel >= 0 ? 'over' : 'under'} din horisont`;
 
   const objOpts = stops.map((s, i) => `<option value="${i}" ${c.objIdx === i ? 'selected' : ''}>${esc(s.name)}</option>`).join('')
+    + SOL.savedObjects.map((o, i) => `<option value="saved:${i}" ${c.objIdx === 'saved:' + i ? 'selected' : ''}>⭐ ${esc(o.name)}</option>`).join('')
     + `<option value="custom" ${c.objIdx === 'custom' ? 'selected' : ''}>➕ Andet objekt…</option>`;
+  const isSaved = typeof c.objIdx === 'string' && c.objIdx.startsWith('saved:');
   const shapeOpts = Object.entries(SOL_SHAPES).map(([k, lbl]) =>
     `<option value="${k}" ${c.shape === k ? 'selected' : ''}>${lbl}</option>`).join('');
 
@@ -2022,7 +2061,13 @@ function renderSol(content, statusEl) {
     <div class="sol-row two">
       <label>Bredde (lat)<input type="text" inputmode="decimal" id="sol-lat" value="${c.lat ?? ''}" onchange="SOL.on('lat',this.value)" placeholder="56.xxxxx (komma el. punktum)"></label>
       <label>Længde (lon)<input type="text" inputmode="decimal" id="sol-lon" value="${c.lon ?? ''}" onchange="SOL.on('lon',this.value)" placeholder="8.xxxxx (komma el. punktum)"></label>
-    </div>` : '';
+    </div>
+    <div class="sol-row"><div class="sol-dim">${((c.name || '').trim() && c.lat != null && c.lon != null)
+      ? '⭐ Gemt — objektet vises i listen næste gang'
+      : 'Udfyld navn + koordinater, så gemmes objektet automatisk til næste gang'}</div></div>` : '';
+  const savedControls = isSaved
+    ? `<div class="sol-row"><button type="button" onclick="SOL.deleteObj('${c.objIdx}')" style="align-self:flex-start;background:rgba(255,80,80,0.12);border:1px solid rgba(255,80,80,0.4);color:#ff8080;font-weight:600;font-size:12px;padding:7px 12px;border-radius:8px;cursor:pointer">🗑 Slet gemt objekt</button></div>`
+    : '';
 
   const anchorName = { base: 'foden', mid: 'midten', top: 'toppen' }[c.anchor];
   const ohX = c.offX / effFill, ohY = c.offY / effFill;   // forskydning i objekt-højder
@@ -2034,6 +2079,7 @@ function renderSol(content, statusEl) {
       <div class="sol-row"><label>Objekt
         <select id="sol-obj" onchange="SOL.on('objIdx',this.value)">${objOpts}</select></label></div>
       ${customFields}
+      ${savedControls}
       <div class="sol-row two">
         <label>Form<select id="sol-shape" onchange="SOL.on('shape',this.value)">${shapeOpts}</select></label>
         <label>Dato<input type="date" id="sol-date" value="${c.date}" onchange="SOL.on('date',this.value)"></label>
@@ -2060,7 +2106,15 @@ function renderSol(content, statusEl) {
         </div>
       </div>
       <div class="sol-row">
-        <label>🔭 Brændvidde: <b>${Math.round(selFocal)} mm</b>
+        <label>📷 Sensor-format <span class="sol-dim">(brændvidde tolkes for denne sensor · telefon → vælg Fuldformat + tast basis×zoom)</span></label>
+        <div class="sol-toggle">
+          <button class="${(c.sensor || 'm43') === 'm43' ? 'on' : ''}" onclick="SOL.on('sensor','m43')">M4/3</button>
+          <button class="${(c.sensor || 'm43') === 'apsc' ? 'on' : ''}" onclick="SOL.on('sensor','apsc')">APS-C</button>
+          <button class="${(c.sensor || 'm43') === 'ff' ? 'on' : ''}" onclick="SOL.on('sensor','ff')">Fuldformat</button>
+        </div>
+      </div>
+      <div class="sol-row">
+        <label>🔭 Brændvidde: <b>${Math.round(selFocal)} mm</b>${SOL.sensorDims().crop !== 1 ? ` <span class="sol-dim">(≈ ${Math.round(selFocal * SOL.sensorDims().crop)} mm fuldformat-ækv)</span>` : ''}
           <input type="range" min="${SOL.LENS_MIN}" max="${SOL.LENS_MAX}" step="1" value="${Math.round(selFocal)}" oninput="SOL.on('focal',this.value)"></label>
       </div>
       <div class="sol-row">
@@ -2189,7 +2243,15 @@ function renderSol(content, statusEl) {
 }
 
 SOL.on = function (field, val) {
-  if (field === 'objIdx') { this.cfg.objIdx = val === 'custom' ? 'custom' : +val; }
+  if (field === 'objIdx') {
+    if (val === 'custom') { this.cfg.objIdx = 'custom'; }
+    else if (typeof val === 'string' && val.startsWith('saved:')) {
+      this.cfg.objIdx = val;
+      const so = this.savedObjects[+val.slice(6)];   // indlæs gemte mål i felterne
+      if (so) { this.cfg.name = so.name; this.cfg.lat = so.lat; this.cfg.lon = so.lon; this.cfg.height = so.height; this.cfg.width = so.width; }
+    }
+    else { this.cfg.objIdx = +val; }
+  }
   else if (field === 'height' || field === 'width' || field === 'focal' || field === 'dist' || field === 'tilt') { this.cfg[field] = +val; }
   else if (field === 'elev') { this.cfg.elev = +val || 0; this.cfg.autoElev = false; }   // manuel indtastning slår auto fra
   else if (field === 'autoElev') { this.cfg.autoElev = !!val; if (this.cfg.autoElev) this.elevState.appliedKey = null; }   // slå til → tving et frisk hent
@@ -2203,6 +2265,7 @@ SOL.on = function (field, val) {
     this.cfg[field] = (s === '' || !isFinite(n) || Math.abs(n) > limit) ? null : n;
   }
   else { this.cfg[field] = val; }   // objIdx=custom, body, side, anchor, date, name
+  this.persistCustom();             // gem "Andet objekt" automatisk når navn + koordinater er sat
   render();
 };
 
