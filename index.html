@@ -1907,6 +1907,27 @@ SOL.runScan = function () {
     if (better) best.set(key, o);
   }
   this.oppResults = [...best.values()].sort((a, b) => a.t - b.t);
+  this._pickedOpp = null;   // ny scan → ryd tidligere valg
+  render();
+};
+
+// Klik-bro: load en mulighed ind i planlæggeren (dato + himmellegeme + side), så
+// den eksisterende kæde beregner standpunktet og tegner det på kortet. Ved brede
+// muligheder (nær fuldmåne) sættes MÅNEN bag objektet (klassisk fuldmåne-opgang);
+// er månen usynlig (≈nymåne) bruges solen. plan()'s side-fallback fanger fejlgæt.
+SOL.applyOpportunity = function (idx) {
+  const o = this.oppResults && this.oppResults[idx];
+  if (!o) return;
+  this.cfg.date = o.date;
+  const body = o.moonFrac >= 0.02 ? 'moon' : 'sun';
+  this.cfg.body = body;
+  const az = body === 'moon' ? o.moonAz : o.sunAz;
+  this.cfg.side = (az < 180) ? 'rise' : 'set';     // østlig himmel = opgang, vestlig = nedgang
+  // neutral komposition (objekt ved horisonten, centreret) → plan() finder pålideligt
+  // standpunktet på op-/nedgangstidspunktet; brændvidde + afstand beholdes.
+  this.cfg.offX = 0; this.cfg.offY = 0; this.cfg.tilt = 0; this.cfg.anchor = 'base';
+  this._pickedOpp = idx;
+  this._fitted = false;                            // lad kortet zoome til objekt + nyt standpunkt
   render();
 };
 
@@ -1921,6 +1942,7 @@ SOL.initMap = function () {
   const standIcon = L.divIcon({ className: 'sol-pin-stand', html: '📍', iconSize: [24, 24], iconAnchor: [12, 22] });
   this._objMarker = L.marker([56, 8.3], { icon: objIcon, interactive: false }).addTo(map);
   this._line = L.polyline([], { color: '#ff9d3c', weight: 3, dashArray: '6 5', opacity: 0.9 }).addTo(map);
+  this._secLine = L.polyline([], { color: '#9ec5ff', weight: 2, dashArray: '2 7', opacity: 0.85 }).addTo(map);  // det andet himmellegemes retning
   this._standMarker = L.marker([56, 8.3], { icon: standIcon, draggable: true }).addTo(map);
   this._standMarker.on('dragstart', () => { this._dragging = true; });
   this._standMarker.on('drag', () => this.onPinDrag());
@@ -1929,7 +1951,7 @@ SOL.initMap = function () {
   this._fitted = false;
 };
 
-SOL.updateMap = function (objLat, objLon, gp, back, dMin, dMax) {
+SOL.updateMap = function (objLat, objLon, gp, back, dMin, dMax, secAz, secBody) {
   this._dragCtx = { objLat, objLon, dMin, dMax, back };
   const note = document.getElementById('sol-map-note');
   if (!this._map) { if (note) note.textContent = typeof L === 'undefined' ? '🗺️ Kort kræver net ved første indlæsning — resten virker offline.' : ''; return; }
@@ -1938,6 +1960,18 @@ SOL.updateMap = function (objLat, objLon, gp, back, dMin, dMax) {
     const near = this.dest(objLat, objLon, back, dMin), far = this.dest(objLat, objLon, back, dMax);
     this._line.setLatLngs([[near.lat, near.lon], [far.lat, far.lon]]);
   }
+  // Sekundært himmellegeme: stråle FRA objektet mod dets retning på himlen (dér ligger
+  // det andet lys). Ved tætte muligheder peger den ~modsat stå-her-linjen (begge bag
+  // objektet); ved brede peger den til den anden side (panorama).
+  if (this._secLine) {
+    if (secAz != null) {
+      const tip = this.dest(objLat, objLon, secAz, Math.max(dMax * 1.4, 1500));
+      this._secLine.setLatLngs([[objLat, objLon], [tip.lat, tip.lon]]);
+      this._secLine.setStyle({ color: secBody === 'moon' ? '#9ec5ff' : '#ffcf7a' });
+    } else {
+      this._secLine.setLatLngs([]);
+    }
+  }
   if (gp && !this._dragging) this._standMarker.setLatLng([gp.lat, gp.lon]);
   this._standMarker.setOpacity(gp ? 1 : 0.4);
   if (!this._fitted && gp) {
@@ -1945,7 +1979,10 @@ SOL.updateMap = function (objLat, objLon, gp, back, dMin, dMax) {
     this._fitted = true;
     setTimeout(() => { if (this._map) this._map.invalidateSize(); }, 0);
   }
-  if (note) note.textContent = '📍 Træk pin\'en ind/ud langs den orange linje for at ændre afstanden.';
+  if (note) {
+    const secTxt = secAz != null ? ` ${secBody === 'moon' ? '🌙 blå' : '☀️ gul'} stråle = ${secBody === 'moon' ? 'månens' : 'solens'} retning (${Math.round(secAz)}° ${this.compassName(secAz)}).` : '';
+    note.textContent = '📍 Træk pin\'en ind/ud langs den orange linje for at ændre afstanden.' + secTxt;
+  }
 };
 
 SOL.onPinDrag = function () {
@@ -2364,6 +2401,20 @@ function renderSol(content, statusEl) {
     }
     if (s.rareCrescent) msg += ` <b>⭐ Sjælden sol + tynd segl</b> (${Math.round(s.moonFrac * 100)}% belyst, ${s.sep.toFixed(0)}° imellem).`;
     secHtml = `<div class="sol-dim" style="text-align:center;margin-top:4px;line-height:1.4">${msg}</div>`;
+  } else if (hasShot && previewPlan.secondary && !previewPlan.secondary.up) {
+    // Det andet himmellegeme er UNDER horisonten på det beregnede tidspunkt — forklar
+    // hvorfor der ikke ses noget (fx en ung segl der allerede er gået ned).
+    const s = previewPlan.secondary;
+    const emo = s.body === 'moon' ? '🌙' : '☀️';
+    const nm = s.body === 'moon' ? 'Månen' : 'Solen';
+    const ev = SOL.dayEvents(c.date, obj.lat, obj.lon, s.body).events;
+    const setBefore = ev.filter(e => e.type === 'set' && e.t <= previewPlan.time).sort((a, b) => b.t - a.t)[0];
+    const riseAfter = ev.filter(e => e.type === 'rise' && e.t >= previewPlan.time).sort((a, b) => a.t - b.t)[0];
+    let when = '';
+    if (setBefore) when = ` — gik ned kl. ${fmt(setBefore.t)} (${SOL.compassName(setBefore.az)})`;
+    else if (riseAfter) when = ` — står først op kl. ${fmt(riseAfter.t)} (${SOL.compassName(riseAfter.az)})`;
+    const frac = s.body === 'moon' ? ` ${Math.round(s.moonFrac * 100)}%-segl,` : '';
+    secHtml = `<div class="sol-dim" style="text-align:center;margin-top:4px;line-height:1.4">${emo} ${nm} er under horisonten kl. ${fmt(previewPlan.time)}${when} —${frac} ikke synlig i dette billede.</div>`;
   }
   const previewHtml = hasShot ? `<div class="sol-preview-wrap">
       ${solPreview(cEff, previewPlan)}
@@ -2390,18 +2441,19 @@ function renderSol(content, statusEl) {
       oppHtml += `<div class="sol-note">Ingen oplagte sol+måne-vinduer de næste 60 dage fra ${c.date}. De tætte muligheder klynger sig om nymåne, de brede om fuldmåne — prøv en anden startdato.</div>`;
     } else {
       const dmy = ds => { const [y, m, d] = ds.split('-'); return `${d}/${m}`; };
-      const oppRows = SOL.oppResults.map(o => {
+      const oppRows = SOL.oppResults.map((o, i) => {
         const badge = o.kind === 'tight' ? '☀️🌙 tæt' : '↔ bred';
         const star = (o.moonFrac > 0.01 && o.moonFrac < 0.18) ? ' ⭐' : '';
-        return `<tr class="${o.kind === 'tight' ? 'ok' : ''}">
-          <td>${dmy(o.date)}</td>
+        const sel = i === SOL._pickedOpp;
+        return `<tr class="${o.kind === 'tight' ? 'ok' : ''}" style="cursor:pointer" title="Klik: vis standpunkt for ${esc(obj.name)} på kortet" onclick="SOL.applyOpportunity(${i})">
+          <td>${sel ? '▶ ' : ''}${dmy(o.date)}</td>
           <td>${fmt(o.t)}</td>
           <td>${badge}${star}</td>
           <td>Sol ${Math.round(o.sunAz)}° ${SOL.compassName(o.sunAz)} (${o.sunAlt.toFixed(0)}°)<br>Måne ${Math.round(o.moonAz)}° ${SOL.compassName(o.moonAz)} (${o.moonAlt.toFixed(0)}°)</td>
           <td>${o.sep.toFixed(0)}° · ${o.lens}</td></tr>`;
       }).join('');
       oppHtml += `<table class="sol-table" style="margin-top:8px"><thead><tr><th>Dato</th><th>Tid</th><th>Type</th><th>Retninger</th><th>Afstand</th></tr></thead><tbody>${oppRows}</tbody></table>
-        <div class="sol-dim" style="margin-top:4px">${SOL.oppResults.length} vinduer · <b>⭐</b> = tynd månesegl (&lt;18% belyst) tæt på solen — den sjældne sol+segl-komposition. Vælg et objekt hvis komposition peger mod de viste retninger.</div>`;
+        <div class="sol-dim" style="margin-top:4px">${SOL.oppResults.length} vinduer · <b>⭐</b> = tynd månesegl (&lt;18% belyst) tæt på solen. <b>Klik en række</b> → dato + himmellegeme loades i planlæggeren for <b>${esc(obj.name)}</b>, og standpunktet vises på kortet (📍 + orange linje = stå her; farvet stråle = det andet himmellegemes retning).</div>`;
     }
   }
 
@@ -2417,7 +2469,9 @@ function renderSol(content, statusEl) {
     ${oppHtml}
     <div class="sol-note">Skru på <b>🔭 brændvidde</b> + <b>📏 afstand</b> (og ↔/↕ placering) for at afprøve setups — objektstørrelsen er resultatet. Tabellen viser afstande ved din valgte brændvidde: tættere på = objektet fylder mere + ${bodyLabel.toLowerCase()} en lille prik; længere væk = komprimering (${bodyLabel.toLowerCase()} stor). Tiden er hvornår ${bodyLabel.toLowerCase()} rammer positionen (${c.side === 'set' ? 'på vej ned' : 'på vej op'}). ⛰️-feltet retter for objektets fod-højde over dit standpunkt (fx fyr på klint). Bakker der skjuler den lave ${bodyLabel.toLowerCase()} bag objektet indgår ikke endnu.</div>
   </div>`);
-  SOL.updateMap(obj.lat, obj.lon, hasShot ? previewPlan.gp : null, hasShot ? previewPlan.back : null, dMin, dMax);
+  const secUp = hasShot && previewPlan.secondary && previewPlan.secondary.up;
+  SOL.updateMap(obj.lat, obj.lon, hasShot ? previewPlan.gp : null, hasShot ? previewPlan.back : null, dMin, dMax,
+    secUp ? previewPlan.secondary.az : null, secUp ? previewPlan.secondary.body : null);
 }
 
 SOL.on = function (field, val) {
