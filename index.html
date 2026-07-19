@@ -1707,13 +1707,14 @@ const SOL = {
       : this.BASE_MARGIN + c.fill;
     const bodyFY = anchorFY + c.offY, bodyFX = 0.5 + c.offX;
     const targetAlt = footAlt + fovV * (bodyFY - this.BASE_MARGIN);   // fod ved footAlt (havhorisont = 0°, kan ligge lavere)
-    const r = { D, focal, inRange, objAngV, fovV, footAlt, seaFy: this.BASE_MARGIN - footAlt / fovV, note: '', ok: false };
+    const r = { D, focal, inRange, objAngV, fovV, fovH, footAlt, bodyFY, targetAlt, seaFy: this.BASE_MARGIN - footAlt / fovV, note: '', ok: false };
     if (targetAlt < -0.2) { r.note = 'under horisont'; return r; }
     const cross = this.findCrossing(series, targetAlt, c.side);
     if (!cross) { r.note = 'når ikke højden'; return r; }
     const p = this.position(cross.t, obj.lat, obj.lon, c.body);
     const dAz = (c.offX * fovH) / Math.max(0.3, Math.cos(targetAlt * this.D2R));
     const aObj = ((cross.az - dAz) % 360 + 360) % 360;                // objektets retning fra fotograf
+    r.aim = aObj;                                                     // kamera-sigtets azimut (ramme-centrum) — bruges af secondary()
     r.back = (aObj + 180) % 360;                                      // fotografens retning fra objekt
     r.gp = this.dest(obj.lat, obj.lon, r.back, D);
     r.time = cross.t;
@@ -1726,6 +1727,42 @@ const SOL = {
     if (!r.fits) r.note = r.note ? r.note + ' · uden for ramme' : 'uden for ramme';
     r.ok = inRange && r.fits;
     return r;
+  },
+
+  // Det ANDET himmellegeme (primær sol → måne, og omvendt) ved standpunktets
+  // beregnede tidspunkt: står det op, hvor sidder det ift. rammen (frame-fraktion
+  // fx/fy i samme afbildning som primæret tegnes med), hvor langt væk i grader, og
+  // er det en sjælden sol+segl-nærkomposition? Returnerer null hvis intet gyldigt
+  // standpunkt, ellers { up, ... } så render kan vise en linje selv når det er nede.
+  secondary(obj, r, c) {
+    if (!r || !r.time || r.aim == null || r.fovH == null) return null;
+    const other = c.body === 'moon' ? 'sun' : 'moon';
+    const thr = other === 'moon' ? 0.125 : -0.833;        // samme horisont-tærskel som dayEvents/dagsserie
+    const p = this.position(r.time, obj.lat, obj.lon, other);
+    const prim = this.position(r.time, obj.lat, obj.lon, c.body);
+    const up = p.alt > thr;
+    // vinkelafstand mellem de to himmellegemer (grader) — via sfærisk cosinusrelation
+    const sep = Math.acos(Math.max(-1, Math.min(1,
+      Math.sin(p.alt * this.D2R) * Math.sin(prim.alt * this.D2R) +
+      Math.cos(p.alt * this.D2R) * Math.cos(prim.alt * this.D2R) *
+      Math.cos((p.az - prim.az) * this.D2R)))) * this.R2D;
+    // frame-fraktioner: samme afbildning som primæret (az→x via cos-korrektion, alt→y)
+    const dAz = ((p.az - r.aim + 540) % 360) - 180;       // signeret az fra sigtet (−180..180); + = til højre
+    const fx = 0.5 + (dAz * Math.cos(p.alt * this.D2R)) / r.fovH;
+    const fy = r.bodyFY + (p.alt - r.targetAlt) / r.fovV;
+    const inFrame = fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1;
+    // Nødvendig brændvidde for at få BEGGE i ét billede (vandret) — mod widest lens
+    const sd = this.sensorDims();
+    const focalForBoth = sep > 0.01 ? sd.w / (2 * Math.tan(sep / 2 * this.D2R)) : this.LENS_MAX;
+    const fitsWidest = focalForBoth >= this.LENS_MIN;     // false = for langt fra hinanden selv med vidvinkel → panorama
+    // Sjælden nærkomposition: tynd månesegl tæt på solen (sol+segl lavt over havet)
+    const moonFrac = this.moonIllum(r.time).fraction;
+    const rareCrescent = up && moonFrac > 0.01 && moonFrac < 0.18 && sep < 40;   // synlig tynd segl (ikke præcis nymåne)
+    return {
+      body: other, up, inFrame, fx, fy, sep,
+      az: p.az, alt: p.alt, diam: p.diam,
+      dAz, focalForBoth, fitsWidest, moonFrac, rareCrescent,
+    };
   },
 };
 
@@ -1805,6 +1842,72 @@ SOL.bearing = function (la1, lo1, la2, lo2) {           // initial-pejling (grad
   const y = Math.sin(dLo) * Math.cos(p2);
   const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dLo);
   return (Math.atan2(y, x) * this.R2D + 360) % 360;
+};
+
+// --- Sol+måne-muligheder: scan objekter N dage frem for tidspunkter hvor BEGGE
+// himmellegemer er oppe i en fotograferbar konstellation. To slags: 'tight' (nær
+// nymåne — sol + lav/tynd måne tæt sammen, tele/normal) og 'wide' (begge meget
+// lavt over horisonten, stor spredning → vidvinkel/panorama, typisk nær fuldmåne).
+SOL.oppResults = null;   // seneste scan (null = ikke kørt endnu)
+SOL._catalog = [];       // sættes af renderSol: alle objekter (stops + gemte)
+
+SOL.findOpportunities = function (objects, startDate, days) {
+  const out = [];
+  const sd = this.sensorDims();
+  const lensHint = sep => {
+    const f = sep > 0.01 ? sd.w / (2 * Math.tan(sep / 2 * this.D2R)) : this.LENS_MAX;
+    return f >= this.LENS_MIN ? `~${Math.round(f)} mm` : `panorama ~${Math.round(sep)}°`;
+  };
+  const sepDeg = (aAlt, aAz, bAlt, bAz) => Math.acos(Math.max(-1, Math.min(1,
+    Math.sin(aAlt * this.D2R) * Math.sin(bAlt * this.D2R) +
+    Math.cos(aAlt * this.D2R) * Math.cos(bAlt * this.D2R) * Math.cos((aAz - bAz) * this.D2R)))) * this.R2D;
+  const [y0, m0, d0] = startDate.split('-').map(Number);
+  for (const obj of objects) {
+    if (obj.lat == null || obj.lon == null) continue;
+    for (let dd = 0; dd < days; dd++) {
+      const base = new Date(y0, m0 - 1, d0 + dd);
+      const dateStr = `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, '0')}-${String(base.getDate()).padStart(2, '0')}`;
+      let tight = null, wide = null;
+      for (let min = 0; min <= 1440; min += 10) {
+        const t = new Date(base.getFullYear(), base.getMonth(), base.getDate(), 0, min, 0);
+        const s = this.position(t, obj.lat, obj.lon, 'sun');
+        if (s.alt < -1) continue;                            // solen skal reelt være oppe
+        const mo = this.position(t, obj.lat, obj.lon, 'moon');
+        if (mo.alt < 0.125) continue;                        // månen over horisont
+        const sep = sepDeg(s.alt, s.az, mo.alt, mo.az);
+        if (s.alt <= 25 && mo.alt <= 25 && sep <= 45) {      // A: tæt, begge lavt
+          if (!tight || sep < tight.sep) tight = { t, sep, s, mo };
+        }
+        if (s.alt <= 6 && mo.alt <= 6 && sep >= 60) {        // B: begge meget lavt, stor spredning
+          if (!wide || sep > wide.sep) wide = { t, sep, s, mo };
+        }
+      }
+      const push = (kind, w) => out.push({
+        obj: obj.name, date: dateStr, t: w.t, kind, sep: w.sep,
+        sunAz: w.s.az, sunAlt: w.s.alt, moonAz: w.mo.az, moonAlt: w.mo.alt,
+        moonFrac: this.moonIllum(w.t).fraction, lens: lensHint(w.sep),
+      });
+      if (tight) push('tight', tight);
+      if (wide) push('wide', wide);
+    }
+  }
+  return out;
+};
+
+// Kør scan over hele kataloget, afduplikér til én række pr. dato+type (alle danske
+// spots giver ~samme geometri) og behold den bedste instans. Re-render bagefter.
+SOL.runScan = function () {
+  const start = this.cfg.date || (function () { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; })();
+  const raw = this.findOpportunities(this._catalog || [], start, 60);
+  const best = new Map();
+  for (const o of raw) {
+    const key = o.date + '|' + o.kind;
+    const prev = best.get(key);
+    const better = o.kind === 'tight' ? (!prev || o.sep < prev.sep) : (!prev || o.sep > prev.sep);
+    if (better) best.set(key, o);
+  }
+  this.oppResults = [...best.values()].sort((a, b) => a.t - b.t);
+  render();
 };
 
 SOL.initMap = function () {
@@ -1976,6 +2079,29 @@ function solPreview(c, plan) {
     : '';
   const outFrame = (bx + br < MX || bx - br > MX + W || by + br < MY || by - br > MY + H);
   const outTag = outFrame ? `<text x="${(MX + W / 2).toFixed(0)}" y="${(MY - 8).toFixed(0)}" text-anchor="middle" fill="#ffd089" font-size="13" font-family="sans-serif">${isMoon ? 'Månen' : 'Solen'} er uden for rammen</text>` : '';
+  // Sekundært himmellegeme (det andet af sol/måne): tegnes altid når det er oppe —
+  // som skive hvor det står (også i den dæmpede margin), ellers som kant-pil hvis
+  // det ligger helt uden for lærredet. Diskret ring + emoji, så det ikke forveksles
+  // med det primære motiv.
+  let secMarker = '';
+  const sec = plan.secondary;
+  if (sec && sec.up) {
+    const emo = sec.body === 'moon' ? '🌙' : '☀️';
+    const sFill = sec.body === 'moon' ? '#dfe6f5' : '#ffe6a0';
+    const sRing = sec.body === 'moon' ? 'rgba(200,215,255,0.75)' : 'rgba(255,205,120,0.9)';
+    const sx = MX + sec.fx * W, sy = MY + (1 - sec.fy) * H + pan;
+    const sr = Math.max(2.5, sec.diam / plan.fovV / 2 * H);
+    const pad = 16;
+    if (sx >= pad && sx <= CW - pad && sy >= pad && sy <= CH - pad) {
+      secMarker = `<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${(sr + 3).toFixed(1)}" fill="none" stroke="${sRing}" stroke-width="1.5" stroke-dasharray="3 2"/>`
+        + `<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${sr.toFixed(1)}" fill="${sFill}" fill-opacity="0.92"/>`
+        + `<text x="${sx.toFixed(1)}" y="${(sy - sr - 6).toFixed(1)}" text-anchor="middle" font-size="13" font-family="sans-serif">${emo}</text>`;
+    } else {
+      const cxp = Math.max(pad, Math.min(CW - pad, sx)), cyp = Math.max(pad, Math.min(CH - pad, sy));
+      secMarker = `<circle cx="${cxp.toFixed(1)}" cy="${cyp.toFixed(1)}" r="10" fill="rgba(10,16,28,0.72)" stroke="${sRing}" stroke-width="1.5"/>`
+        + `<text x="${cxp.toFixed(1)}" y="${(cyp + 4).toFixed(1)}" text-anchor="middle" font-size="11" font-family="sans-serif">${emo}</text>`;
+    }
+  }
   return `<svg class="sol-preview" viewBox="0 0 ${CW} ${CH}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Forhåndsvisning af komposition">
     <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">${sky}</linearGradient></defs>
     <rect x="0" y="0" width="${CW}" height="${hzC}" fill="url(#${gid})"/>
@@ -1990,6 +2116,7 @@ function solPreview(c, plan) {
     <rect x="0" y="${MY}" width="${MX}" height="${H}" fill="${dim}"/>
     <rect x="${MX + W}" y="${MY}" width="${CW - MX - W}" height="${H}" fill="${dim}"/>
     <rect x="${MX}" y="${MY}" width="${W}" height="${H}" fill="none" stroke="#ffffff" stroke-width="2"/>
+    ${secMarker}
     ${outTag}
   </svg>`;
 }
@@ -2006,6 +2133,8 @@ function renderSol(content, statusEl) {
     if (seen.has(s.name)) continue; seen.add(s.name);
     stops.push({ name: s.name, lat: s.lat, lon: s.lon });
   }
+  // Katalog til sol+måne-scanneren: alle fyr + gemte objekter med koordinater
+  SOL._catalog = stops.concat(SOL.savedObjects.filter(o => o.lat != null && o.lon != null).map(o => ({ name: o.name, lat: o.lat, lon: o.lon })));
   if (c.date == null) { const n = new Date(); c.date = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; }
 
   // Afled objekt-position
@@ -2201,6 +2330,7 @@ function renderSol(content, statusEl) {
   const cEff = { ...c, fill: effFill };
   const previewPlan = SOL.plan(obj, series, selDist, cEff);
   const hasShot = previewPlan && previewPlan.time && previewPlan.gp;
+  if (hasShot) previewPlan.secondary = SOL.secondary(obj, previewPlan, cEff);
 
   // Auto-terræn: hent højde for objekt + beregnet standpunkt (debounced, cachet, offline-sikkert)
   if (c.autoElev && obj.lat != null && obj.lon != null && previewPlan && previewPlan.gp) {
@@ -2214,10 +2344,32 @@ function renderSol(content, statusEl) {
     const pct = Math.round(bodyDiam / angH * 100);
     widthNote = `<div class="sol-dim" style="text-align:center;margin-top:2px">Bredde ~${angH.toFixed(2)}° · ${bodyLabel.toLowerCase()} (${bodyDiam.toFixed(2)}°) fylder ${pct}%${pct > 100 ? ' — bredere end objektet' : ' af bredden'}</div>`;
   }
+
+  // Sekundært himmellegeme: vis altid en linje når det er oppe på det beregnede tidspunkt.
+  let secHtml = '';
+  if (hasShot && previewPlan.secondary && previewPlan.secondary.up) {
+    const s = previewPlan.secondary;
+    const emo = s.body === 'moon' ? '🌙' : '☀️';
+    const nm = s.body === 'moon' ? 'Månen' : 'Solen';
+    const hSide = s.dAz >= 0 ? 'til højre' : 'til venstre';
+    const hDeg = Math.abs(s.dAz).toFixed(0);
+    const cmp = SOL.compassName(s.az);
+    let msg;
+    if (s.inFrame) {
+      msg = `${emo} <b>${nm} er også i rammen</b> — ${hDeg}° ${hSide}, ${s.alt.toFixed(0)}° oppe (${cmp}).`;
+    } else if (s.fitsWidest) {
+      msg = `${emo} ${nm} er oppe ${hDeg}° ${hSide} (${cmp}, ${s.alt.toFixed(0)}°) — uden for rammen. Zoom til ~${Math.round(s.focalForBoth)} mm for begge.`;
+    } else {
+      msg = `${emo} ${nm} er oppe (${cmp}, ${s.alt.toFixed(0)}°), ${s.sep.toFixed(0)}° væk — for langt til begge på ét billede (kræver panorama).`;
+    }
+    if (s.rareCrescent) msg += ` <b>⭐ Sjælden sol + tynd segl</b> (${Math.round(s.moonFrac * 100)}% belyst, ${s.sep.toFixed(0)}° imellem).`;
+    secHtml = `<div class="sol-dim" style="text-align:center;margin-top:4px;line-height:1.4">${msg}</div>`;
+  }
   const previewHtml = hasShot ? `<div class="sol-preview-wrap">
       ${solPreview(cEff, previewPlan)}
       <div class="sol-dim" style="text-align:center;margin-top:6px">${Math.round(selFocal)} mm · stå ${dispD(selDist)} væk · objektet ${Math.round(effFill * 100)}% · kl. ${fmt(previewPlan.time)}</div>
       ${widthNote}
+      ${secHtml}
     </div>` : `<div class="sol-note">Med ${Math.round(selFocal)} mm på ${dispD(selDist)} når ${bodyLabel.toLowerCase()} ikke den valgte position (${previewPlan && previewPlan.note ? previewPlan.note : 'uden for rækkevidde'}). Prøv en anden afstand, brændvidde, forskydning eller dato/side.</div>`;
   let mapBtn = '';
   if (hasShot) {
@@ -2226,6 +2378,31 @@ function renderSol(content, statusEl) {
       <a class="route-map-btn" target="_blank" rel="noopener"
         href="https://www.google.com/maps/dir/?api=1&destination=${best.gp.lat.toFixed(5)},${best.gp.lon.toFixed(5)}&travelmode=driving">
         🚗 Kør til dette standpunkt</a>`;
+  }
+
+  // Sol+måne-mulighedsscanner (alle objekter, 60 dage frem — dato-liste)
+  const scanBtnLabel = SOL.oppResults ? '🔄 Scan igen' : `🔭 Find sol+måne-muligheder`;
+  let oppHtml = `<h3 class="sol-h3">🌗 Sol + måne samtidig</h3>
+    <div class="sol-dim" style="margin-bottom:6px">Scanner alle ${SOL._catalog.length} objekter 60 dage frem for tidspunkter hvor sol og måne <b>begge</b> er oppe i en fotograferbar konstellation — <b>tæt</b> (nær nymåne, tele/normal) og <b>bred</b> (begge lavt over horisonten, vidvinkel/panorama). Tidspunkterne gælder reelt hele Danmark; azimut varierer få grader fra spot til spot.</div>
+    <button type="button" onclick="SOL.runScan()" style="background:rgba(90,150,255,0.16);border:1px solid rgba(90,150,255,0.45);color:#bcd4ff;font-weight:600;font-size:13px;padding:9px 14px;border-radius:9px;cursor:pointer">${scanBtnLabel}</button>`;
+  if (SOL.oppResults) {
+    if (!SOL.oppResults.length) {
+      oppHtml += `<div class="sol-note">Ingen oplagte sol+måne-vinduer de næste 60 dage fra ${c.date}. De tætte muligheder klynger sig om nymåne, de brede om fuldmåne — prøv en anden startdato.</div>`;
+    } else {
+      const dmy = ds => { const [y, m, d] = ds.split('-'); return `${d}/${m}`; };
+      const oppRows = SOL.oppResults.map(o => {
+        const badge = o.kind === 'tight' ? '☀️🌙 tæt' : '↔ bred';
+        const star = (o.moonFrac > 0.01 && o.moonFrac < 0.18) ? ' ⭐' : '';
+        return `<tr class="${o.kind === 'tight' ? 'ok' : ''}">
+          <td>${dmy(o.date)}</td>
+          <td>${fmt(o.t)}</td>
+          <td>${badge}${star}</td>
+          <td>Sol ${Math.round(o.sunAz)}° ${SOL.compassName(o.sunAz)} (${o.sunAlt.toFixed(0)}°)<br>Måne ${Math.round(o.moonAz)}° ${SOL.compassName(o.moonAz)} (${o.moonAlt.toFixed(0)}°)</td>
+          <td>${o.sep.toFixed(0)}° · ${o.lens}</td></tr>`;
+      }).join('');
+      oppHtml += `<table class="sol-table" style="margin-top:8px"><thead><tr><th>Dato</th><th>Tid</th><th>Type</th><th>Retninger</th><th>Afstand</th></tr></thead><tbody>${oppRows}</tbody></table>
+        <div class="sol-dim" style="margin-top:4px">${SOL.oppResults.length} vinduer · <b>⭐</b> = tynd månesegl (&lt;18% belyst) tæt på solen — den sjældne sol+segl-komposition. Vælg et objekt hvis komposition peger mod de viste retninger.</div>`;
+    }
   }
 
   statusEl.innerHTML = `Sol & Måne · ${esc(obj.name)}`;
@@ -2237,6 +2414,7 @@ function renderSol(content, statusEl) {
     ${previewHtml}
     <table class="sol-table"><thead><tr><th>Afstand</th><th>Objekt fylder</th><th>Tid</th><th>${bodyLabel} i billedet</th><th>${bodyLabel} vs. objekt</th></tr></thead><tbody>${rows}</tbody></table>
     ${mapBtn}
+    ${oppHtml}
     <div class="sol-note">Skru på <b>🔭 brændvidde</b> + <b>📏 afstand</b> (og ↔/↕ placering) for at afprøve setups — objektstørrelsen er resultatet. Tabellen viser afstande ved din valgte brændvidde: tættere på = objektet fylder mere + ${bodyLabel.toLowerCase()} en lille prik; længere væk = komprimering (${bodyLabel.toLowerCase()} stor). Tiden er hvornår ${bodyLabel.toLowerCase()} rammer positionen (${c.side === 'set' ? 'på vej ned' : 'på vej op'}). ⛰️-feltet retter for objektets fod-højde over dit standpunkt (fx fyr på klint). Bakker der skjuler den lave ${bodyLabel.toLowerCase()} bag objektet indgår ikke endnu.</div>
   </div>`);
   SOL.updateMap(obj.lat, obj.lon, hasShot ? previewPlan.gp : null, hasShot ? previewPlan.back : null, dMin, dMax);
