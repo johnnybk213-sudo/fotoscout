@@ -1,5 +1,95 @@
 [
   {
+    "id": 35261,
+    "title": "71",
+    "city": null,
+    "slug": "71",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.625674,
+    "lon": 8.2393788,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/71/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.625674,8.2393788"
+  },
+  {
+    "id": 35260,
+    "title": "72",
+    "city": null,
+    "slug": "72",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.6255869,
+    "lon": 8.2404575,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/72/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.6255869,8.2404575"
+  },
+  {
+    "id": 35259,
+    "title": "73",
+    "city": null,
+    "slug": "73",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.6254525,
+    "lon": 8.2414662,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/73/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.6254525,8.2414662"
+  },
+  {
+    "id": 35258,
+    "title": "74",
+    "city": null,
+    "slug": "74",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.6253075,
+    "lon": 8.242524,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/74/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.6253075,8.242524"
+  },
+  {
+    "id": 35262,
+    "title": "Ammuntionsbunker Drengsted",
+    "city": null,
+    "slug": "ammuntionsbunker-drengsted",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.0962696,
+    "lon": 8.8214994,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/ammuntionsbunker-drengsted/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.0962696,8.8214994"
+  },
+  {
     "id": 35224,
     "title": "Ammuntionsbunker Øster Gasse",
     "city": "Skærbæk",
@@ -18,6 +108,42 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1553741,8.8066812"
   },
   {
+    "id": 35235,
+    "title": "Be Free",
+    "city": null,
+    "slug": "be-free",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.3653964,
+    "lon": 8.4189594,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/be-free/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3653964,8.4189594"
+  },
+  {
+    "id": 35215,
+    "title": "Blegs Bunker",
+    "city": null,
+    "slug": "blegs-bunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1508551,
+    "lon": 8.5377189,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/blegs-bunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1508551,8.5377189"
+  },
+  {
     "id": 35232,
     "title": "Bulbjerg Bunker",
     "city": "Frøstrup",
@@ -34,6 +160,150 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/bulbjerg-bunker/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1579656,9.0254987"
+  },
+  {
+    "id": 35243,
+    "title": "Bunker",
+    "city": null,
+    "slug": "bunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.4902757,
+    "lon": 8.4109576,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/bunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4902757,8.4109576"
+  },
+  {
+    "id": 35212,
+    "title": "Bunker \"Gut versteckt\"",
+    "city": null,
+    "slug": "bunker-gut-versteckt",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1526152,
+    "lon": 8.5303024,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/bunker-gut-versteckt/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1526152,8.5303024"
+  },
+  {
+    "id": 35234,
+    "title": "Bunker \"Heidemarie\"",
+    "city": null,
+    "slug": "bunker-heidemarie",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1531497,
+    "lon": 8.5298749,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/bunker-heidemarie/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1531497,8.5298749"
+  },
+  {
+    "id": 35209,
+    "title": "Bunker Nødudgang",
+    "city": null,
+    "slug": "bunker-noedudgang",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1484221,
+    "lon": 8.5294821,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/bunker-noedudgang/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1484221,8.5294821"
+  },
+  {
+    "id": 35213,
+    "title": "Drypstensbunker",
+    "city": null,
+    "slug": "drypstensbunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1480071,
+    "lon": 8.5347658,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/drypstensbunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1480071,8.5347658"
+  },
+  {
+    "id": 35219,
+    "title": "Elværk",
+    "city": null,
+    "slug": "elvaerk",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 57.1191733,
+    "lon": 8.6194216,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/elvaerk/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1191733,8.6194216"
+  },
+  {
+    "id": 35216,
+    "title": "Flankeringsbunker",
+    "city": null,
+    "slug": "flankeringsbunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 57.1219551,
+    "lon": 8.616886,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/flankeringsbunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1219551,8.616886"
+  },
+  {
+    "id": 35214,
+    "title": "Frejafundament",
+    "city": null,
+    "slug": "frejafundament",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1493618,
+    "lon": 8.5390694,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/frejafundament/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1493618,8.5390694"
   },
   {
     "id": 35250,
@@ -72,6 +342,96 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1727739,8.7672038"
   },
   {
+    "id": 35228,
+    "title": "Kanon 2 (GII)",
+    "city": null,
+    "slug": "kanon-2-gii",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 57.1194772,
+    "lon": 8.6212513,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/kanon-2-gii/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1194772,8.6212513"
+  },
+  {
+    "id": 35225,
+    "title": "Kanon 3 (G III)",
+    "city": null,
+    "slug": "kanon-3-g-iii",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 57.1204675,
+    "lon": 8.6164029,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/kanon-3-g-iii/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1204675,8.6164029"
+  },
+  {
+    "id": 35211,
+    "title": "Klitbunker",
+    "city": null,
+    "slug": "klitbunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1514109,
+    "lon": 8.5322429,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/klitbunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1514109,8.5322429"
+  },
+  {
+    "id": 35208,
+    "title": "Kronenjäger",
+    "city": null,
+    "slug": "kronenjager",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1489922,
+    "lon": 8.5292408,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/kronenjager/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1489922,8.5292408"
+  },
+  {
+    "id": 35244,
+    "title": "L410",
+    "city": null,
+    "slug": "l410",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.437286,
+    "lon": 8.3791436,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/l410/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.437286,8.3791436"
+  },
+  {
     "id": 35248,
     "title": "Mammut Bunker",
     "city": "Rømø",
@@ -88,6 +448,24 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/mammut-bunker/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1505729,8.5312875"
+  },
+  {
+    "id": 35220,
+    "title": "Maskingeværstilling",
+    "city": null,
+    "slug": "maskingevaerstilling",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 57.119016,
+    "lon": 8.6179089,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/maskingevaerstilling/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.119016,8.6179089"
   },
   {
     "id": 35229,
@@ -108,6 +486,204 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.5491555,8.109598"
   },
   {
+    "id": 35230,
+    "title": "Maultier Bunker",
+    "city": null,
+    "slug": "maultier-bunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.5488937,
+    "lon": 8.1107364,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/maultier-bunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.5488937,8.1107364"
+  },
+  {
+    "id": 35207,
+    "title": "Ottekantet Bunker",
+    "city": null,
+    "slug": "ottekantet-bunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1500799,
+    "lon": 8.5307145,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/ottekantet-bunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1500799,8.5307145"
+  },
+  {
+    "id": 35253,
+    "title": "R621",
+    "city": null,
+    "slug": "r621-2",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 56.5997124,
+    "lon": 8.1604735,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/r621-2/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.5997124,8.1604735"
+  },
+  {
+    "id": 35257,
+    "title": "R621",
+    "city": null,
+    "slug": "r621",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 56.600178,
+    "lon": 8.1587344,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/r621/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.600178,8.1587344"
+  },
+  {
+    "id": 35233,
+    "title": "R622",
+    "city": null,
+    "slug": "r622",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 57.1565669,
+    "lon": 9.0271319,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/r622/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1565669,9.0271319"
+  },
+  {
+    "id": 35252,
+    "title": "R680",
+    "city": null,
+    "slug": "r680-2",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 56.6160089,
+    "lon": 8.1629088,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/r680-2/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.6160089,8.1629088"
+  },
+  {
+    "id": 35254,
+    "title": "R680",
+    "city": null,
+    "slug": "r680",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 56.6134692,
+    "lon": 8.1627947,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/r680/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.6134692,8.1627947"
+  },
+  {
+    "id": 35255,
+    "title": "Radar Würzburg-Riese",
+    "city": null,
+    "slug": "radar-wurzburg-riese",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 56.5150316,
+    "lon": 8.1178158,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/radar-wurzburg-riese/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.5150316,8.1178158"
+  },
+  {
+    "id": 35256,
+    "title": "Regelbau 608",
+    "city": null,
+    "slug": "regelbau-608",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.4392094,
+    "lon": 8.3777365,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/regelbau-608/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4392094,8.3777365"
+  },
+  {
+    "id": 35245,
+    "title": "Regelbau 622",
+    "city": null,
+    "slug": "regelbau-622",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.4389156,
+    "lon": 8.3790237,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/regelbau-622/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4389156,8.3790237"
+  },
+  {
+    "id": 35246,
+    "title": "Regelbau 661 - 75259",
+    "city": null,
+    "slug": "regelbau-661-75259",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.4379652,
+    "lon": 8.3794006,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/regelbau-661-75259/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4379652,8.3794006"
+  },
+  {
     "id": 35239,
     "title": "Revolverkanonbunker Arrild",
     "city": "Toftlund",
@@ -124,6 +700,42 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/revolverkanonbunker-arrild/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1623934,8.9533784"
+  },
+  {
+    "id": 35217,
+    "title": "Robbe-Südwest",
+    "city": null,
+    "slug": "robbe-sudwest",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1425986,
+    "lon": 8.5239905,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/robbe-sudwest/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1425986,8.5239905"
+  },
+  {
+    "id": 35247,
+    "title": "Sandfang",
+    "city": null,
+    "slug": "sandfang",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1513092,
+    "lon": 8.5315192,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/sandfang/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1513092,8.5315192"
   },
   {
     "id": 35240,
@@ -180,6 +792,60 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1528492,8.9645513"
   },
   {
+    "id": 35227,
+    "title": "Skyts 1 \"Gneisenau\"",
+    "city": null,
+    "slug": "skyts-1-gneisenau",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.4547115,
+    "lon": 8.3613423,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/skyts-1-gneisenau/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4547115,8.3613423"
+  },
+  {
+    "id": 35237,
+    "title": "Spionbunker",
+    "city": null,
+    "slug": "spionbunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 56.7062937,
+    "lon": 8.2136279,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/spionbunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7062937,8.2136279"
+  },
+  {
+    "id": 35218,
+    "title": "Sprængt bunker",
+    "city": null,
+    "slug": "spraengt-bunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1491745,
+    "lon": 8.5389626,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/spraengt-bunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1491745,8.5389626"
+  },
+  {
     "id": 35238,
     "title": "Stauning Batteri",
     "city": "Skjern",
@@ -232,6 +898,60 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/tirpitz-stillingen/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.5544869,8.1691428"
+  },
+  {
+    "id": 35242,
+    "title": "UgruKo",
+    "city": null,
+    "slug": "ugruko",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.4840112,
+    "lon": 8.4331252,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/ugruko/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4840112,8.4331252"
+  },
+  {
+    "id": 35226,
+    "title": "Würzburg-Riese",
+    "city": null,
+    "slug": "wurzburg-riese-2",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 57.4077144,
+    "lon": 9.7423464,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/wurzburg-riese-2/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.4077144,9.7423464"
+  },
+  {
+    "id": 35236,
+    "title": "Würzburg-Riese",
+    "city": null,
+    "slug": "wurzburg-riese",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 57.4021417,
+    "lon": 9.7370726,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/wurzburg-riese/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.4021417,9.7370726"
   },
   {
     "id": 35193,
@@ -306,6 +1026,24 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1127129,8.5985543"
   },
   {
+    "id": 35199,
+    "title": "Sædding Strand Mellemfyr",
+    "city": null,
+    "slug": "saedding-strand-mellemfyr",
+    "categories": [
+      "fyrtaarne"
+    ],
+    "primary_category": "fyrtaarne",
+    "lat": 55.4990502,
+    "lon": 8.4058848,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/saedding-strand-mellemfyr/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4990502,8.4058848"
+  },
+  {
     "id": 35192,
     "title": "Thyborøn Tange Nord Fyr",
     "city": "Thyborøn",
@@ -378,6 +1116,42 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4660898,8.4577652"
   },
   {
+    "id": 35189,
+    "title": "Havfruens Butik",
+    "city": null,
+    "slug": "havfruens-butik",
+    "categories": [
+      "gallerier"
+    ],
+    "primary_category": "gallerier",
+    "lat": 55.8165664,
+    "lon": 8.1976401,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/havfruens-butik/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.8165664,8.1976401"
+  },
+  {
+    "id": 35137,
+    "title": "Esbjerg Frikirke",
+    "city": null,
+    "slug": "esbjerg-frikirke",
+    "categories": [
+      "kirker"
+    ],
+    "primary_category": "kirker",
+    "lat": 55.4690241,
+    "lon": 8.453624,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/esbjerg-frikirke/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4690241,8.453624"
+  },
+  {
     "id": 35138,
     "title": "Frelsens Hær Esbjerg",
     "city": "Esbjerg",
@@ -394,6 +1168,24 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/frelsens-haer-esbjerg/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4675515,8.4472145"
+  },
+  {
+    "id": 35169,
+    "title": "Hellig Kors Kirke",
+    "city": null,
+    "slug": "hellig-kors-kirke",
+    "categories": [
+      "kirker"
+    ],
+    "primary_category": "kirker",
+    "lat": 56.5502955,
+    "lon": 8.314428,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/hellig-kors-kirke/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.5502955,8.314428"
   },
   {
     "id": 35161,
@@ -558,6 +1350,24 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7050714,8.218666"
   },
   {
+    "id": 35101,
+    "title": "Det Gamle Rådhus",
+    "city": null,
+    "slug": "det-gamle-raadhus",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.3277298,
+    "lon": 8.7626464,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35101.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/det-gamle-raadhus/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3277298,8.7626464"
+  },
+  {
     "id": 42675,
     "title": "Det Grå Fyr",
     "city": "Skagen",
@@ -574,6 +1384,60 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/det-graa-fyr/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=57.735602,10.630435"
+  },
+  {
+    "id": 35098,
+    "title": "Esbjerg Byhistoriske Arkiv",
+    "city": null,
+    "slug": "esbjerg-byhistoriske-arkiv",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.4697025,
+    "lon": 8.453431,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35098.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/esbjerg-byhistoriske-arkiv/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4697025,8.453431"
+  },
+  {
+    "id": 35086,
+    "title": "Esbjerg Kunstmuseum",
+    "city": null,
+    "slug": "esbjerg-kunstmuseum",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.4642399,
+    "lon": 8.4505741,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35086.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/esbjerg-kunstmuseum/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4642399,8.4505741"
+  },
+  {
+    "id": 35095,
+    "title": "Esbjerg Museum",
+    "city": null,
+    "slug": "esbjerg-museum",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.4693369,
+    "lon": 8.4535335,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35095.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/esbjerg-museum/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4693369,8.4535335"
   },
   {
     "id": 35099,
@@ -594,6 +1458,60 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4644744,8.4499456"
   },
   {
+    "id": 35090,
+    "title": "Esehytterne",
+    "city": null,
+    "slug": "esehytterne",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.8185927,
+    "lon": 8.1848808,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35090.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/esehytterne/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.8185927,8.1848808"
+  },
+  {
+    "id": 35093,
+    "title": "HEX! Museum of Witch Hunt",
+    "city": null,
+    "slug": "hex-museum-of-witch-hunt",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.3286027,
+    "lon": 8.7634829,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35093.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/hex-museum-of-witch-hunt/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3286027,8.7634829"
+  },
+  {
+    "id": 35188,
+    "title": "Hans Tavsens Hus",
+    "city": null,
+    "slug": "hans-tavsens-hus",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.327684,
+    "lon": 8.7609596,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/hans-tavsens-hus/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.327684,8.7609596"
+  },
+  {
     "id": 42697,
     "title": "Havets Hemmeligheder",
     "city": "Thyborøn",
@@ -612,6 +1530,150 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7058238,8.2132257"
   },
   {
+    "id": 35092,
+    "title": "Jacob A. Riis Museum",
+    "city": null,
+    "slug": "jacob-a-riis-museum",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.3285544,
+    "lon": 8.7635611,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35092.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/jacob-a-riis-museum/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3285544,8.7635611"
+  },
+  {
+    "id": 35106,
+    "title": "Kannikegården",
+    "city": null,
+    "slug": "kannikegaarden",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.3276342,
+    "lon": 8.7616438,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35106.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/kannikegaarden/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3276342,8.7616438"
+  },
+  {
+    "id": 35105,
+    "title": "Klim Kalkovn",
+    "city": null,
+    "slug": "klim-kalkovn",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 57.103786,
+    "lon": 9.1704575,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35105.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/klim-kalkovn/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.103786,9.1704575"
+  },
+  {
+    "id": 35117,
+    "title": "Klimatorium",
+    "city": null,
+    "slug": "klimatorium",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 56.5537911,
+    "lon": 8.3087653,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35117.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/klimatorium/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.5537911,8.3087653"
+  },
+  {
+    "id": 35100,
+    "title": "Mandøhuset",
+    "city": null,
+    "slug": "mandoehuset",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.2740478,
+    "lon": 8.5373349,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35100.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/mandoehuset/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.2740478,8.5373349"
+  },
+  {
+    "id": 35107,
+    "title": "Museet for Religiøs Kunst",
+    "city": null,
+    "slug": "museet-for-religioes-kunst",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 56.5527472,
+    "lon": 8.2963712,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35107.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/museet-for-religioes-kunst/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.5527472,8.2963712"
+  },
+  {
+    "id": 35109,
+    "title": "Nymindegab Museum",
+    "city": null,
+    "slug": "nymindegab-museum",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.8173177,
+    "lon": 8.1976395,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35109.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/nymindegab-museum/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.8173177,8.1976395"
+  },
+  {
+    "id": 35115,
+    "title": "Nymindegab Redningsstation",
+    "city": null,
+    "slug": "nymindegab-redningsstation",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.8108806,
+    "lon": 8.189971,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35115.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/nymindegab-redningsstation/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.8108806,8.189971"
+  },
+  {
     "id": 42672,
     "title": "Ravhuset",
     "city": "Thyborøn",
@@ -628,6 +1690,24 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/ravhuset/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7060148,8.2175965"
+  },
+  {
+    "id": 35096,
+    "title": "Ribe Kunstmuseum",
+    "city": null,
+    "slug": "ribe-kunstmuseum",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.3292228,
+    "lon": 8.7675976,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35096.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/ribe-kunstmuseum/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3292228,8.7675976"
   },
   {
     "id": 42692,
@@ -666,6 +1746,24 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=57.7198915,10.537829"
   },
   {
+    "id": 35112,
+    "title": "Skærbæk Uldspinderi Museum",
+    "city": null,
+    "slug": "skaerbaek-uldspinderi-museum",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.1597746,
+    "lon": 8.7640231,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35112.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/skaerbaek-uldspinderi-museum/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1597746,8.7640231"
+  },
+  {
     "id": 42676,
     "title": "Stensamling",
     "city": "Hirtshals",
@@ -702,6 +1800,42 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7621184,8.3206912"
   },
   {
+    "id": 44044,
+    "title": "Vendsyssel Historiske Museum",
+    "city": "Hjørring",
+    "slug": "vendsyssel-historiske-museum",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 57.4610483,
+    "lon": 9.9827996,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vendsyssel-historiske-museum/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.4610483,9.9827996"
+  },
+  {
+    "id": 35111,
+    "title": "Vennebjerg Mølle",
+    "city": null,
+    "slug": "vennebjerg-moelle",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 57.4592745,
+    "lon": 9.8225571,
+    "reason_key": "weak-image",
+    "reason": "Svagt billede (website-screenshot eller ikke et foto af stedet)",
+    "thumb": "thumbs/35111.jpg",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vennebjerg-moelle/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.4592745,9.8225571"
+  },
+  {
     "id": 42685,
     "title": "Æ Beeshus",
     "city": "Vestervig",
@@ -718,6 +1852,24 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/ae-beeshus/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7738164,8.3157036"
+  },
+  {
+    "id": 35275,
+    "title": "Bredbjerg",
+    "city": null,
+    "slug": "bredbjerg",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 57.2675638,
+    "lon": 9.6136326,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/bredbjerg/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.2675638,9.6136326"
   },
   {
     "id": 35294,
@@ -738,6 +1890,24 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=56.4276647,8.1465466"
   },
   {
+    "id": 35269,
+    "title": "Damaged dune",
+    "city": null,
+    "slug": "damaged-dune",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.7510858,
+    "lon": 8.1797343,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/damaged-dune/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.7510858,8.1797343"
+  },
+  {
     "id": 35267,
     "title": "Filsø",
     "city": "Henne",
@@ -756,6 +1926,24 @@
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.7001908,8.2192452"
   },
   {
+    "id": 35293,
+    "title": "Fjandø",
+    "city": null,
+    "slug": "fjandoe",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 56.3418293,
+    "lon": 8.1842938,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/fjandoe/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.3418293,8.1842938"
+  },
+  {
     "id": 35286,
     "title": "Harboøre Tange Vildtreservat",
     "city": "Harboøre",
@@ -772,6 +1960,60 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/harbooere-tange-vildtreservat/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=56.6526784,8.1970272"
+  },
+  {
+    "id": 35289,
+    "title": "Havrvig Grund Sydvest",
+    "city": null,
+    "slug": "havrvig-grund-sydvest",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.9272759,
+    "lon": 8.2046946,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/havrvig-grund-sydvest/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9272759,8.2046946"
+  },
+  {
+    "id": 35292,
+    "title": "Høje Sande",
+    "city": null,
+    "slug": "hoeje-sande",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.9035952,
+    "lon": 8.3676799,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/hoeje-sande/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9035952,8.3676799"
+  },
+  {
+    "id": 35265,
+    "title": "Klægbanke",
+    "city": null,
+    "slug": "klaegbanke",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.9927076,
+    "lon": 8.284353,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/klaegbanke/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9927076,8.284353"
   },
   {
     "id": 35268,
@@ -862,6 +2104,24 @@
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/ringkoebing-fjord-vildtreservat/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9552582,8.2537709"
+  },
+  {
+    "id": 35295,
+    "title": "Rønland Sandø",
+    "city": null,
+    "slug": "roenland-sandoe",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 56.6499881,
+    "lon": 8.2338764,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/roenland-sandoe/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.6499881,8.2338764"
   },
   {
     "id": 35266,
@@ -969,6 +2229,24 @@
     "thumb": "thumbs/35284.jpg",
     "shot": false,
     "dev_url": "https://vestkystendk.local/listings/vejlerne-naturreservat-de-vestlige-vejler-2/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.0299645,8.9242379"
+  },
+  {
+    "id": 35287,
+    "title": "Vejlerne Naturreservat - De vestlige Vejler",
+    "city": null,
+    "slug": "vejlerne-naturreservat-de-vestlige-vejler",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 57.0299645,
+    "lon": 8.9242379,
+    "reason_key": "broken-image",
+    "reason": "Brudt/manglende featured image (peger på slettet billede)",
+    "thumb": null,
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vejlerne-naturreservat-de-vestlige-vejler/",
     "maps_url": "https://www.google.com/maps/search/?api=1&query=57.0299645,8.9242379"
   },
   {
