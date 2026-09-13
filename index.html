@@ -3776,7 +3776,7 @@ function renderFoto(content, statusEl) {
     <div style="font-size:12px;color:var(--text-dim);padding:8px 2px">Tryk på en pin for billede + <b>Kør hertil</b>. Grønne pins = allerede fotograferet.</div>`;
 
   content.innerHTML = `<div class="route-wrap">
-    <div class="route-intro">Attraktioner på Vestkysten der stadig viser et <b>Gemini-genereret placeholder-billede</b> — de trænger til <b>dit eget foto</b>. ${pos ? 'Sorteret efter afstand fra din position.' : 'Aktivér GPS for afstand/din-position på kortet.'} Skift mellem liste og kort, og vælg kategori nedenfor.</div>
+    <div class="route-intro">Attraktioner på Vestkysten hvor vi mangler <b>vores eget foto</b> — de viser enten en <b>Gemini-illustration</b> eller kun et <b>website-screenshot</b>. ${pos ? 'Sorteret efter afstand fra din position.' : 'Aktivér GPS for afstand/din-position på kortet.'} Skift mellem liste og kort, og vælg kategori nedenfor.</div>
     ${toggleRow}
     ${catPills}
     ${mapMode ? mapBody : listBody}

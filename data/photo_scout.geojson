@@ -6,6 +6,32 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          8.8066812,
+          55.1553741
+        ]
+      },
+      "properties": {
+        "id": 35224,
+        "title": "Ammuntionsbunker Øster Gasse",
+        "city": "Skærbæk",
+        "slug": "ammuntionsbunker-oester-gasse",
+        "categories": [
+          "bunkere"
+        ],
+        "primary_category": "bunkere",
+        "reason_key": "screenshot",
+        "reason": "Viser kun et screenshot af hjemmesiden — ikke et foto af stedet",
+        "thumb": "thumbs/35224.jpg",
+        "shot": false,
+        "dev_url": "https://vestkystendk.local/listings/ammuntionsbunker-oester-gasse/",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1553741,8.8066812"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           9.0254987,
           57.1579656
         ]
@@ -344,6 +370,32 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          8.0832535,
+          55.5578258
+        ]
+      },
+      "properties": {
+        "id": 35197,
+        "title": "Blåvandshuk Fyr",
+        "city": "Blåvand",
+        "slug": "blaavandshuk-fyr",
+        "categories": [
+          "fyrtaarne"
+        ],
+        "primary_category": "fyrtaarne",
+        "reason_key": "screenshot",
+        "reason": "Viser kun et screenshot af hjemmesiden — ikke et foto af stedet",
+        "thumb": "thumbs/35197.jpg",
+        "shot": false,
+        "dev_url": "https://vestkystendk.local/listings/blaavandshuk-fyr/",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=55.5578258,8.0832535"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           8.5664752,
           56.5806159
         ]
@@ -363,6 +415,32 @@
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/grisetaaodde/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.5806159,8.5664752"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.5985543,
+          57.1127129
+        ]
+      },
+      "properties": {
+        "id": 35203,
+        "title": "Hanstholm Fyr",
+        "city": "Hanstholm",
+        "slug": "hanstholm-fyr",
+        "categories": [
+          "fyrtaarne"
+        ],
+        "primary_category": "fyrtaarne",
+        "reason_key": "screenshot",
+        "reason": "Viser kun et screenshot af hjemmesiden — ikke et foto af stedet",
+        "thumb": "thumbs/35203.jpg",
+        "shot": false,
+        "dev_url": "https://vestkystendk.local/listings/hanstholm-fyr/",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1127129,8.5985543"
       }
     },
     {
@@ -467,6 +545,58 @@
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/bra-kunstudstilling/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4660898,8.4577652"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4472145,
+          55.4675515
+        ]
+      },
+      "properties": {
+        "id": 35138,
+        "title": "Frelsens Hær Esbjerg",
+        "city": "Esbjerg",
+        "slug": "frelsens-haer-esbjerg",
+        "categories": [
+          "kirker"
+        ],
+        "primary_category": "kirker",
+        "reason_key": "screenshot",
+        "reason": "Viser kun et screenshot af hjemmesiden — ikke et foto af stedet",
+        "thumb": "thumbs/35138.jpg",
+        "shot": false,
+        "dev_url": "https://vestkystendk.local/listings/frelsens-haer-esbjerg/",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4675515,8.4472145"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.1269405,
+          55.9982327
+        ]
+      },
+      "properties": {
+        "id": 35161,
+        "title": "Helligåndskirken",
+        "city": "Hvide Sande",
+        "slug": "helligaandskirken",
+        "categories": [
+          "kirker"
+        ],
+        "primary_category": "kirker",
+        "reason_key": "screenshot",
+        "reason": "Viser kun et screenshot af hjemmesiden — ikke et foto af stedet",
+        "thumb": "thumbs/35161.jpg",
+        "shot": false,
+        "dev_url": "https://vestkystendk.local/listings/helligaandskirken/",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9982327,8.1269405"
       }
     },
     {
@@ -656,6 +786,32 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          8.218666,
+          56.7050714
+        ]
+      },
+      "properties": {
+        "id": 42674,
+        "title": "Den gamle Smedie",
+        "city": "Thyborøn",
+        "slug": "den-gamle-smedie",
+        "categories": [
+          "museum"
+        ],
+        "primary_category": "museum",
+        "reason_key": "screenshot",
+        "reason": "Viser kun et screenshot af hjemmesiden — ikke et foto af stedet",
+        "thumb": "thumbs/42674.jpg",
+        "shot": false,
+        "dev_url": "https://vestkystendk.local/listings/den-gamle-smedie/",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7050714,8.218666"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           10.630435,
           57.735602
         ]
@@ -760,6 +916,32 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          8.2156505,
+          56.7065924
+        ]
+      },
+      "properties": {
+        "id": 42692,
+        "title": "Sea War Museum Jutland",
+        "city": "Thyborøn",
+        "slug": "sea-war-museum-jutland",
+        "categories": [
+          "museum"
+        ],
+        "primary_category": "museum",
+        "reason_key": "screenshot",
+        "reason": "Viser kun et screenshot af hjemmesiden — ikke et foto af stedet",
+        "thumb": "thumbs/42692.jpg",
+        "shot": false,
+        "dev_url": "https://vestkystendk.local/listings/sea-war-museum-jutland/",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7065924,8.2156505"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           10.537829,
           57.7198915
         ]
@@ -805,6 +987,58 @@
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/stensamling/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=57.5845038,9.941885"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3206912,
+          56.7621184
+        ]
+      },
+      "properties": {
+        "id": 42694,
+        "title": "Thinghuset",
+        "city": "Vestervig",
+        "slug": "thinghuset",
+        "categories": [
+          "museum"
+        ],
+        "primary_category": "museum",
+        "reason_key": "screenshot",
+        "reason": "Viser kun et screenshot af hjemmesiden — ikke et foto af stedet",
+        "thumb": "thumbs/42694.jpg",
+        "shot": false,
+        "dev_url": "https://vestkystendk.local/listings/thinghuset/",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7621184,8.3206912"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3157036,
+          56.7738164
+        ]
+      },
+      "properties": {
+        "id": 42685,
+        "title": "Æ Beeshus",
+        "city": "Vestervig",
+        "slug": "ae-beeshus",
+        "categories": [
+          "museum"
+        ],
+        "primary_category": "museum",
+        "reason_key": "screenshot",
+        "reason": "Viser kun et screenshot af hjemmesiden — ikke et foto af stedet",
+        "thumb": "thumbs/42685.jpg",
+        "shot": false,
+        "dev_url": "https://vestkystendk.local/listings/ae-beeshus/",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7738164,8.3157036"
       }
     },
     {
