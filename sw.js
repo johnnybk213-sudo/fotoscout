@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fotoscout-v27';
+const CACHE_NAME = 'fotoscout-v32';
 const ASSETS = [
   './',
   './index.html',
@@ -34,6 +34,22 @@ self.addEventListener('fetch', event => {
         cache: 'no-store'
       })
       .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // photo_scout data: network-first (frisk liste) MEN gem i cache så den virker
+  // offline i marken (Vestkysten har huller i dækningen).
+  if (url.pathname.includes('photo_scout')) {
+    event.respondWith(
+      fetch(event.request.url + (event.request.url.includes('?') ? '&' : '?') + '_t=' + Date.now(),
+            { cache: 'no-store' })
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(event.request))
     );
     return;
   }

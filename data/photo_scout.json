@@ -1,0 +1,835 @@
+[
+  {
+    "id": 35232,
+    "title": "Bulbjerg Bunker",
+    "city": "Frøstrup",
+    "slug": "bulbjerg-bunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 57.1579656,
+    "lon": 9.0254987,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/bulbjerg-bunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1579656,9.0254987"
+  },
+  {
+    "id": 35250,
+    "title": "Kalby Skov halvdelingsbunker",
+    "city": "Skærbæk",
+    "slug": "kalby-skov-halvdelingsbunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1721248,
+    "lon": 8.7731045,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/kalby-skov-halvdelingsbunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1721248,8.7731045"
+  },
+  {
+    "id": 35251,
+    "title": "Kalby Skov maskingeværbunker",
+    "city": "Skærbæk",
+    "slug": "kalby-skov-maskingevaerbunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1727739,
+    "lon": 8.7672038,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/kalby-skov-maskingevaerbunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1727739,8.7672038"
+  },
+  {
+    "id": 35248,
+    "title": "Mammut Bunker",
+    "city": "Rømø",
+    "slug": "mammut-bunker",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1505729,
+    "lon": 8.5312875,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/mammut-bunker/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1505729,8.5312875"
+  },
+  {
+    "id": 35229,
+    "title": "Maultier Bunker",
+    "city": "Blåvand",
+    "slug": "maultier-bunker-2",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.5491555,
+    "lon": 8.109598,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/maultier-bunker-2/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.5491555,8.109598"
+  },
+  {
+    "id": 35239,
+    "title": "Revolverkanonbunker Arrild",
+    "city": "Toftlund",
+    "slug": "revolverkanonbunker-arrild",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1623934,
+    "lon": 8.9533784,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/revolverkanonbunker-arrild/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1623934,8.9533784"
+  },
+  {
+    "id": 35240,
+    "title": "Sektionsbunker Arrild",
+    "city": "Toftlund",
+    "slug": "sektionsbunker-arrild",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1556948,
+    "lon": 8.9425964,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/sektionsbunker-arrild/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1556948,8.9425964"
+  },
+  {
+    "id": 35206,
+    "title": "Sikringsstilling Nord",
+    "city": "Toftlund",
+    "slug": "sikringsstilling-nord-4",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1528638,
+    "lon": 8.9655189,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/sikringsstilling-nord-4/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1528638,8.9655189"
+  },
+  {
+    "id": 35222,
+    "title": "Sikringsstilling Nord",
+    "city": "Toftlund",
+    "slug": "sikringsstilling-nord-2",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.1528492,
+    "lon": 8.9645513,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/sikringsstilling-nord-2/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1528492,8.9645513"
+  },
+  {
+    "id": 35238,
+    "title": "Stauning Batteri",
+    "city": "Skjern",
+    "slug": "stauning-batteri",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.9960753,
+    "lon": 8.3236425,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/stauning-batteri/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9960753,8.3236425"
+  },
+  {
+    "id": 35241,
+    "title": "Tarp Bunkermuseum",
+    "city": "Esbjerg N",
+    "slug": "tarp-bunkermuseum",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.517961,
+    "lon": 8.4847901,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/tarp-bunkermuseum/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.517961,8.4847901"
+  },
+  {
+    "id": 35231,
+    "title": "Tirpitz-Stillingen",
+    "city": "Blåvand",
+    "slug": "tirpitz-stillingen",
+    "categories": [
+      "bunkere"
+    ],
+    "primary_category": "bunkere",
+    "lat": 55.5544869,
+    "lon": 8.1691428,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/tirpitz-stillingen/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.5544869,8.1691428"
+  },
+  {
+    "id": 35193,
+    "title": "Agger Tange Forfyr",
+    "city": "Vestervig",
+    "slug": "agger-tange-forfyr",
+    "categories": [
+      "fyrtaarne"
+    ],
+    "primary_category": "fyrtaarne",
+    "lat": 56.7161721,
+    "lon": 8.2355194,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/agger-tange-forfyr/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7161721,8.2355194"
+  },
+  {
+    "id": 35191,
+    "title": "Grisetåodde",
+    "city": "Struer",
+    "slug": "grisetaaodde",
+    "categories": [
+      "fyrtaarne"
+    ],
+    "primary_category": "fyrtaarne",
+    "lat": 56.5806159,
+    "lon": 8.5664752,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/grisetaaodde/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.5806159,8.5664752"
+  },
+  {
+    "id": 35192,
+    "title": "Thyborøn Tange Nord Fyr",
+    "city": "Thyborøn",
+    "slug": "thyboroen-tange-nord-fyr",
+    "categories": [
+      "fyrtaarne"
+    ],
+    "primary_category": "fyrtaarne",
+    "lat": 56.7059954,
+    "lon": 8.2233686,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/thyboroen-tange-nord-fyr/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7059954,8.2233686"
+  },
+  {
+    "id": 35194,
+    "title": "Vorupør Bagfyr",
+    "city": "Thisted",
+    "slug": "vorupoer-bagfyr",
+    "categories": [
+      "fyrtaarne"
+    ],
+    "primary_category": "fyrtaarne",
+    "lat": 56.9579761,
+    "lon": 8.3707037,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vorupoer-bagfyr/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.9579761,8.3707037"
+  },
+  {
+    "id": 35195,
+    "title": "Vorupør Forfyr",
+    "city": "Thisted",
+    "slug": "vorupoer-forfyr",
+    "categories": [
+      "fyrtaarne"
+    ],
+    "primary_category": "fyrtaarne",
+    "lat": 56.958728,
+    "lon": 8.3691239,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vorupoer-forfyr/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.958728,8.3691239"
+  },
+  {
+    "id": 35185,
+    "title": "BRA Kunstudstilling",
+    "city": "Esbjerg",
+    "slug": "bra-kunstudstilling",
+    "categories": [
+      "gallerier"
+    ],
+    "primary_category": "gallerier",
+    "lat": 55.4660898,
+    "lon": 8.4577652,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/bra-kunstudstilling/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4660898,8.4577652"
+  },
+  {
+    "id": 35301,
+    "title": "Lydlegeplads",
+    "city": "Esbjerg",
+    "slug": "lydlegeplads",
+    "categories": [
+      "legesteder"
+    ],
+    "primary_category": "legesteder",
+    "lat": 55.4702674,
+    "lon": 8.4513016,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/lydlegeplads/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4702674,8.4513016"
+  },
+  {
+    "id": 35299,
+    "title": "Lykkens Have",
+    "city": "Esbjerg",
+    "slug": "lykkens-have",
+    "categories": [
+      "legesteder"
+    ],
+    "primary_category": "legesteder",
+    "lat": 55.4637779,
+    "lon": 8.4531923,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/lykkens-have/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4637779,8.4531923"
+  },
+  {
+    "id": 35296,
+    "title": "Monkey Tonkey",
+    "city": "Ringkøbing",
+    "slug": "monkey-tonkey",
+    "categories": [
+      "legesteder"
+    ],
+    "primary_category": "legesteder",
+    "lat": 56.1203411,
+    "lon": 8.1201777,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/monkey-tonkey/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.1203411,8.1201777"
+  },
+  {
+    "id": 35297,
+    "title": "Sky Ride",
+    "city": "Ringkøbing",
+    "slug": "sky-ride",
+    "categories": [
+      "legesteder"
+    ],
+    "primary_category": "legesteder",
+    "lat": 56.1202796,
+    "lon": 8.1201499,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/sky-ride/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.1202796,8.1201499"
+  },
+  {
+    "id": 35298,
+    "title": "Vikingelegepladsen",
+    "city": "Ribe",
+    "slug": "vikingelegepladsen",
+    "categories": [
+      "legesteder"
+    ],
+    "primary_category": "legesteder",
+    "lat": 55.3256347,
+    "lon": 8.7653173,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vikingelegepladsen/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3256347,8.7653173"
+  },
+  {
+    "id": 35302,
+    "title": "Vognbølparkens Legeplads",
+    "city": "Esbjerg",
+    "slug": "vognboelparkens-legeplads",
+    "categories": [
+      "legesteder"
+    ],
+    "primary_category": "legesteder",
+    "lat": 55.4842303,
+    "lon": 8.4429475,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vognboelparkens-legeplads/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4842303,8.4429475"
+  },
+  {
+    "id": 35088,
+    "title": "De sorte huse",
+    "city": "Vestervig",
+    "slug": "de-sorte-huse",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 56.7847828,
+    "lon": 8.2351254,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/de-sorte-huse/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7847828,8.2351254"
+  },
+  {
+    "id": 42675,
+    "title": "Det Grå Fyr",
+    "city": "Skagen",
+    "slug": "det-graa-fyr",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 57.735602,
+    "lon": 10.630435,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/det-graa-fyr/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.735602,10.630435"
+  },
+  {
+    "id": 35099,
+    "title": "Esbjerg Vandtårn",
+    "city": "Esbjerg",
+    "slug": "esbjerg-vandtaarn",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 55.4644744,
+    "lon": 8.4499456,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/esbjerg-vandtaarn/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4644744,8.4499456"
+  },
+  {
+    "id": 42697,
+    "title": "Havets Hemmeligheder",
+    "city": "Thyborøn",
+    "slug": "havets-hemmeligheder",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 56.7058238,
+    "lon": 8.2132257,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/havets-hemmeligheder/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7058238,8.2132257"
+  },
+  {
+    "id": 42672,
+    "title": "Ravhuset",
+    "city": "Thyborøn",
+    "slug": "ravhuset",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 56.7060148,
+    "lon": 8.2175965,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/ravhuset/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7060148,8.2175965"
+  },
+  {
+    "id": 42691,
+    "title": "Skagen Naturhistoriske Museum",
+    "city": "Skagen",
+    "slug": "skagen-naturhistoriske-museum",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 57.7198915,
+    "lon": 10.537829,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/skagen-naturhistoriske-museum/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.7198915,10.537829"
+  },
+  {
+    "id": 42676,
+    "title": "Stensamling",
+    "city": "Hirtshals",
+    "slug": "stensamling",
+    "categories": [
+      "museum"
+    ],
+    "primary_category": "museum",
+    "lat": 57.5845038,
+    "lon": 9.941885,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/stensamling/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.5845038,9.941885"
+  },
+  {
+    "id": 35294,
+    "title": "Bøvling Fjord Nord",
+    "city": "Bøvlingbjerg",
+    "slug": "boevling-fjord-nord",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 56.4276647,
+    "lon": 8.1465466,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/boevling-fjord-nord/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.4276647,8.1465466"
+  },
+  {
+    "id": 35267,
+    "title": "Filsø",
+    "city": "Henne",
+    "slug": "filsoe",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.7001908,
+    "lon": 8.2192452,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/filsoe/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.7001908,8.2192452"
+  },
+  {
+    "id": 35286,
+    "title": "Harboøre Tange Vildtreservat",
+    "city": "Harboøre",
+    "slug": "harbooere-tange-vildtreservat",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 56.6526784,
+    "lon": 8.1970272,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/harbooere-tange-vildtreservat/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.6526784,8.1970272"
+  },
+  {
+    "id": 35268,
+    "title": "Lustrup Fællesjord",
+    "city": "Ribe",
+    "slug": "lustrup-faellesjord",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.2986219,
+    "lon": 8.798986,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/lustrup-faellesjord/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.2986219,8.798986"
+  },
+  {
+    "id": 35270,
+    "title": "Marskgården",
+    "city": "Højer",
+    "slug": "marskgaarden",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 54.9630593,
+    "lon": 8.6973719,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/marskgaarden/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=54.9630593,8.6973719"
+  },
+  {
+    "id": 35288,
+    "title": "Nissum Fjord Vildtreservat",
+    "city": "Vemb",
+    "slug": "nissum-fjord-vildtreservat",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 56.364173,
+    "lon": 8.2129869,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/nissum-fjord-vildtreservat/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.364173,8.2129869"
+  },
+  {
+    "id": 35279,
+    "title": "Ribe Vildtreservat",
+    "city": "Ribe",
+    "slug": "ribe-vildtreservat",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.3223269,
+    "lon": 8.7773127,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/ribe-vildtreservat/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3223269,8.7773127"
+  },
+  {
+    "id": 35281,
+    "title": "Ringkøbing Fjord Vildtreservat",
+    "city": "Skjern",
+    "slug": "ringkoebing-fjord-vildtreservat",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.9552582,
+    "lon": 8.2537709,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/ringkoebing-fjord-vildtreservat/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9552582,8.2537709"
+  },
+  {
+    "id": 35266,
+    "title": "Skjern Enge",
+    "city": "Tarm",
+    "slug": "skjern-enge",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.9243094,
+    "lon": 8.5107187,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/skjern-enge/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9243094,8.5107187"
+  },
+  {
+    "id": 35272,
+    "title": "Stormengene",
+    "city": "Rømø",
+    "slug": "stormengene",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.0786328,
+    "lon": 8.5351109,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/stormengene/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.0786328,8.5351109"
+  },
+  {
+    "id": 35278,
+    "title": "Struer Vildtreservat",
+    "city": "Struer",
+    "slug": "struer-vildtreservat",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 56.4968888,
+    "lon": 8.5603866,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/struer-vildtreservat/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.4968888,8.5603866"
+  },
+  {
+    "id": 35273,
+    "title": "Sølsted Mose",
+    "city": "Tønder",
+    "slug": "soelsted-mose",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.0297508,
+    "lon": 8.8432382,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/soelsted-mose/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.0297508,8.8432382"
+  },
+  {
+    "id": 35290,
+    "title": "Tipperne",
+    "city": "Nørre Nebel",
+    "slug": "tipperne",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 55.8718753,
+    "lon": 8.2354687,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/tipperne/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=55.8718753,8.2354687"
+  },
+  {
+    "id": 35284,
+    "title": "Vejlerne Naturreservat - De vestlige Vejler",
+    "city": "Thisted",
+    "slug": "vejlerne-naturreservat-de-vestlige-vejler-2",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 57.0299645,
+    "lon": 8.9242379,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vejlerne-naturreservat-de-vestlige-vejler-2/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.0299645,8.9242379"
+  },
+  {
+    "id": 35274,
+    "title": "Vejlerne Naturreservat - De østlige Vejler",
+    "city": "Fjerritslev",
+    "slug": "vejlerne-naturreservat-de-oestlige-vejler-2",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 57.0743719,
+    "lon": 9.0792017,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vejlerne-naturreservat-de-oestlige-vejler-2/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.0743719,9.0792017"
+  },
+  {
+    "id": 35285,
+    "title": "Vejlerne Naturreservat - De østlige Vejler",
+    "city": "Fjerritslev",
+    "slug": "vejlerne-naturreservat-de-oestlige-vejler",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 57.0739196,
+    "lon": 9.0743199,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vejlerne-naturreservat-de-oestlige-vejler/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.0739196,9.0743199"
+  },
+  {
+    "id": 35277,
+    "title": "Vest Stadil Fjord Vildtreservat",
+    "city": "Tim",
+    "slug": "vest-stadil-fjord-vildtreservat",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 56.2047768,
+    "lon": 8.1515628,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vest-stadil-fjord-vildtreservat/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=56.2047768,8.1515628"
+  },
+  {
+    "id": 35264,
+    "title": "Vilsbøl Klitplantage",
+    "city": "Thisted",
+    "slug": "vilsboel-klitplantage",
+    "categories": [
+      "naturomraader"
+    ],
+    "primary_category": "naturomraader",
+    "lat": 57.033243,
+    "lon": 8.5659039,
+    "reason_key": "illustration",
+    "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+    "shot": false,
+    "dev_url": "https://vestkystendk.local/listings/vilsboel-klitplantage/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=57.033243,8.5659039"
+  }
+]

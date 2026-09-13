@@ -721,6 +721,38 @@
 .sol-note { font-size: 12px; color: var(--text-dim); line-height: 1.5; margin-top: 10px; }
 .sol-preview-wrap { margin: 4px 0 14px; }
 .sol-preview { display: block; width: 100%; max-width: 460px; margin: 0 auto; height: auto; border-radius: 8px; background: var(--card); }
+/* Skyline-planlægger (genbruger sol-* klasserne; egne kort + tabel-tweaks) */
+#sky-map { height: 460px; width: 100%; border-radius: 8px; z-index: 0; background: var(--card); }
+.sky-pin-stand, .sky-pin-aim { font-size: 20px; text-align: center; line-height: 1; background: none; border: none; }
+.sky-results { max-height: 440px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; margin-top: 6px; }
+.sky-results .sol-table { margin: 0; }
+.sky-results .sol-table th { position: sticky; top: 0; background: var(--card); z-index: 1; }
+.sol-table tr.pick td { background: rgba(90, 150, 255, 0.14); color: var(--text-bright); }
+@media (max-width: 720px) { #sky-map { height: 300px; } }
+/* Skyfri-finder (genbruger sol-* klasserne; egne kort-markører + resultat-kort) */
+#clear-map { height: 460px; width: 100%; border-radius: 8px; z-index: 0; background: var(--card); }
+@media (max-width: 720px) { #clear-map { height: 300px; } }
+.clear-pin-orig { font-size: 20px; text-align: center; line-height: 1; background: none; border: none; }
+.cl-card { display: flex; gap: 12px; align-items: flex-start; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 10px; cursor: pointer; transition: transform 0.15s; }
+.cl-card:active { transform: scale(0.99); }
+.cl-card.pick { border-color: var(--pin); box-shadow: 0 0 0 1px var(--pin); }
+.cl-dot { width: 14px; height: 14px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.cl-body { flex: 1; min-width: 0; }
+.cl-name { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+.cl-meta { font-size: 12px; color: var(--text-dim); margin-top: 3px; line-height: 1.5; }
+.cl-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+.cl-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: var(--pin-bg); color: var(--pin); }
+.cl-tag.warn { background: rgba(234,179,8,0.16); color: #eab308; }
+.cl-tag.bad { background: rgba(239,68,68,0.16); color: #ef4444; }
+.cl-tag.ok { background: rgba(34,197,94,0.16); color: #22c55e; }
+.cl-checks { max-height: 210px; overflow-y: auto; border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
+.cl-check { display: flex; align-items: center; gap: 8px; padding: 6px 8px; font-size: 14px; color: var(--text); cursor: pointer; border-radius: 7px; }
+.cl-check:hover { background: var(--pin-bg); }
+.cl-check input { width: 16px; height: 16px; }
+.cl-check .cl-cdist { margin-left: auto; font-size: 12px; color: var(--text-dim); }
+.cl-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+.cl-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.cl-legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
 </style>
 
 <script>
@@ -831,7 +863,9 @@ const state = {
   _groups: [],                      // seneste landmark-grupper (til klik-handlere)
   manualTown: null,                 // valgt by fra listen (scout hjemmefra) — null = brug GPS
   gpsLat: null, gpsLon: null, gpsName: null,   // den rigtige GPS-position (så man kan skifte tilbage)
-  items: []
+  items: [],
+  photoScout: [],   // Vestkysten-attraktioner der mangler VORES eget foto (Gemini-placeholder)
+  photoShot: new Set(JSON.parse(localStorage.getItem('fotoscout-shot') || '[]'))  // id'er markeret "fotograferet"
 };
 
 // --- Haversine ---
@@ -904,6 +938,17 @@ async function loadData() {
   // Sikr at begge arrays altid findes
   if (!Array.isArray(state.data.locations)) state.data.locations = [];
   if (!Array.isArray(state.data.inspirations)) state.data.inspirations = [];
+}
+
+// --- Load Vestkysten "mangler foto"-liste (Gemini-placeholders der skal have vores eget foto) ---
+async function loadPhotoScout() {
+  try {
+    const res = await fetch('./data/photo_scout.json?' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const arr = await res.json();
+      if (Array.isArray(arr)) state.photoScout = arr;
+    }
+  } catch {}
 }
 
 // --- Indlæs by-liste (vestkyst-byer) ---
@@ -1537,6 +1582,8 @@ const SOL = {
     anchor: 'top',      // 'base' | 'mid' | 'top' — hvor forskydningens nulpunkt sidder
     fill: 0.60,         // objektets andel af billedhøjden
     offX: 0, offY: 0,   // forskydning i andel af billedet (−0.4..0.4); + = højre / op
+    lockOn: false,      // 🕐 tidspunkt-lås: lås tiden og vis begge himmellegemer hvor de FAKTISK står
+    lockTime: null,     // 'HH:MM' — låst klokkeslæt (styrer så lodret position + op/nedgang, ikke omvendt)
   },
 
   // Brugerens egne "Andet objekt" — persisteret i localStorage, så de kan genbruges.
@@ -1723,6 +1770,7 @@ const SOL = {
     const rY = p.diam / fovV / 2, rX = p.diam / fovH / 2;
     const drawFY = bodyFY - (+c.tilt || 0) / fovV;                    // hældning panorerer den tegnede sol-position
     r.fits = drawFY - rY >= 0 && drawFY + rY <= 1 && bodyFX - rX >= 0 && bodyFX + rX <= 1;
+    r.usedSide = cross.side;                                          // hvilken side der FAKTISK blev brugt (kan afvige v. fallback)
     if (cross.side !== c.side) r.note = cross.side === 'rise' ? 'kun v. opgang' : 'kun v. nedgang';
     if (!r.fits) r.note = r.note ? r.note + ' · uden for ramme' : 'uden for ramme';
     r.ok = inRange && r.fits;
@@ -1923,9 +1971,12 @@ SOL.applyOpportunity = function (idx) {
   this.cfg.body = body;
   const az = body === 'moon' ? o.moonAz : o.sunAz;
   this.cfg.side = (az < 180) ? 'rise' : 'set';     // østlig himmel = opgang, vestlig = nedgang
-  // neutral komposition (objekt ved horisonten, centreret) → plan() finder pålideligt
-  // standpunktet på op-/nedgangstidspunktet; brændvidde + afstand beholdes.
-  this.cfg.offX = 0; this.cfg.offY = 0; this.cfg.tilt = 0; this.cfg.anchor = 'base';
+  // neutral komposition (centreret) → plan() finder pålideligt standpunktet;
+  // brændvidde + afstand beholdes.
+  this.cfg.offX = 0; this.cfg.tilt = 0; this.cfg.anchor = 'base';
+  // lås tiden til mulighedens tidspunkt → begge himmellegemer vises hvor de faktisk står
+  this.cfg.lockOn = true;
+  this.cfg.lockTime = `${String(o.t.getHours()).padStart(2, '0')}:${String(o.t.getMinutes()).padStart(2, '0')}`;
   this._pickedOpp = idx;
   this._fitted = false;                            // lad kortet zoome til objekt + nyt standpunkt
   render();
@@ -2201,6 +2252,33 @@ function renderSol(content, statusEl) {
   const objAngVsel = (Math.atan((elev + obj.height) / selDist) - Math.atan(elev / selDist)) * SOL.R2D;
   const effFill = objAngVsel / fovVsel;                                            // objektets andel af billedhøjden (resultat)
 
+  // 🕐 Tidspunkt-lås: hvis tiden er låst, overstyr lodret forskydning + op/nedgang, så
+  // himmellegemet placeres på sin FAKTISKE højde kl. lockTime (frem for at tiden løses
+  // ud fra en ønsket komposition). Så viser preview + sekundær-markør begge himmellegemer
+  // præcis hvor de står på det låste tidspunkt. Genbruger plan() uændret.
+  let lockOverride = null, lockInfo = null;
+  if (c.lockOn && c.lockTime && obj.lat != null && obj.lon != null) {
+    const [lh, lm] = c.lockTime.split(':').map(Number);
+    const lockDate = new Date(...c.date.split('-').map((v, i) => i === 1 ? v - 1 : +v), lh || 0, lm || 0);
+    const lpos = SOL.position(lockDate, obj.lat, obj.lon, c.body);
+    const lnext = SOL.position(new Date(lockDate.getTime() + 60000), obj.lat, obj.lon, c.body);
+    const lockedSide = lnext.alt >= lpos.alt ? 'rise' : 'set';                      // stiger → opgang, falder → nedgang
+    const neededBodyFY = SOL.BASE_MARGIN + (lpos.alt - footAltSel) / fovVsel;       // frame-fraktion for den faktiske højde
+    const anchorFY = c.anchor === 'base' ? SOL.BASE_MARGIN : c.anchor === 'mid' ? SOL.BASE_MARGIN + effFill / 2 : SOL.BASE_MARGIN + effFill;
+    lockOverride = { offY: neededBodyFY - anchorFY, side: lockedSide };
+    lockInfo = { time: lockDate, alt: lpos.alt, az: lpos.az, up: lpos.alt > (c.body === 'moon' ? 0.125 : -0.833) };
+  }
+
+  // Beregn setup én gang + afgør hvilken side (op/nedgang) der FAKTISK har en brugbar
+  // hændelse bag objektet i dag. plan() falder tilbage til modsat side når den valgte
+  // ikke findes (fx en lav måne der først går ned efter midnat, uden for dagens scan) —
+  // så toggle-knappen skal afspejle den reelle side, og vi forklarer skiftet tydeligt.
+  const series = SOL.daySeries(c.date, obj.lat, obj.lon, c.body);
+  const cEff = { ...c, ...(lockOverride || {}), fill: effFill };
+  const previewPlan = SOL.plan(obj, series, selDist, cEff);
+  const effSide = lockOverride ? lockOverride.side : ((previewPlan && previewPlan.usedSide) || c.side);
+  const sideFellBack = !lockOverride && previewPlan && previewPlan.usedSide && previewPlan.usedSide !== c.side;
+
   // Auto-terræn status-tekst (Open-Meteo; debounced/cachet; offline → manuel)
   let elevStatus;
   if (!c.autoElev) elevStatus = 'manuel — indtast selv';
@@ -2250,6 +2328,13 @@ function renderSol(content, statusEl) {
         <label>Form<select id="sol-shape" onchange="SOL.on('shape',this.value)">${shapeOpts}</select></label>
         <label>Dato<input type="date" id="sol-date" value="${c.date}" onchange="SOL.on('date',this.value)"></label>
       </div>
+      <div class="sol-row">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+          <input type="checkbox" ${c.lockOn ? 'checked' : ''} onchange="SOL.on('lockOn',this.checked)"> 🕐 Lås tidspunkt
+          ${c.lockOn ? `<input type="time" value="${c.lockTime || '20:00'}" onchange="SOL.on('lockTime',this.value)" style="margin-left:4px">` : ''}
+        </label>
+        ${c.lockOn ? `<div class="sol-dim">Begge himmellegemer vises hvor de FAKTISK står kl. ${c.lockTime} — lodret position + op/nedgang styres af tiden. Skru på 🔭 brændvidde for at få begge i rammen.${lockInfo && !lockInfo.up ? ` <b>OBS:</b> ${c.body === 'moon' ? 'månen' : 'solen'} er under horisonten på dette tidspunkt.` : ''}</div>` : ''}
+      </div>
       <div class="sol-row two">
         <label>Objektets højde (m)<input type="number" step="1" min="1" id="sol-h" value="${c.height}" onchange="SOL.on('height',this.value)"></label>
         <label>Objektets bredde (m)<input type="number" step="1" min="1" id="sol-w" value="${c.width}" onchange="SOL.on('width',this.value)"></label>
@@ -2267,10 +2352,18 @@ function renderSol(content, statusEl) {
           <button class="${c.body === 'moon' ? 'on' : ''}" onclick="SOL.on('body','moon')">🌙 Måne</button>
         </div>
         <div class="sol-toggle">
-          <button class="${c.side === 'rise' ? 'on' : ''}" onclick="SOL.on('side','rise')">↗ Opgang</button>
-          <button class="${c.side === 'set' ? 'on' : ''}" onclick="SOL.on('side','set')">↘ Nedgang</button>
+          <button class="${effSide === 'rise' ? 'on' : ''}" ${lockOverride ? 'disabled title="styret af låst tidspunkt"' : ''} onclick="SOL.on('side','rise')">↗ Opgang</button>
+          <button class="${effSide === 'set' ? 'on' : ''}" ${lockOverride ? 'disabled title="styret af låst tidspunkt"' : ''} onclick="SOL.on('side','set')">↘ Nedgang</button>
         </div>
       </div>
+      ${sideFellBack ? (() => {
+        const t = previewPlan.time, hhmm = `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+        const dir = SOL.compassName(SOL.position(t, obj.lat, obj.lon, c.body).az);
+        const bl = c.body === 'moon' ? 'Månen' : 'Solen';
+        const want = c.side === 'set' ? 'nedgang' : 'opgang', got = effSide === 'rise' ? 'opgang' : 'nedgang';
+        return `<div class="sol-row"><div style="background:rgba(255,190,70,0.12);border:1px solid rgba(255,190,70,0.4);color:#ffcf87;font-size:12.5px;padding:8px 10px;border-radius:8px;line-height:1.45">
+          ℹ️ Ingen brugbar <b>${want}</b> bag ${esc(obj.name)} d. ${c.date} — ${bl.toLowerCase()} er kun lavt nok bag objektet ved <b>${got}</b> (kl. ${hhmm}, ${dir}). Viser ${got}.</div></div>`;
+      })() : ''}
       <div class="sol-row">
         <label>📷 Sensor-format <span class="sol-dim">(brændvidde tolkes for denne sensor · telefon → vælg Fuldformat + tast basis×zoom)</span></label>
         <div class="sol-toggle">
@@ -2304,8 +2397,8 @@ function renderSol(content, statusEl) {
           <input type="range" min="-60" max="60" step="5" value="${Math.round(c.offX * 100)}" oninput="SOL.on('offX',this.value)"></label>
       </div>
       <div class="sol-row">
-        <label>↕ Lodret forskydning: <b>${c.offY > 0 ? '+' : ''}${Math.round(c.offY * 100)}%</b> <span class="sol-dim">(${readY})</span>
-          <input type="range" min="-60" max="60" step="5" value="${Math.round(c.offY * 100)}" oninput="SOL.on('offY',this.value)"></label>
+        <label>↕ Lodret forskydning: <b>${lockOverride ? '🔒 styret af tid' : (c.offY > 0 ? '+' : '') + Math.round(c.offY * 100) + '%'}</b> ${lockOverride ? '' : `<span class="sol-dim">(${readY})</span>`}
+          <input type="range" min="-60" max="60" step="5" value="${Math.round((lockOverride ? lockOverride.offY : c.offY) * 100)}" ${lockOverride ? 'disabled' : ''} oninput="SOL.on('offY',this.value)"></label>
       </div>
       <div class="sol-row">
         <label>📐 Kamerahældning: <b>${(+c.tilt || 0) > 0 ? '+' : ''}${+c.tilt || 0}°</b> <span class="sol-dim">(+ = vip op, fanger en høj sol/måne — objektets fod ryger ud i bunden)</span>
@@ -2342,9 +2435,8 @@ function renderSol(content, statusEl) {
 
   // Tabel: 7 afstande (geometrisk fordelt over skalaen) ved den VALGTE brændvidde.
   // Objektstørrelsen (fill) er nu et resultat af (brændvidde, afstand), ikke et input.
-  const series = SOL.daySeries(c.date, obj.lat, obj.lon, c.body);
   const fillAt = D => ((Math.atan((elev + obj.height) / D) - Math.atan(elev / D)) * SOL.R2D) / fovVsel;   // objektfyld ved afstand D
-  const planAt = D => SOL.plan(obj, series, D, { ...c, fill: fillAt(D) });
+  const planAt = D => SOL.plan(obj, series, D, { ...c, ...(lockOverride || {}), fill: fillAt(D) });
   const distSteps = Array.from({ length: 7 }, (_, i) => Math.round(dMin * Math.pow(dMax / dMin, i / 6)));
   const plans = distSteps.map(planAt);
   const selStepIdx = distSteps.reduce((b, D, i) => Math.abs(D - selDist) < Math.abs(distSteps[b] - selDist) ? i : b, 0);
@@ -2363,11 +2455,10 @@ function renderSol(content, statusEl) {
       <td>${Math.round(r.bodyVsObj * 100)}%${r.note ? ' · ' + r.note : ''}</td></tr>`;
   }).join('');
 
-  // Preview = dit valgte setup: brændvidde (effFill) + afstand.
-  const cEff = { ...c, fill: effFill };
-  const previewPlan = SOL.plan(obj, series, selDist, cEff);
+  // Preview = dit valgte setup: brændvidde (effFill) + afstand. (cEff/previewPlan beregnet ovenfor.)
   const hasShot = previewPlan && previewPlan.time && previewPlan.gp;
   if (hasShot) previewPlan.secondary = SOL.secondary(obj, previewPlan, cEff);
+  if (!c.lockOn && hasShot) SOL._lastTime = previewPlan.time;   // husk sidst beregnede tid (bruges når lås slås til)
 
   // Auto-terræn: hent højde for objekt + beregnet standpunkt (debounced, cachet, offline-sikkert)
   if (c.autoElev && obj.lat != null && obj.lon != null && previewPlan && previewPlan.gp) {
@@ -2488,6 +2579,13 @@ SOL.on = function (field, val) {
   else if (field === 'elev') { this.cfg.elev = +val || 0; this.cfg.autoElev = false; }   // manuel indtastning slår auto fra
   else if (field === 'autoElev') { this.cfg.autoElev = !!val; if (this.cfg.autoElev) this.elevState.appliedKey = null; }   // slå til → tving et frisk hent
   else if (field === 'fill' || field === 'offX' || field === 'offY') { this.cfg[field] = +val / 100; }
+  else if (field === 'lockOn') {
+    this.cfg.lockOn = !!val;
+    if (this.cfg.lockOn && !this.cfg.lockTime) {          // slå til uden tid → start fra nuværende beregnede tidspunkt
+      const t = this._lastTime;
+      this.cfg.lockTime = t ? `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}` : '20:00';
+    }
+  }
   else if (field === 'lat' || field === 'lon') {
     // Normalisér: dansk komma → punktum, fjern mellemrum. type="text" giver os den rå
     // streng (type="number" ville have strippet kommaet som tusind-separator → skrald-værdi).
@@ -2501,6 +2599,760 @@ SOL.on = function (field, val) {
   render();
 };
 
+// ============================================================
+// Skyline-planlægger (🏙️) — "vendt om": standpunktet er LÅST (et
+// udsigtspunkt), og vi finder HVORNÅR sol/måne står lavt i sigte-
+// retningen mod byens skyline. Genbruger SOL's astronomi-motor
+// (position/moonIllum/dest/bearing/compassName) + sensor-tabellen.
+// ============================================================
+const SKY = {
+  AIM_LEN: 2500,        // sigtelinjens visuelle længde på kortet (m)
+  // 19 kuraterede udsigtspunkter (fra danmarks_skyline_udsigtspunkter.xlsx,
+  // luget: kun spots med reel by-skyline i en retning hvor lav sol/måne kan stå bag).
+  // az = default sigte-azimut (kompas); manual=true → luge-vurderet, træk selv.
+  SPOTS: [
+    { id: 1, by: 'Hovedstadsområdet', vp: 'Langelinie / Inderhavnsbroen', lat: 55.6845, lon: 12.5937, az: 240, manual: false, hint: '' },
+    { id: 2, by: 'Aarhus', vp: 'Aarhus Ø (Molen) / Riis Skov', lat: 56.1629, lon: 10.2246, az: 231, manual: false, hint: '' },
+    { id: 4, by: 'Aalborg', vp: 'Nørresundby Kystlinje / Utzon Center', lat: 57.0543, lon: 9.9231, az: 250, manual: true, hint: 'Skyline mod syd (umuligt lavt); sigt VSV langs fjorden/Limfjordsbroen for aftensol.' },
+    { id: 5, by: 'Esbjerg', vp: 'Strandpromenaden / Mennesket ved Havet', lat: 55.4852, lon: 8.4385, az: 90, manual: true, hint: 'Skulpturen vender mod V-havet (solnedgang på hav); sigt Ø mod havn/by-skyline til solopgang.' },
+    { id: 6, by: 'Horsens', vp: 'Lunden / Stensballe-kysten', lat: 55.8598, lon: 9.8702, az: 275, manual: false, hint: '' },
+    { id: 9, by: 'Vejle', vp: 'Skyttehuset / Mølholm-bakkerne', lat: 55.7064, lon: 9.5532, az: 284, manual: false, hint: '' },
+    { id: 11, by: 'Silkeborg', vp: 'Indelukket / Silkeborg Langsø', lat: 56.1732, lon: 9.5514, az: 245, manual: true, hint: 'Beskeden skyline; sigt V/SV for solnedgang langs Langsøen.' },
+    { id: 16, by: 'Viborg', vp: 'Søndersø Søstien / Borgvold', lat: 56.4475, lon: 9.4072, az: 315, manual: true, hint: 'Domkirkens tvillingetårne spejlet i Søndersø; sigt NV for sen solnedgang/måne.' },
+    { id: 18, by: 'Køge', vp: 'Køge Marina / Nordstrand', lat: 55.4593, lon: 12.1904, az: 255, manual: false, hint: '' },
+    { id: 23, by: 'Sønderborg', vp: 'Strandpromenaden / Alsik', lat: 54.9122, lon: 9.7821, az: 73, manual: false, hint: '' },
+    { id: 24, by: 'Holbæk', vp: 'Holbæk Fjord / Strandparken', lat: 55.7185, lon: 11.7124, az: 263, manual: false, hint: '' },
+    { id: 25, by: 'Svendborg', vp: 'Christiansminde', lat: 55.0612, lon: 10.6358, az: 264, manual: false, hint: '' },
+    { id: 27, by: 'Frederikshavn', vp: 'Pikkerbakken', lat: 57.4215, lon: 10.5312, az: 90, manual: true, hint: 'Hævet punkt, men byen ligger mod N (umuligt lavt); sigt Ø mod hav/havn til solopgang.' },
+    { id: 28, by: 'Haderslev', vp: 'Haderslev Dam / Damparken', lat: 55.2514, lon: 9.4891, az: 41, manual: true, hint: 'Domkirke over Haderslev Dam; retning NØ marginal for lav sol — mest måne/tidlig solopgang.' },
+    { id: 29, by: 'Skive', vp: 'Resen Kær / Skive Fjord', lat: 56.5712, lon: 9.0345, az: 225, manual: true, hint: 'Beskeden skyline; sigt SV/V for solnedgang over fjorden.' },
+    { id: 32, by: 'Skanderborg', vp: 'Skanderborg Sø (Dyrehaven)', lat: 56.0315, lon: 9.9324, az: 315, manual: true, hint: 'Slotskirke over søen; sigt NV for solnedgang.' },
+    { id: 33, by: 'Nykøbing F', vp: 'Guldborgsund-siden / Sundby', lat: 54.7674, lon: 11.8742, az: 120, manual: true, hint: 'Sundby ligger vest for sundet; sigt Ø/SØ over Guldborgsund mod byen.' },
+    { id: 38, by: 'Thisted', vp: 'Limfjorden / Christiansgave', lat: 56.9542, lon: 8.6874, az: 77, manual: false, hint: '' },
+    { id: 40, by: 'Korsør', vp: 'Halsskov Odde', lat: 55.3341, lon: 11.1294, az: 127, manual: true, hint: 'Mest Storebæltsbroen (bro-motiv); SØ til solopgang.' },
+  ],
+  cfg: {
+    spotId: 1, aimAz: null, days: 365, body: 'both',
+    maxAlt: 8, fullOnly: false, sensor: 'ff', focal: 135, picked: null,
+  },
+  results: null, _map: null,
+
+  spot() { return this.SPOTS.find(s => s.id === this.cfg.spotId) || this.SPOTS[0]; },
+  aim() { return this.cfg.aimAz == null ? this.spot().az : this.cfg.aimAz; },
+  _dAz(a, b) { return ((a - b + 540) % 360) - 180; },   // signeret az-forskel a−b i [−180,180]
+
+  // Kernen (vendt om ift. objekt-mode): for hver dag finder vi tidspunktet hvor
+  // body's AZIMUT krydser sigtet, og aflæser HØJDEN dér. Lav højde (−1..maxAlt) =
+  // sol/måne står lavt over/bag skylinen → fotograferbart vindue.
+  findWindows(spot, aim, startDate, days, body, maxAlt) {
+    const out = [];
+    const [y0, m0, d0] = startDate.split('-').map(Number);
+    const bodies = body === 'both' ? ['sun', 'moon'] : [body];
+    for (let dd = 0; dd < days; dd++) {
+      const base = new Date(y0, m0 - 1, d0 + dd);
+      const ds = `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, '0')}-${String(base.getDate()).padStart(2, '0')}`;
+      for (const b of bodies) {
+        let prevD = null, prevT = null;
+        for (let min = 0; min <= 1440; min += 10) {
+          const t = new Date(base.getFullYear(), base.getMonth(), base.getDate(), 0, min, 0);
+          const p = SOL.position(t, spot.lat, spot.lon, b);
+          const dA = this._dAz(p.az, aim);
+          if (prevD != null && Math.sign(dA) !== Math.sign(prevD) && Math.abs(dA) + Math.abs(prevD) < 90) {
+            const f = Math.abs(prevD) / (Math.abs(prevD) + Math.abs(dA));      // interpolér krydsningen
+            const tc = new Date(prevT.getTime() + f * (t - prevT));
+            const pc = SOL.position(tc, spot.lat, spot.lon, b);
+            if (pc.alt >= -1 && pc.alt <= maxAlt) {
+              const nxt = SOL.position(new Date(tc.getTime() + 60000), spot.lat, spot.lon, b);
+              const il = b === 'moon' ? SOL.moonIllum(tc) : null;
+              out.push({
+                date: ds, t: tc, body: b, az: pc.az, alt: pc.alt, diam: pc.diam,
+                rising: nxt.alt >= pc.alt, illum: il ? il.fraction : null, phase: il ? il.phase : null,
+              });
+            }
+          }
+          prevD = dA; prevT = t;
+        }
+      }
+    }
+    return out.sort((a, b) => a.t - b.t);
+  },
+
+  scan() {
+    const spot = this.spot(), aim = this.aim();
+    const n = new Date();
+    const start = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+    this.results = this.findWindows(spot, aim, start, this.cfg.days, this.cfg.body, this.cfg.maxAlt);
+    this.cfg.picked = this.results.length ? 0 : null;
+    render();
+  },
+  pick(i) { this.cfg.picked = +i; render(); },
+
+  on(field, val) {
+    if (field === 'spot') { this.cfg.spotId = +val; this.cfg.aimAz = null; this._fitted = false; this.scan(); return; }
+    if (field === 'body' || field === 'maxAlt' || field === 'days') { this.cfg[field] = field === 'body' ? val : +val; this.scan(); return; }
+    if (field === 'resetAim') { this.cfg.aimAz = null; this._fitted = false; this.scan(); return; }
+    if (field === 'sensor') { this.cfg.sensor = val; render(); return; }
+    if (field === 'focal') { this.cfg.focal = +val; render(); return; }
+    if (field === 'fullOnly') { this.cfg.fullOnly = !!val; render(); return; }
+    this.cfg[field] = val; render();
+  },
+
+  // --- Kort (Leaflet, egen instans; standpunkt fast + træk-bar sigte) ---
+  initMap() {
+    if (typeof L === 'undefined') return;
+    if (this._map) { try { this._map.remove(); } catch (e) {} this._map = null; }
+    const el = document.getElementById('sky-map');
+    if (!el) return;
+    const map = L.map(el, { zoomControl: true }).setView([56, 10], 7);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+    const standIcon = L.divIcon({ className: 'sky-pin-stand', html: '📍', iconSize: [24, 24], iconAnchor: [12, 22] });
+    const aimIcon = L.divIcon({ className: 'sky-pin-aim', html: '🎯', iconSize: [24, 24], iconAnchor: [12, 12] });
+    this._stand = L.marker([56, 10], { icon: standIcon, interactive: false }).addTo(map);
+    this._aimLine = L.polyline([], { color: '#ff9d3c', weight: 3, dashArray: '6 5', opacity: 0.9 }).addTo(map);
+    this._aimHandle = L.marker([56, 10], { icon: aimIcon, draggable: true }).addTo(map);
+    this._aimHandle.on('dragstart', () => { this._dragging = true; });
+    this._aimHandle.on('drag', () => this.onAimDrag());
+    this._aimHandle.on('dragend', () => { this._dragging = false; this.scan(); });
+    this._map = map; this._fitted = false;
+  },
+  updateMap(spot, aim) {
+    const note = document.getElementById('sky-map-note');
+    if (!this._map) { if (note) note.textContent = typeof L === 'undefined' ? '🗺️ Kort kræver net ved første indlæsning — resten virker offline.' : ''; return; }
+    this._dragCtx = { lat: spot.lat, lon: spot.lon, len: this.AIM_LEN };
+    this._stand.setLatLng([spot.lat, spot.lon]);
+    const tip = SOL.dest(spot.lat, spot.lon, aim, this.AIM_LEN);
+    this._aimLine.setLatLngs([[spot.lat, spot.lon], [tip.lat, tip.lon]]);
+    if (!this._dragging) this._aimHandle.setLatLng([tip.lat, tip.lon]);
+    if (!this._fitted) {
+      this._map.setView([spot.lat, spot.lon], 13);
+      this._fitted = true;
+      setTimeout(() => { if (this._map) this._map.invalidateSize(); }, 0);
+    }
+    if (note) note.textContent = `🎯 Træk målet for at dreje sigtelinjen mod skylinen. Sigte: ${Math.round(aim)}° ${SOL.compassName(aim)}.`;
+  },
+  onAimDrag() {
+    const ctx = this._dragCtx;
+    if (!ctx || !this._aimHandle) return;
+    const p = this._aimHandle.getLatLng();
+    const brg = SOL.bearing(ctx.lat, ctx.lon, p.lat, p.lng);
+    this.cfg.aimAz = Math.round(brg);
+    const tip = SOL.dest(ctx.lat, ctx.lon, brg, ctx.len);        // lås målet til fast radius (perle på snor)
+    this._aimHandle.setLatLng([tip.lat, tip.lon]);
+    this._aimLine.setLatLngs([[ctx.lat, ctx.lon], [tip.lat, tip.lon]]);
+    const ro = document.getElementById('sky-aim-readout');
+    if (ro) ro.textContent = `${Math.round(brg)}° ${SOL.compassName(brg)}`;
+    const note = document.getElementById('sky-map-note');
+    if (note) note.textContent = `🎯 Sigte: ${Math.round(brg)}° ${SOL.compassName(brg)} — slip for at scanne.`;
+  },
+  mount(content, controlsHtml) {
+    let ctrl = document.getElementById('sky-controls');
+    if (!ctrl) {
+      content.innerHTML = `<div class="sol-layout">
+        <div id="sky-controls" class="sol-controls"></div>
+        <div class="sol-mapwrap"><div id="sky-map"></div><div class="sol-dim sol-map-note" id="sky-map-note"></div></div>
+      </div>`;
+      ctrl = document.getElementById('sky-controls');
+      this.initMap();
+    }
+    ctrl.innerHTML = controlsHtml;
+  },
+};
+
+// Generisk by-silhuet: rækker af bygninger + et spir/antenne, deterministisk mønster.
+function skyCity(cx, baseY, halfW, maxH, col) {
+  const pat = [0.30, 0.55, 0.42, 0.72, 0.50, 0.85, 0.38, 0.62, 0.48, 0.68, 0.34, 0.58, 0.44, 0.78, 0.40];
+  const n = pat.length, bw = (halfW * 2) / n, L = x => x.toFixed(1);
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const x = cx - halfW + i * bw, h = Math.max(3, pat[i] * maxH);
+    s += `<rect x="${L(x)}" y="${L(baseY - h)}" width="${L(bw * 0.92)}" height="${L(h)}" fill="${col}"/>`;
+    if (i === 5) s += `<rect x="${L(x + bw * 0.42)}" y="${L(baseY - h - maxH * 0.55)}" width="${L(Math.max(1.5, bw * 0.09))}" height="${L(maxH * 0.55)}" fill="${col}"/>`;   // antenne
+    if (i === 10) { const sx = x + bw * 0.46; s += `<polygon points="${L(sx - bw * 0.2)},${L(baseY - h)} ${L(sx)},${L(baseY - h - maxH * 0.5)} ${L(sx + bw * 0.2)},${L(baseY - h)}" fill="${col}"/>`; }   // spir
+  }
+  return s;
+}
+
+// Preview: sol/måne lavt over en by-skyline set fra udsigtspunktet, ved det valgte vindue.
+function skyPreview(spot, aim, win, cfg) {
+  const dims = SOL.SENSORS[cfg.sensor] || SOL.SENSORS.ff;
+  const focal = Math.max(SOL.LENS_MIN, Math.min(SOL.LENS_MAX, cfg.focal || 135));
+  const fovV = 2 * Math.atan(dims.h / (2 * focal)) * SOL.R2D;
+  const fovH = 2 * Math.atan(dims.w / (2 * focal)) * SOL.R2D;
+  const W = 400, H = 300, MX = 60, MY = 55, CW = W + 2 * MX, CH = H + 2 * MY;
+  const ppdV = H / fovV, ppdH = W / fovH;                     // px pr. grad
+  const hzY = MY + (1 - 0.20) * H;                            // horisont (20% fra bunden = vand/forgrund)
+  const isMoon = win.body === 'moon';
+  const dAz = ((win.az - aim + 540) % 360) - 180;
+  const bx = MX + W / 2 + dAz * ppdH;
+  const by = hzY - win.alt * ppdV;
+  const br = Math.max(1.5, win.diam / 2 * ppdV);
+  const bandH = Math.min(H * 0.5, 1.1 * ppdV);               // skylinens vinkelhøjde ~1.1°
+  const cx = MX + W / 2;
+  const gid = 'skysky' + (isMoon ? 'm' : 's');
+  const sky = isMoon
+    ? `<stop offset="0" stop-color="#141f38"/><stop offset="1" stop-color="#2a3a5f"/>`
+    : `<stop offset="0" stop-color="#2a3a5e"/><stop offset="0.6" stop-color="#e8894a"/><stop offset="1" stop-color="#ffd089"/>`;
+  const bodyFill = isMoon ? '#eef2fb' : '#fff2c4';
+  const bodyGlow = isMoon ? 'rgba(200,215,255,0.35)' : 'rgba(255,200,110,0.55)';
+  let bodyShape;
+  if (!isMoon) {
+    bodyShape = `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${br.toFixed(1)}" fill="${bodyFill}"/>`;
+  } else {
+    const il = SOL.moonIllum(win.t), f = Math.max(0, Math.min(1, il.fraction));
+    const waxing = ((il.phase % 1) + 1) % 1 < 0.5;
+    const rx = (br * Math.abs(1 - 2 * f)).toFixed(1);
+    const top = `${bx.toFixed(1)},${(by - br).toFixed(1)}`, bot = `${bx.toFixed(1)},${(by + br).toFixed(1)}`;
+    const limbSweep = waxing ? 1 : 0, termSweep = waxing ? (f > 0.5 ? 1 : 0) : (f > 0.5 ? 0 : 1);
+    const lit = `<path d="M ${top} A ${br.toFixed(1)} ${br.toFixed(1)} 0 0 ${limbSweep} ${bot} A ${rx} ${br.toFixed(1)} 0 0 ${termSweep} ${top} Z" fill="${bodyFill}"/>`;
+    bodyShape = `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${br.toFixed(1)}" fill="#1c2740"/>${lit}`;
+  }
+  // Spejling i vandet (dæmpet, kun når legemet er over horisonten og reflekset er på lærredet)
+  let reflection = '';
+  const ry = hzY + (hzY - by);
+  if (by < hzY && ry - br < CH) {
+    reflection = `<ellipse cx="${bx.toFixed(1)}" cy="${ry.toFixed(1)}" rx="${(br * 0.85).toFixed(1)}" ry="${(br * 1.15).toFixed(1)}" fill="${bodyFill}" opacity="0.22"/>`;
+  }
+  const silhouette = skyCity(cx, hzY, W * 0.5, bandH, '#0b1016');
+  const outTop = by - br < MY;
+  const outTag = outTop ? `<text x="${(MX + W / 2).toFixed(0)}" y="${(MY - 8).toFixed(0)}" text-anchor="middle" fill="#ffd089" font-size="13" font-family="sans-serif">${isMoon ? 'Månen' : 'Solen'} står højere end rammen (zoom ud / hæv maks-højde)</text>` : '';
+  const dim = 'rgba(6,10,18,0.58)';
+  return `<svg class="sol-preview" viewBox="0 0 ${CW} ${CH}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Forhåndsvisning af skyline med sol/måne">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">${sky}</linearGradient></defs>
+    <rect x="0" y="0" width="${CW}" height="${hzY.toFixed(1)}" fill="url(#${gid})"/>
+    <rect x="0" y="${hzY.toFixed(1)}" width="${CW}" height="${(CH - hzY).toFixed(1)}" fill="${isMoon ? '#0a1220' : '#243247'}"/>
+    <circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${(br + 6).toFixed(1)}" fill="${bodyGlow}"/>
+    ${bodyShape}
+    <line x1="0" y1="${hzY.toFixed(1)}" x2="${CW}" y2="${hzY.toFixed(1)}" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+    ${reflection}
+    ${silhouette}
+    <rect x="0" y="0" width="${CW}" height="${MY}" fill="${dim}"/>
+    <rect x="0" y="${MY + H}" width="${CW}" height="${CH - MY - H}" fill="${dim}"/>
+    <rect x="0" y="${MY}" width="${MX}" height="${H}" fill="${dim}"/>
+    <rect x="${MX + W}" y="${MY}" width="${CW - MX - W}" height="${H}" fill="${dim}"/>
+    <rect x="${MX}" y="${MY}" width="${W}" height="${H}" fill="none" stroke="#ffffff" stroke-width="2"/>
+    ${outTag}
+  </svg>`;
+}
+
+function renderSky(content, statusEl) {
+  const lbl = document.getElementById('activeFilterLabel');
+  if (lbl) lbl.textContent = 'Skyline';
+  const c = SKY.cfg, spot = SKY.spot(), aim = SKY.aim();
+  const fmt = t => `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+  const dmy = ds => { const [y, m, d] = ds.split('-'); return `${d}/${m}`; };
+  const dims = SOL.SENSORS[c.sensor] || SOL.SENSORS.ff;
+  const selFocal = Math.max(SOL.LENS_MIN, Math.min(SOL.LENS_MAX, c.focal || 135));
+
+  const spotOpts = SKY.SPOTS.map(s => `<option value="${s.id}" ${s.id === c.spotId ? 'selected' : ''}>${esc(s.by)} — ${esc(s.vp)}</option>`).join('');
+  const hint = spot.manual ? `<div class="sol-dim" style="margin-top:5px">💡 <b>Sigt-tip:</b> ${esc(spot.hint)}</div>` : '';
+  const btn = 'background:rgba(90,150,255,0.16);border:1px solid rgba(90,150,255,0.45);color:#bcd4ff;font-weight:600;font-size:13px;padding:8px 13px;border-radius:9px;cursor:pointer';
+
+  const controls = `
+    <div class="sol-card">
+      <div class="sol-row"><label>🏙️ Udsigtspunkt
+        <select onchange="SKY.on('spot',this.value)">${spotOpts}</select></label>${hint}</div>
+      <div class="sol-row">
+        <div class="sol-dim">🎯 Sigte mod skyline: <b id="sky-aim-readout">${Math.round(aim)}° ${SOL.compassName(aim)}</b>
+          <button type="button" onclick="SKY.on('resetAim')" style="margin-left:8px;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-size:12px;padding:4px 9px;border-radius:7px;cursor:pointer">↺ nulstil</button></div>
+        <div class="sol-dim" style="margin-top:3px">Træk 🎯-målet på kortet for at dreje retningen mod den del af skylinen du vil have i baggrunden.</div>
+      </div>
+      <div class="sol-row two">
+        <div><label style="margin-bottom:5px">Himmellegeme</label>
+          <div class="sol-toggle">
+            <button class="${c.body === 'both' ? 'on' : ''}" onclick="SKY.on('body','both')">Begge</button>
+            <button class="${c.body === 'sun' ? 'on' : ''}" onclick="SKY.on('body','sun')">☀️ Sol</button>
+            <button class="${c.body === 'moon' ? 'on' : ''}" onclick="SKY.on('body','moon')">🌙 Måne</button>
+          </div></div>
+        <label>📐 Maks. højde over horisont: <b>${c.maxAlt}°</b> <span class="sol-dim">(lavere = tættere på skylinen)</span>
+          <input type="range" min="2" max="20" step="1" value="${c.maxAlt}" onchange="SKY.on('maxAlt',this.value)"></label>
+      </div>
+      ${c.body !== 'sun' ? `<div class="sol-row"><label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;flex-direction:row"><input type="checkbox" ${c.fullOnly ? 'checked' : ''} onchange="SKY.on('fullOnly',this.checked)"> 🌕 Kun måne nær fuld (&gt;85% belyst)</label></div>` : ''}
+      <div class="sol-row">
+        <label>📷 Sensor <span class="sol-dim">(til preview-udsnit · telefon → Fuldformat + basis×zoom)</span></label>
+        <div class="sol-toggle">
+          <button class="${c.sensor === 'm43' ? 'on' : ''}" onclick="SKY.on('sensor','m43')">M4/3</button>
+          <button class="${c.sensor === 'apsc' ? 'on' : ''}" onclick="SKY.on('sensor','apsc')">APS-C</button>
+          <button class="${c.sensor === 'ff' ? 'on' : ''}" onclick="SKY.on('sensor','ff')">Fuldformat</button>
+        </div>
+      </div>
+      <div class="sol-row"><label>🔭 Brændvidde: <b>${Math.round(selFocal)} mm</b>${dims.crop !== 1 ? ` <span class="sol-dim">(≈ ${Math.round(selFocal * dims.crop)} mm FF-ækv)</span>` : ''}
+        <input type="range" min="${SOL.LENS_MIN}" max="${SOL.LENS_MAX}" step="1" value="${Math.round(selFocal)}" oninput="SKY.on('focal',this.value)"></label></div>
+    </div>`;
+
+  let resultsHtml;
+  if (SKY.results === null) {
+    resultsHtml = `<button type="button" onclick="SKY.scan()" style="${btn}">🔭 Find fotograferbare vinduer</button>
+      <div class="sol-note">Scanner ${c.days} dage frem for tidspunkter hvor ${c.body === 'sun' ? 'solen' : c.body === 'moon' ? 'månen' : 'sol/måne'} står lavt (under ${c.maxAlt}°) i sigte-retningen mod skylinen.</div>`;
+  } else {
+    let rows = SKY.results.slice();
+    if (c.fullOnly) rows = rows.filter(r => r.body !== 'moon' || (r.illum != null && r.illum > 0.85));
+    const pIdx = (c.picked != null && c.picked < rows.length) ? c.picked : (rows.length ? 0 : null);
+    const pick = pIdx != null ? rows[pIdx] : null;
+
+    let previewHtml = '';
+    if (pick) {
+      const ph = pick.body === 'moon' ? SOL.phaseLabel(pick.phase) : null;
+      previewHtml = `<div class="sol-preview-wrap">
+        ${skyPreview(spot, aim, pick, c)}
+        <div class="sol-dim" style="text-align:center;margin-top:6px;line-height:1.5">${dmy(pick.date)} kl. <b>${fmt(pick.t)}</b> · ${pick.body === 'moon' ? '🌙 Måne ' + ph.emoji + ' ' + Math.round(pick.illum * 100) + '%' : '☀️ Sol'} ${pick.rising ? '↗ opgang' : '↘ nedgang'}<br>${Math.round(pick.az)}° ${SOL.compassName(pick.az)} · <b>${pick.alt.toFixed(1)}°</b> over horisont · ${Math.round(selFocal)} mm</div>
+        <a class="route-map-btn" style="margin-top:10px" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${spot.lat.toFixed(5)},${spot.lon.toFixed(5)}&travelmode=driving">🚗 Kør til udsigtspunktet</a>
+      </div>`;
+    }
+
+    let tableHtml;
+    if (!rows.length) {
+      tableHtml = `<div class="sol-note">Ingen vinduer under ${c.maxAlt}° i sigtet ${Math.round(aim)}° de næste ${c.days} dage. Prøv at <b>dreje sigtet</b> (træk 🎯 på kortet) eller <b>hæv maks-højden</b>. Peger skylinen mod syd, kan lav sol/måne aldrig stå bag — så vend sigtet mod øst (solopgang) eller vest (solnedgang).</div>`;
+    } else {
+      const trows = rows.map((r, i) => {
+        const emo = r.body === 'moon' ? '🌙' : '☀️';
+        const dir = r.rising ? '↗' : '↘';
+        const ph = r.body === 'moon' ? SOL.phaseLabel(r.phase) : null;
+        const star = (r.body === 'moon' && r.illum > 0.9) ? ' ⭐' : '';
+        const moonTxt = r.body === 'moon' ? ` ${ph.emoji} ${Math.round(r.illum * 100)}%${star}` : '';
+        return `<tr class="${i === pIdx ? 'pick' : ''} ${r.body === 'moon' ? '' : 'ok'}" style="cursor:pointer" onclick="SKY.pick(${i})">
+          <td>${i === pIdx ? '▶ ' : ''}${dmy(r.date)}</td>
+          <td>${fmt(r.t)}</td>
+          <td>${emo}${dir}${moonTxt}</td>
+          <td>${Math.round(r.az)}° ${SOL.compassName(r.az)}</td>
+          <td>${r.alt.toFixed(1)}°</td></tr>`;
+      }).join('');
+      tableHtml = `<div class="sky-results"><table class="sol-table"><thead><tr><th>Dato</th><th>Tid</th><th>Legeme</th><th>Retning</th><th>Højde</th></tr></thead><tbody>${trows}</tbody></table></div>
+        <div class="sol-dim" style="margin-top:6px">${rows.length} vinduer · <b>⭐</b> = næsten fuld måne. <b>Klik en række</b> → preview. ↗ = på vej op (solopgang-side), ↘ = på vej ned (solnedgang-side).</div>`;
+    }
+    resultsHtml = `${previewHtml}<h3 class="sol-h3">📅 Fotograferbare vinduer</h3>${tableHtml}
+      <button type="button" onclick="SKY.scan()" style="${btn};margin-top:10px">🔄 Scan igen</button>`;
+  }
+
+  statusEl.innerHTML = `Skyline · ${esc(spot.by)}`;
+  SKY.mount(content, `<div class="sol-wrap">
+    ${controls}
+    ${resultsHtml}
+    <div class="sol-note">Modellen er <b>vendt om</b> ift. Sol &amp; Måne: her står du fast på udsigtspunktet, og appen finder <b>hvornår</b> sol/måne krydser din sigte-retning lavt over skylinen. Solen rammer en fast retning lavt kun i bestemte uger (op/nedgang vandrer over året); månen rammer stort set hele året. Retninger/afstande er kuraterede startgæt — finjustér sigtet på kortet.</div>
+  </div>`);
+  SKY.updateMap(spot, aim);
+}
+
+// ============================================================
+// Skyfri-finder (Lag: vejr) — per-request procedure, ingen 24/7.
+// Finder HVOR i landet det er skyfrit ved næste solop-/nedgang i et
+// valgt tidsrum, rangeret efter afstand fra dig. Bygger på Open-Meteo
+// (gratis, nøglefri, CORS) med metno_nordic-modellen (~1 km, Norden).
+// Genbruger astronomien i SOL (solop/nedgang) + haversine.
+// De fire v1-søjler: (1) lys-øjeblik i vinduet, (2) fri horisont mod
+// solretning, (3) "kan jeg nå det", (4) fugleflugt-radius eller byvalg.
+// ============================================================
+const CLEAR = {
+  // Kandidat-steder: fotorelevante byer/kyststeder med national spredning.
+  // open = åben horisont-retning jeg er rimelig sikker på: 'W' (Vesterhavet/
+  // vestkyst → solnedgang), 'E' (Øresund/Kattegat/Østersø mod øst → solopgang),
+  // 'both' (fx Skagens nordspids), null = ikke vurderet (vises som "ukendt").
+  PLACES: [
+    { id: 1,  name: 'København (Amager Strand)', lat: 55.6600, lon: 12.6500, open: 'E' },
+    { id: 2,  name: 'Helsingør', lat: 56.0360, lon: 12.6140, open: 'E' },
+    { id: 3,  name: 'Gilleleje', lat: 56.1230, lon: 12.3080, open: 'E' },
+    { id: 4,  name: 'Hornbæk', lat: 56.0960, lon: 12.4610, open: 'E' },
+    { id: 5,  name: 'Hundested', lat: 55.9670, lon: 11.8520, open: 'E' },
+    { id: 6,  name: 'Roskilde', lat: 55.6420, lon: 12.0800, open: null },
+    { id: 7,  name: 'Køge', lat: 55.4580, lon: 12.1820, open: 'E' },
+    { id: 8,  name: 'Stevns Klint', lat: 55.2830, lon: 12.4470, open: 'E' },
+    { id: 9,  name: 'Møns Klint', lat: 54.9690, lon: 12.5480, open: 'E' },
+    { id: 10, name: 'Vordingborg', lat: 55.0100, lon: 11.9100, open: null },
+    { id: 11, name: 'Næstved', lat: 55.2300, lon: 11.7600, open: null },
+    { id: 12, name: 'Slagelse', lat: 55.4030, lon: 11.3540, open: null },
+    { id: 13, name: 'Kalundborg', lat: 55.6790, lon: 11.0880, open: null },
+    { id: 14, name: 'Korsør', lat: 55.3300, lon: 11.1390, open: null },
+    { id: 15, name: 'Nykøbing Sjælland', lat: 55.9260, lon: 11.6700, open: null },
+    { id: 16, name: 'Odense', lat: 55.4030, lon: 10.4020, open: null },
+    { id: 17, name: 'Kerteminde', lat: 55.4500, lon: 10.6620, open: 'E' },
+    { id: 18, name: 'Nyborg', lat: 55.3120, lon: 10.7910, open: 'E' },
+    { id: 19, name: 'Svendborg', lat: 55.0600, lon: 10.6080, open: null },
+    { id: 20, name: 'Faaborg', lat: 55.0960, lon: 10.2410, open: 'W' },
+    { id: 21, name: 'Assens', lat: 55.2710, lon: 9.9000, open: 'W' },
+    { id: 22, name: 'Middelfart', lat: 55.5060, lon: 9.7350, open: null },
+    { id: 23, name: 'Ærøskøbing', lat: 54.8880, lon: 10.4100, open: null },
+    { id: 24, name: 'Esbjerg', lat: 55.4670, lon: 8.4500, open: 'W' },
+    { id: 25, name: 'Blåvand', lat: 55.5580, lon: 8.0810, open: 'W' },
+    { id: 26, name: 'Hvide Sande', lat: 56.0000, lon: 8.1280, open: 'W' },
+    { id: 27, name: 'Ringkøbing', lat: 56.0890, lon: 8.2440, open: 'W' },
+    { id: 28, name: 'Ribe', lat: 55.3280, lon: 8.7660, open: 'W' },
+    { id: 29, name: 'Rømø (Lakolk)', lat: 55.1500, lon: 8.5200, open: 'W' },
+    { id: 30, name: 'Tønder', lat: 54.9370, lon: 8.8640, open: null },
+    { id: 31, name: 'Kolding', lat: 55.4900, lon: 9.4720, open: null },
+    { id: 32, name: 'Fredericia', lat: 55.5650, lon: 9.7520, open: null },
+    { id: 33, name: 'Vejle', lat: 55.7100, lon: 9.5350, open: null },
+    { id: 34, name: 'Horsens', lat: 55.8600, lon: 9.8500, open: null },
+    { id: 35, name: 'Haderslev', lat: 55.2510, lon: 9.4900, open: null },
+    { id: 36, name: 'Aabenraa', lat: 55.0440, lon: 9.4180, open: null },
+    { id: 37, name: 'Sønderborg', lat: 54.9120, lon: 9.7920, open: null },
+    { id: 38, name: 'Aarhus (Ø/Molen)', lat: 56.1620, lon: 10.2250, open: 'E' },
+    { id: 39, name: 'Ebeltoft', lat: 56.1950, lon: 10.6820, open: 'E' },
+    { id: 40, name: 'Grenaa', lat: 56.4120, lon: 10.8790, open: 'E' },
+    { id: 41, name: 'Randers', lat: 56.4610, lon: 10.0370, open: null },
+    { id: 42, name: 'Silkeborg', lat: 56.1700, lon: 9.5500, open: null },
+    { id: 43, name: 'Herning', lat: 56.1360, lon: 8.9760, open: null },
+    { id: 44, name: 'Holstebro', lat: 56.3600, lon: 8.6160, open: null },
+    { id: 45, name: 'Viborg', lat: 56.4530, lon: 9.4020, open: null },
+    { id: 46, name: 'Skive', lat: 56.5670, lon: 9.0290, open: null },
+    { id: 47, name: 'Thisted', lat: 56.9550, lon: 8.6940, open: null },
+    { id: 48, name: 'Thyborøn', lat: 56.6960, lon: 8.2160, open: 'W' },
+    { id: 49, name: 'Lemvig', lat: 56.5490, lon: 8.3110, open: 'W' },
+    { id: 50, name: 'Nykøbing Mors', lat: 56.7950, lon: 8.8580, open: null },
+    { id: 51, name: 'Aalborg', lat: 57.0480, lon: 9.9210, open: null },
+    { id: 52, name: 'Løkken', lat: 57.3680, lon: 9.7150, open: 'W' },
+    { id: 53, name: 'Lønstrup', lat: 57.4700, lon: 9.8000, open: 'W' },
+    { id: 54, name: 'Hirtshals', lat: 57.5880, lon: 9.9600, open: 'W' },
+    { id: 55, name: 'Skagen (Grenen)', lat: 57.7440, lon: 10.6410, open: 'both' },
+    { id: 56, name: 'Frederikshavn', lat: 57.4410, lon: 10.5370, open: 'E' },
+    { id: 57, name: 'Hjørring', lat: 57.4600, lon: 9.9820, open: null },
+    { id: 58, name: 'Nykøbing Falster', lat: 54.7690, lon: 11.8710, open: null },
+    { id: 59, name: 'Nakskov', lat: 54.8340, lon: 11.1360, open: 'W' },
+    { id: 60, name: 'Rønne (Bornholm)', lat: 55.1000, lon: 14.7000, open: 'W' },
+    { id: 61, name: 'Gudhjem (Bornholm)', lat: 55.2120, lon: 14.9800, open: 'E' },
+    { id: 62, name: 'Svaneke (Bornholm)', lat: 55.1360, lon: 15.1440, open: 'E' },
+  ],
+
+  // Skydække-kategorier → farve + label. Foto-nuancen: lave skyer dræber lyset,
+  // mens lidt cirrus (høje skyer) ofte GIVER den farvede himmel.
+  CAT: {
+    clear:   { c: '#22c55e', label: 'Helt klart',                badge: '☀️' },
+    cirrus:  { c: '#a3e635', label: 'Klart forneden + cirrus',   badge: '🌤️' },
+    partial: { c: '#eab308', label: 'Delvist skyet',             badge: '⛅' },
+    cloudy:  { c: '#6b7280', label: 'Skyet',                     badge: '☁️' },
+  },
+
+  cfg: {
+    mode: 'radius',     // 'radius' | 'cities'
+    radius: 75,         // km (fugleflugt) fra din position
+    cities: [],         // valgte place-id'er i by-mode
+    win: 'next4',       // 'next4' | 'morning' | 'evening' | 'custom'
+    from: '16:00', to: '21:00',
+    day: 'today',       // 'today' | 'tomorrow' (next4 tvinger today)
+    picked: null,
+  },
+  results: null, status: 'idle', error: '', win: null, updatedAt: null,
+  _map: null, _layer: null, _markers: [], _fitted: false,
+
+  fmt(t) { return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`; },
+  originPt() { return (state.lat != null && state.lon != null) ? { lat: state.lat, lon: state.lon } : null; },
+
+  // Tidsrum → konkret [from,to] på den valgte dag + labels.
+  windowRange() {
+    const c = this.cfg, now = new Date();
+    const day = c.win === 'next4' ? 'today' : c.day;
+    const base = new Date(now); if (day === 'tomorrow') base.setDate(base.getDate() + 1);
+    const pad = n => String(n).padStart(2, '0');
+    const ds = `${base.getFullYear()}-${pad(base.getMonth() + 1)}-${pad(base.getDate())}`;
+    const mk = (h, m) => new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, m, 0);
+    let from, to, label;
+    if (c.win === 'next4') { from = new Date(now); to = new Date(now.getTime() + 4 * 3600e3); label = 'de næste 4 timer'; }
+    else if (c.win === 'morning') { from = mk(5, 0); to = mk(11, 0); label = 'formiddag (05–11)'; }
+    else if (c.win === 'evening') { from = mk(16, 0); to = mk(22, 0); label = 'aften (16–22)'; }
+    else { const [fh, fm] = c.from.split(':').map(Number), [th, tm] = c.to.split(':').map(Number); from = mk(fh, fm); to = mk(th, tm); label = `${c.from}–${c.to}`; }
+    return { from, to, ds, label, isToday: day === 'today', dayLabel: day === 'tomorrow' ? 'i morgen' : 'i dag' };
+  },
+
+  // Hvilke steder skal vurderes: radius-filtrér om din position, eller de valgte byer.
+  candidatePlaces(origin) {
+    if (this.cfg.mode === 'cities') {
+      const sel = new Set(this.cfg.cities);
+      return this.PLACES.filter(p => sel.has(p.id));
+    }
+    if (!origin) return [];
+    return this.PLACES.filter(p => haversine(origin.lat, origin.lon, p.lat, p.lon) <= this.cfg.radius);
+  },
+
+  // Ét batch-kald til Open-Meteo for alle kandidat-punkter (komma-separeret).
+  // Returnerer array i samme rækkefølge som `places`.
+  async fetchClouds(places) {
+    const lats = places.map(p => p.lat.toFixed(4)).join(',');
+    const lons = places.map(p => p.lon.toFixed(4)).join(',');
+    // best_match: Open-Meteos blend af bedste tilgængelige model pr. punkt. Vigtigt:
+    // den giver skydække-OPDELINGEN (lav/mel/høj) — den høj-opløste metno_nordic gør
+    // IKKE (kun total), og opdelingen er hele foto-nuancen. Nøglefri + CORS.
+    const url = 'https://api.open-meteo.com/v1/forecast'
+      + `?latitude=${lats}&longitude=${lons}`
+      + '&hourly=cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high'
+      + '&timezone=Europe%2FCopenhagen&forecast_days=2';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Open-Meteo svarede ' + res.status);
+    let data = await res.json();
+    if (!Array.isArray(data)) data = [data];   // enkelt punkt → objekt
+    return data;
+  },
+
+  // Skydække interpoleret til et konkret tidspunkt (lineært mellem to timer).
+  cloudAt(h, date) {
+    if (!h || !h.time) return null;
+    const parse = s => { const [d, t] = s.split('T'); const [y, mo, da] = d.split('-').map(Number); const [hh, mm] = t.split(':').map(Number); return new Date(y, mo - 1, da, hh, mm, 0).getTime(); };
+    const target = date.getTime();
+    for (let i = 0; i < h.time.length - 1; i++) {
+      const t0 = parse(h.time[i]), t1 = parse(h.time[i + 1]);
+      if (target >= t0 && target <= t1) {
+        const f = t1 === t0 ? 0 : (target - t0) / (t1 - t0);
+        const L = (a, b) => a == null ? b : b == null ? a : a + (b - a) * f;
+        return {
+          low: L(h.cloud_cover_low[i], h.cloud_cover_low[i + 1]),
+          mid: L(h.cloud_cover_mid[i], h.cloud_cover_mid[i + 1]),
+          high: L(h.cloud_cover_high[i], h.cloud_cover_high[i + 1]),
+          total: L(h.cloud_cover[i], h.cloud_cover[i + 1]),
+        };
+      }
+    }
+    return null;
+  },
+
+  // Ingen sol-event i vinduet → gennemsnit af skydække over hele vinduet.
+  // Robust mod null-komponenter (nogle modeller giver kun total).
+  avgWindow(h, from, to) {
+    const acc = { low: 0, mid: 0, high: 0, total: 0 }, cnt = { low: 0, mid: 0, high: 0, total: 0 };
+    for (let t = from.getTime(); t <= to.getTime(); t += 30 * 60e3) {
+      const cl = this.cloudAt(h, new Date(t));
+      if (!cl) continue;
+      for (const k of ['low', 'mid', 'high', 'total']) if (cl[k] != null) { acc[k] += cl[k]; cnt[k]++; }
+    }
+    if (!cnt.total) return null;
+    const avg = k => cnt[k] ? acc[k] / cnt[k] : null;
+    return { low: avg('low'), mid: avg('mid'), high: avg('high'), total: avg('total') };
+  },
+
+  // Klarheds-score (0-100) + kategori. Med lav/mel/høj-opdeling straffes lave
+  // skyer hårdt og mellemskyer moderat, mens lidt cirrus (høje skyer) giver bonus
+  // (foto-farve). Mangler opdelingen (kun total tilgængelig) → simpel total-score
+  // uden cirrus-skelnen. split=false markerer sidstnævnte, så UI ikke overfortolker.
+  clarityScore(cl) {
+    const split = cl.low != null && cl.mid != null && cl.high != null;
+    if (!split) {
+      const tot = cl.total != null ? cl.total : 0;
+      const clarity = Math.max(0, Math.min(100, Math.round(100 - tot)));
+      const cat = tot < 15 ? 'clear' : tot < 40 ? 'partial' : 'cloudy';
+      return { clarity, cat, split: false };
+    }
+    const low = cl.low, mid = cl.mid, high = cl.high;
+    let clarity = 100 - (low * 1.0 + mid * 0.6 + Math.max(0, high - 30) * 0.3);
+    if (low < 25 && high >= 10 && high <= 60) clarity += 8;   // cirrus-bonus
+    clarity = Math.max(0, Math.min(100, Math.round(clarity)));
+    let cat;
+    if (low < 15 && mid < 20 && high < 40) cat = 'clear';
+    else if (low < 25 && high >= 15 && mid < 40) cat = 'cirrus';
+    else if (low < 45 && mid < 55) cat = 'partial';
+    else cat = 'cloudy';
+    return { clarity, cat, split: true };
+  },
+
+  async scan() {
+    this.status = 'loading'; this.error = ''; this.results = null; this._fitted = false; render();
+    try {
+      const origin = this.originPt();
+      const places = this.candidatePlaces(origin);
+      if (!places.length) {
+        this.results = []; this.win = this.windowRange(); this.status = 'done'; render(); return;
+      }
+      const win = this.windowRange();
+      const data = await this.fetchClouds(places);
+      const now = new Date();
+      const rows = places.map((p, idx) => {
+        const h = data[idx] && data[idx].hourly;
+        if (!h) return null;
+        // (1) Lys-øjeblik: solop/nedgang der falder inde i vinduet (tættest på midten).
+        const ev = SOL.dayEvents(win.ds, p.lat, p.lon, 'sun').events;
+        const inWin = ev.filter(e => e.t >= win.from && e.t <= win.to);
+        let moment = null, evType = null;
+        if (inWin.length) {
+          const mid = (win.from.getTime() + win.to.getTime()) / 2;
+          inWin.sort((a, b) => Math.abs(a.t - mid) - Math.abs(b.t - mid));
+          moment = inWin[0].t; evType = inWin[0].type;
+        }
+        // Skydække ved øjeblikket (±0, interpoleret) — ellers gennemsnit over vinduet.
+        const cl = moment ? this.cloudAt(h, moment) : this.avgWindow(h, win.from, win.to);
+        if (!cl) return null;
+        const sc = this.clarityScore(cl);
+        const dist = origin ? haversine(origin.lat, origin.lon, p.lat, p.lon) : null;
+        // (3) Kan jeg nå det? — kun i dag + kun hvis øjeblikket ligger frem i tid.
+        let reach = null;
+        if (moment && win.isToday) {
+          const minsUntil = (moment - now) / 60000;
+          const driveMin = dist != null ? dist / 70 * 60 : 0;   // ~70 km/t fugleflugt-antagelse
+          reach = minsUntil < 0 ? 'past' : (driveMin + 15 <= minsUntil ? 'ok' : (driveMin <= minsUntil ? 'tight' : 'late'));
+        }
+        // (2) Fri horisont mod solretningen (kendt for kyststeder).
+        let horizon = 'unknown';
+        if (evType) {
+          if (p.open === 'both') horizon = 'ok';
+          else if (evType === 'set' && p.open === 'W') horizon = 'ok';
+          else if (evType === 'rise' && p.open === 'E') horizon = 'ok';
+          else if (p.open) horizon = 'side';
+        }
+        return { p, dist, moment, evType, cl, cat: sc.cat, clarity: sc.clarity, split: sc.split, reach, horizon };
+      }).filter(Boolean);
+      // Rang: kategori-prioritet → afstand → klarhed.
+      const pri = { clear: 0, cirrus: 1, partial: 2, cloudy: 3 };
+      rows.sort((a, b) => (pri[a.cat] - pri[b.cat]) || ((a.dist == null ? 1e9 : a.dist) - (b.dist == null ? 1e9 : b.dist)) || (b.clarity - a.clarity));
+      this.results = rows; this.win = win; this.updatedAt = now;
+      this.cfg.picked = rows.length ? 0 : null;
+      this.status = 'done'; render();
+    } catch (e) {
+      this.status = 'error'; this.error = String(e && e.message || e); render();
+    }
+  },
+
+  pick(i) { this.cfg.picked = +i; render(); },
+
+  on(field, val) {
+    const c = this.cfg;
+    if (field === 'toggleCity') { const id = +val; const i = c.cities.indexOf(id); if (i >= 0) c.cities.splice(i, 1); else c.cities.push(id); render(); return; }
+    if (field === 'radius') { c.radius = +val; render(); return; }
+    c[field] = val; render();
+  },
+
+  initMap() {
+    if (typeof L === 'undefined') return;
+    if (this._map) { try { this._map.remove(); } catch (e) {} this._map = null; }
+    const el = document.getElementById('clear-map');
+    if (!el) return;
+    const map = L.map(el, { zoomControl: true }).setView([56.2, 10.5], 7);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+    this._map = map; this._layer = L.layerGroup().addTo(map); this._fitted = false;
+  },
+  updateMap() {
+    const note = document.getElementById('clear-map-note');
+    if (!this._map) { if (note) note.textContent = typeof L === 'undefined' ? '🗺️ Kort kræver net ved første indlæsning.' : ''; return; }
+    this._layer.clearLayers(); this._markers = [];
+    const o = this.originPt();
+    if (o) this._layer.addLayer(L.marker([o.lat, o.lon], { icon: L.divIcon({ className: 'clear-pin-orig', html: '📍', iconSize: [24, 24], iconAnchor: [12, 22] }), interactive: false }));
+    const rows = this.results || [];
+    const pts = [];
+    rows.forEach((r, i) => {
+      const info = this.CAT[r.cat];
+      const m = L.circleMarker([r.p.lat, r.p.lon], {
+        radius: r.cat === 'cloudy' ? 6 : 9, color: '#0b1016', weight: 1,
+        fillColor: info.c, fillOpacity: r.cat === 'cloudy' ? 0.5 : 0.9,
+      });
+      const evTxt = r.moment ? `${this.fmt(r.moment)} · ${r.evType === 'set' ? 'solnedgang' : r.evType === 'rise' ? 'solopgang' : ''}` : '';
+      m.bindPopup(`<b>${esc(r.p.name)}</b><br>${info.badge} ${info.label}${evTxt ? '<br>' + evTxt : ''}${r.dist != null ? '<br>' + formatDist(r.dist) : ''}`);
+      m.on('click', () => this.pick(i));
+      this._layer.addLayer(m); this._markers.push(m);
+      pts.push([r.p.lat, r.p.lon]);
+    });
+    if (o) pts.push([o.lat, o.lon]);
+    if (pts.length && !this._fitted) {
+      try { this._map.fitBounds(pts, { padding: [30, 30], maxZoom: 11 }); } catch (e) {}
+      this._fitted = true;
+      setTimeout(() => { if (this._map) this._map.invalidateSize(); }, 0);
+    }
+    const pk = this.cfg.picked;
+    if (pk != null && this._markers[pk]) { const ll = this._markers[pk].getLatLng(); this._map.panTo(ll); this._markers[pk].openPopup(); }
+    if (note) note.textContent = `Grønne = klart, gule = delvist, grå = skyet. Klik en prik for detaljer.`;
+  },
+  mount(content, controlsHtml) {
+    let ctrl = document.getElementById('clear-controls');
+    if (!ctrl) {
+      content.innerHTML = `<div class="sol-layout">
+        <div id="clear-controls" class="sol-controls"></div>
+        <div class="sol-mapwrap"><div id="clear-map"></div><div class="sol-dim sol-map-note" id="clear-map-note"></div></div>
+      </div>`;
+      ctrl = document.getElementById('clear-controls');
+      this.initMap();
+    }
+    ctrl.innerHTML = controlsHtml;
+  },
+};
+
+function renderClear(content, statusEl) {
+  const lbl = document.getElementById('activeFilterLabel'); if (lbl) lbl.textContent = 'Skyfri';
+  const c = CLEAR.cfg, origin = CLEAR.originPt();
+  const btn = 'background:rgba(90,150,255,0.16);border:1px solid rgba(90,150,255,0.45);color:#bcd4ff;font-weight:700;font-size:15px;padding:12px 14px;border-radius:9px;cursor:pointer;width:100%';
+  const seg = (field, val, cur, label) => `<button class="${cur === val ? 'on' : ''}" onclick="CLEAR.on('${field}','${val}')">${label}</button>`;
+
+  // --- Søge-område: radius eller valgte byer ---
+  let areaHtml;
+  if (c.mode === 'radius') {
+    const originTxt = origin ? `${state.gpsName || state.manualTown || 'din position'}` : '⚠️ ingen position endnu';
+    const n = origin ? CLEAR.PLACES.filter(p => haversine(origin.lat, origin.lon, p.lat, p.lon) <= c.radius).length : 0;
+    areaHtml = `<div class="sol-row"><label>📏 Radius (fugleflugt) fra ${esc(originTxt)}: <b>${c.radius} km</b>
+      <input type="range" min="25" max="250" step="5" value="${c.radius}" oninput="CLEAR.on('radius',this.value)"></label>
+      <div class="sol-dim" style="margin-top:4px">${origin ? n + ' kandidat-steder i radius' : 'Tillad position, eller vælg byer i stedet.'}</div></div>`;
+  } else {
+    const list = [...CLEAR.PLACES]
+      .map(p => ({ p, d: origin ? haversine(origin.lat, origin.lon, p.lat, p.lon) : null }))
+      .sort((a, b) => a.d == null ? a.p.name.localeCompare(b.p.name, 'da') : a.d - b.d)
+      .map(({ p, d }) => `<label class="cl-check"><input type="checkbox" ${c.cities.includes(p.id) ? 'checked' : ''} onchange="CLEAR.on('toggleCity','${p.id}')"> ${esc(p.name)}${d != null ? `<span class="cl-cdist">${formatDist(d)}</span>` : ''}</label>`).join('');
+    areaHtml = `<div class="sol-row"><label>🏙️ Vælg byer (${c.cities.length} valgt)</label>
+      <div class="cl-checks">${list}</div></div>`;
+  }
+
+  const controls = `
+    <div class="sol-card">
+      <div class="sol-row"><label style="margin-bottom:5px">Søge-område</label>
+        <div class="sol-toggle">${seg('mode', 'radius', c.mode, '📍 Radius')}${seg('mode', 'cities', c.mode, '🏙️ Byer')}</div></div>
+      ${areaHtml}
+      <div class="sol-row"><label style="margin-bottom:5px">Tidsrum</label>
+        <div class="sol-toggle">${seg('win', 'next4', c.win, 'Næste 4t')}${seg('win', 'morning', c.win, 'Formiddag')}${seg('win', 'evening', c.win, 'Aften')}${seg('win', 'custom', c.win, 'Selv')}</div></div>
+      ${c.win === 'custom' ? `<div class="sol-row two">
+        <label>Fra<input type="time" value="${c.from}" onchange="CLEAR.on('from',this.value)"></label>
+        <label>Til<input type="time" value="${c.to}" onchange="CLEAR.on('to',this.value)"></label></div>` : ''}
+      ${c.win !== 'next4' ? `<div class="sol-row"><label style="margin-bottom:5px">Dag</label>
+        <div class="sol-toggle">${seg('day', 'today', c.day, 'I dag')}${seg('day', 'tomorrow', c.day, 'I morgen')}</div></div>` : ''}
+      <div class="sol-row"><button type="button" onclick="CLEAR.scan()" style="${btn}">☁️ Find skyfrit område</button></div>
+    </div>`;
+
+  // --- Resultater ---
+  let resultsHtml = '';
+  if (CLEAR.status === 'loading') {
+    resultsHtml = `<div class="sol-note">🛰️ Henter skyprognose fra Open-Meteo…</div>`;
+  } else if (CLEAR.status === 'error') {
+    resultsHtml = `<div class="sol-note">⚠️ Kunne ikke hente prognose (${esc(CLEAR.error)}). Denne funktion kræver net. <b>Prøv igen.</b></div>`;
+  } else if (CLEAR.results && CLEAR.win) {
+    const rows = CLEAR.results;
+    if (!rows.length) {
+      resultsHtml = `<div class="sol-note">${c.mode === 'radius' && !origin ? 'Ingen position fundet — tillad lokation eller skift til by-valg.' : 'Ingen kandidat-steder i søgningen. Øg radius eller vælg byer.'}</div>`;
+    } else {
+      const upd = CLEAR.updatedAt ? CLEAR.fmt(CLEAR.updatedAt) : '';
+      const top = rows.slice(0, 6).map((r, i) => {
+        const info = CLEAR.CAT[r.cat];
+        const evTxt = r.moment
+          ? `${r.evType === 'set' ? '🌇 Solnedgang' : r.evType === 'rise' ? '🌅 Solopgang' : ''} kl. <b>${CLEAR.fmt(r.moment)}</b>`
+          : `Vurderet over ${esc(CLEAR.win.label)}`;
+        const tags = [];
+        tags.push(`<span class="cl-tag">Klarhed ${r.clarity}%</span>`);
+        if (r.horizon === 'ok') tags.push(`<span class="cl-tag ok">✓ fri horisont mod solen</span>`);
+        else if (r.horizon === 'side') tags.push(`<span class="cl-tag">åben mod modsat side</span>`);
+        else if (r.horizon === 'unknown' && r.evType) tags.push(`<span class="cl-tag">horisont ikke vurderet</span>`);
+        if (r.reach === 'ok') tags.push(`<span class="cl-tag ok">✓ kan nås</span>`);
+        else if (r.reach === 'tight') tags.push(`<span class="cl-tag warn">⚠ stramt</span>`);
+        else if (r.reach === 'late') tags.push(`<span class="cl-tag bad">✗ når det ikke</span>`);
+        else if (r.reach === 'past') tags.push(`<span class="cl-tag">– allerede forbi</span>`);
+        const nav = `https://www.google.com/maps/dir/?api=1&destination=${r.p.lat.toFixed(5)},${r.p.lon.toFixed(5)}&travelmode=driving`;
+        return `<div class="cl-card ${i === c.picked ? 'pick' : ''}" onclick="CLEAR.pick(${i})">
+          <span class="cl-dot" style="background:${info.c}"></span>
+          <div class="cl-body">
+            <div class="cl-name">${esc(r.p.name)} ${r.dist != null ? `<span class="sol-dim" style="font-weight:600">· ${formatDist(r.dist)}</span>` : ''}</div>
+            <div class="cl-meta">${info.badge} ${info.label} · ${evTxt}<br>${r.split ? `Skyer: lav ${Math.round(r.cl.low)}% · mel ${Math.round(r.cl.mid)}% · høj ${Math.round(r.cl.high)}%` : `Samlet skydække ${Math.round(r.cl.total)}%`}</div>
+            <div class="cl-tags">${tags.join('')}</div>
+            <a class="route-map-btn" style="margin-top:10px;padding:9px" target="_blank" rel="noopener" href="${nav}" onclick="event.stopPropagation()">🚗 Kør hertil</a>
+          </div>
+        </div>`;
+      }).join('');
+      const legend = `<div class="cl-legend">
+        <span><i style="background:${CLEAR.CAT.clear.c}"></i>Helt klart</span>
+        <span><i style="background:${CLEAR.CAT.cirrus.c}"></i>Klart + cirrus</span>
+        <span><i style="background:${CLEAR.CAT.partial.c}"></i>Delvist</span>
+        <span><i style="background:${CLEAR.CAT.cloudy.c}"></i>Skyet</span></div>`;
+      resultsHtml = `<div class="sol-dim" style="margin:2px 0 10px">${rows.length} steder vurderet · ${esc(CLEAR.win.dayLabel)}, ${esc(CLEAR.win.label)} · opdateret kl. ${upd}</div>
+        <h3 class="sol-h3">Nærmeste klare steder</h3>${top}${legend}`;
+    }
+  } else {
+    resultsHtml = `<div class="sol-note">Vælg område + tidsrum og tryk <b>Find skyfrit område</b>. Appen finder solop-/nedgangen i dit tidsrum og viser hvor det er klart dér — rangeret efter afstand.</div>`;
+  }
+
+  statusEl.innerHTML = 'Skyfri-finder';
+  CLEAR.mount(content, `<div class="sol-wrap">
+    ${controls}
+    ${resultsHtml}
+    <div class="sol-note">Prognose: <b>Open-Meteo</b> (bedste tilgængelige model pr. sted). Skydække vurderes ved selve solop-/nedgangen i dit tidsrum. Lave skyer straffes, mens lidt cirrus giver bonus (farvet himmel). Afstand = fugleflugt; "kan nås" antager ~70 km/t. Pålideligt i dag/i morgen. Kræver net.</div>
+  </div>`);
+  CLEAR.updateMap();
+}
+
 function render() {
   const statusEl = document.getElementById('status');
   const content = document.getElementById('content');
@@ -2511,6 +3363,15 @@ function render() {
 
   // Sol & Måne-planlægger (uafhængigt af items/flickr)
   if (state.view === 'sol') { renderSol(content, statusEl); return; }
+
+  // Skyline-planlægger (uafhængigt af items/flickr)
+  if (state.view === 'sky') { renderSky(content, statusEl); return; }
+
+  // Skyfri-finder (uafhængigt af items/flickr)
+  if (state.view === 'clear') { renderClear(content, statusEl); return; }
+
+  // Vestkysten "mangler foto" (uafhængigt af items/flickr)
+  if (state.view === 'foto') { renderFoto(content, statusEl); return; }
 
   // Fase 1: landmark-overblik som standard-view (falder tilbage til feed hvis ingen grupper)
   if (state.view === 'overblik' && state.flickrLandmarkMode && state.flickr.length) {
@@ -2625,8 +3486,14 @@ function renderTagFilters() {
 
   const routePill = `<button class="pill ${state.view === 'ruter' ? 'active' : ''}" data-action="view-ruter">🗺️ Ruter</button>`;
   const solPill = `<button class="pill ${state.view === 'sol' ? 'active' : ''}" data-action="view-sol">🌅 Sol & Måne</button>`;
+  const skyPill = `<button class="pill ${state.view === 'sky' ? 'active' : ''}" data-action="view-sky">🏙️ Skyline</button>`;
+  const clearPill = `<button class="pill ${state.view === 'clear' ? 'active' : ''}" data-action="view-clear">☁️ Skyfri</button>`;
+  const remaining = state.photoScout.filter(p => !state.photoShot.has(p.id)).length;
+  const fotoPill = state.photoScout.length
+    ? `<button class="pill ${state.view === 'foto' ? 'active' : ''}" data-action="view-foto">📷 Mangler foto${remaining ? ` (${remaining})` : ' ✓'}</button>`
+    : '';
 
-  filtersEl.innerHTML = townPicker + routePill + solPill + viewToggle + basePills + likedPill + hiddenPill + togglePill + landmarkPill + tagPills;
+  filtersEl.innerHTML = townPicker + routePill + fotoPill + solPill + skyPill + clearPill + viewToggle + basePills + likedPill + hiddenPill + togglePill + landmarkPill + tagPills;
 }
 
 // --- Filter click ---
@@ -2665,6 +3532,28 @@ document.getElementById('filters').addEventListener('click', async e => {
     document.getElementById('filtersPanel').classList.remove('open');
     window.scrollTo(0, 0);
     render(); return;
+  }
+  if (pill.dataset.action === 'view-sky') {
+    state.view = 'sky';
+    document.getElementById('filtersPanel').classList.remove('open');
+    window.scrollTo(0, 0);
+    if (!SKY.results) SKY.scan(); else render();
+    return;
+  }
+  if (pill.dataset.action === 'view-clear') {
+    state.view = 'clear';
+    document.getElementById('filtersPanel').classList.remove('open');
+    window.scrollTo(0, 0);
+    render();
+    return;
+  }
+  if (pill.dataset.action === 'view-foto') {
+    state.view = 'foto';
+    document.getElementById('filtersPanel').classList.remove('open');
+    window.scrollTo(0, 0);
+    if (!state.photoScout.length) await loadPhotoScout();
+    render();
+    return;
   }
   if (pill.dataset.action === 'view-overblik') {
     state.view = 'overblik'; state.filter = 'all';
@@ -2723,6 +3612,84 @@ function buildFullRouteUrl(route) {
   const wp = mids.map(p => `${p.lat},${p.lon}`).join('|');
   return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=driving` +
     (wp ? `&waypoints=${encodeURIComponent(wp)}` : '');
+}
+
+// --- Vestkysten "mangler foto"-view ---
+const PS_CAT = {
+  naturomraader:  { i: '🌿', l: 'Naturområde' },
+  bunkere:        { i: '🪖', l: 'Bunker' },
+  museum:         { i: '🏛️', l: 'Museum' },
+  legesteder:     { i: '🛝', l: 'Legeplads' },
+  fyrtaarne:      { i: '🗼', l: 'Fyrtårn' },
+  gallerier:      { i: '🖼️', l: 'Galleri' },
+  kirker:         { i: '⛪', l: 'Kirke' },
+  sevaerdigheder: { i: '📸', l: 'Seværdighed' },
+  strande:        { i: '🏖️', l: 'Strand' }
+};
+function psCat(c) { return PS_CAT[c] || { i: '📍', l: c || 'Attraktion' }; }
+
+function togglePhotoShot(id) {
+  if (state.photoShot.has(id)) state.photoShot.delete(id);
+  else state.photoShot.add(id);
+  localStorage.setItem('fotoscout-shot', JSON.stringify([...state.photoShot]));
+  render();
+}
+
+function renderFoto(content, statusEl) {
+  const lbl = document.getElementById('activeFilterLabel');
+  if (lbl) lbl.textContent = 'Mangler foto';
+  const pos = effectivePos();
+  const all = state.photoScout.map(p => ({
+    ...p,
+    dist: (pos && p.lat && p.lon) ? haversine(pos.lat, pos.lon, p.lat, p.lon) : null
+  }));
+  const remaining = all.filter(p => !state.photoShot.has(p.id));
+  const done = all.filter(p => state.photoShot.has(p.id));
+  remaining.sort((a, b) => pos
+    ? ((a.dist ?? 1e9) - (b.dist ?? 1e9))
+    : ((a.city || '').localeCompare(b.city || '', 'da') || a.title.localeCompare(b.title, 'da')));
+
+  statusEl.innerHTML = `<span class="count">${remaining.length}</span> attraktioner mangler vores foto${done.length ? ` · ${done.length} taget` : ''}`;
+
+  if (!all.length) {
+    content.innerHTML = `<div class="empty"><div class="icon">📷</div><p>Ingen foto-liste indlæst</p>
+      <p class="sub">Kør photo_scout_feed.py --fotoscout for at opdatere listen</p></div>`;
+    return;
+  }
+
+  const card = (p) => {
+    const c = psCat(p.primary_category);
+    const navUrl = (p.lat && p.lon) ? `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving` : null;
+    const imgUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(p.title + ' ' + (p.city || ''))}`;
+    const shot = state.photoShot.has(p.id);
+    return `<div class="rt-stop">
+      <div class="rt-rail"><div class="rt-num">${c.i}</div><div class="rt-line"></div></div>
+      <div class="rt-info">
+        <div class="rt-name">${esc(p.title)}${shot ? ' <span style="color:#3fb950">✓</span>' : ''}</div>
+        <div class="rt-sub">${esc(p.city || '')}${p.dist != null ? ` · <span class="rt-dist">📏 ${formatDist(p.dist)}</span>` : ''}</div>
+        <div style="font-size:12px;color:var(--text-dim,#8b949e);margin:4px 0 8px">${esc(p.reason)}</div>
+        <div class="rt-row" style="flex-wrap:wrap;gap:8px">
+          ${navUrl ? `<a class="rt-go" href="${navUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🚗 Kør hertil</a>` : ''}
+          <a class="rt-go" style="background:none;border:1px solid var(--border,#30363d);color:inherit" href="${imgUrl}" target="fsimg" rel="noopener" onclick="event.stopPropagation()">🔍 Se stedet</a>
+          <button class="rt-go" style="cursor:pointer;background:${shot ? 'rgba(63,185,80,0.15)' : 'none'};border:1px solid ${shot ? '#3fb950' : 'var(--border,#30363d)'};color:${shot ? '#3fb950' : 'inherit'}" onclick="togglePhotoShot(${p.id})">${shot ? '✓ Fotograferet' : '📷 Markér fotograferet'}</button>
+          <span class="rt-badge">${c.l}</span>
+        </div>
+      </div>
+    </div>`;
+  };
+
+  const doneSection = done.length ? `
+    <details style="margin-top:16px">
+      <summary style="cursor:pointer;color:var(--text-dim,#8b949e);padding:8px 0">✓ Fotograferet (${done.length})</summary>
+      <div class="rt-timeline" style="opacity:.6">${done.map(card).join('')}</div>
+    </details>` : '';
+
+  content.innerHTML = `<div class="route-wrap">
+    <div class="route-intro">Attraktioner på Vestkysten der stadig viser et <b>Gemini-genereret placeholder-billede</b> — de trænger til <b>dit eget foto</b>. ${pos ? 'Sorteret efter afstand fra din position.' : 'Aktivér GPS for at sortere efter afstand.'} Tryk <b>Kør hertil</b> for navigation, og <b>Markér fotograferet</b> når du har taget billedet.</div>
+    ${remaining.length ? `<div class="rt-timeline">${remaining.map(card).join('')}</div>`
+      : `<div class="empty"><div class="icon">🎉</div><p>Alle attraktioner er fotograferet!</p></div>`}
+    ${doneSection}
+  </div>`;
 }
 
 function renderRuter(content, statusEl) {
@@ -2925,6 +3892,7 @@ window.addEventListener('keydown', (e) => {
 async function init() {
   await loadData();
   await loadTowns();
+  await loadPhotoScout();
 
   // Try geolocation
   try {
@@ -2958,6 +3926,7 @@ function handleInAppBack() {
   if (sheet && sheet.classList.contains('open')) { closeSheet(); return true; }   // 2. luk skjul-ark
   const panel = document.getElementById('filtersPanel');
   if (panel && panel.classList.contains('open')) { panel.classList.remove('open'); return true; }  // 3. luk menu
+  if (state.view === 'foto') { state.view = 'overblik'; render(); return true; }   // 4a. foto-liste -> overblik
   if (state.view === 'feed') { backToOverview(); return true; }        // 4. feed/landmark -> overblik
   return false;                                                        // ved overblik-roden
 }
