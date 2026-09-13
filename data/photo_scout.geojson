@@ -21,6 +21,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35232.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/bulbjerg-bunker/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=57.1579656,9.0254987"
@@ -46,6 +47,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35250.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/kalby-skov-halvdelingsbunker/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1721248,8.7731045"
@@ -71,6 +73,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35251.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/kalby-skov-maskingevaerbunker/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1727739,8.7672038"
@@ -96,6 +99,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35248.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/mammut-bunker/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1505729,8.5312875"
@@ -121,6 +125,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35229.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/maultier-bunker-2/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.5491555,8.109598"
@@ -146,6 +151,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35239.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/revolverkanonbunker-arrild/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1623934,8.9533784"
@@ -171,6 +177,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35240.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/sektionsbunker-arrild/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1556948,8.9425964"
@@ -196,6 +203,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35206.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/sikringsstilling-nord-4/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1528638,8.9655189"
@@ -221,6 +229,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35222.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/sikringsstilling-nord-2/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.1528492,8.9645513"
@@ -246,6 +255,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35238.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/stauning-batteri/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9960753,8.3236425"
@@ -271,6 +281,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35241.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/tarp-bunkermuseum/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.517961,8.4847901"
@@ -296,6 +307,7 @@
         "primary_category": "bunkere",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35231.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/tirpitz-stillingen/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.5544869,8.1691428"
@@ -321,6 +333,7 @@
         "primary_category": "fyrtaarne",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35193.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/agger-tange-forfyr/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7161721,8.2355194"
@@ -346,6 +359,7 @@
         "primary_category": "fyrtaarne",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35191.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/grisetaaodde/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.5806159,8.5664752"
@@ -371,6 +385,7 @@
         "primary_category": "fyrtaarne",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35192.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/thyboroen-tange-nord-fyr/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7059954,8.2233686"
@@ -396,6 +411,7 @@
         "primary_category": "fyrtaarne",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35194.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/vorupoer-bagfyr/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.9579761,8.3707037"
@@ -421,6 +437,7 @@
         "primary_category": "fyrtaarne",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35195.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/vorupoer-forfyr/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.958728,8.3691239"
@@ -446,6 +463,7 @@
         "primary_category": "gallerier",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35185.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/bra-kunstudstilling/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4660898,8.4577652"
@@ -471,6 +489,7 @@
         "primary_category": "legesteder",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35301.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/lydlegeplads/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4702674,8.4513016"
@@ -496,6 +515,7 @@
         "primary_category": "legesteder",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35299.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/lykkens-have/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4637779,8.4531923"
@@ -521,6 +541,7 @@
         "primary_category": "legesteder",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35296.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/monkey-tonkey/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.1203411,8.1201777"
@@ -546,6 +567,7 @@
         "primary_category": "legesteder",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35297.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/sky-ride/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.1202796,8.1201499"
@@ -571,6 +593,7 @@
         "primary_category": "legesteder",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35298.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/vikingelegepladsen/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3256347,8.7653173"
@@ -596,6 +619,7 @@
         "primary_category": "legesteder",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35302.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/vognboelparkens-legeplads/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4842303,8.4429475"
@@ -621,6 +645,7 @@
         "primary_category": "museum",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35088.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/de-sorte-huse/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7847828,8.2351254"
@@ -646,6 +671,7 @@
         "primary_category": "museum",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/42675.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/det-graa-fyr/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=57.735602,10.630435"
@@ -671,6 +697,7 @@
         "primary_category": "museum",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35099.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/esbjerg-vandtaarn/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.4644744,8.4499456"
@@ -696,6 +723,7 @@
         "primary_category": "museum",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/42697.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/havets-hemmeligheder/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7058238,8.2132257"
@@ -721,6 +749,7 @@
         "primary_category": "museum",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/42672.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/ravhuset/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.7060148,8.2175965"
@@ -746,6 +775,7 @@
         "primary_category": "museum",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/42691.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/skagen-naturhistoriske-museum/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=57.7198915,10.537829"
@@ -771,6 +801,7 @@
         "primary_category": "museum",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/42676.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/stensamling/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=57.5845038,9.941885"
@@ -796,6 +827,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35294.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/boevling-fjord-nord/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.4276647,8.1465466"
@@ -821,6 +853,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35267.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/filsoe/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.7001908,8.2192452"
@@ -846,6 +879,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35286.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/harbooere-tange-vildtreservat/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.6526784,8.1970272"
@@ -871,6 +905,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35268.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/lustrup-faellesjord/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.2986219,8.798986"
@@ -896,6 +931,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35270.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/marskgaarden/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=54.9630593,8.6973719"
@@ -921,6 +957,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35288.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/nissum-fjord-vildtreservat/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.364173,8.2129869"
@@ -946,6 +983,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35279.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/ribe-vildtreservat/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.3223269,8.7773127"
@@ -971,6 +1009,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35281.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/ringkoebing-fjord-vildtreservat/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9552582,8.2537709"
@@ -996,6 +1035,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35266.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/skjern-enge/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.9243094,8.5107187"
@@ -1021,6 +1061,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35272.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/stormengene/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.0786328,8.5351109"
@@ -1046,6 +1087,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35278.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/struer-vildtreservat/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.4968888,8.5603866"
@@ -1071,6 +1113,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35273.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/soelsted-mose/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.0297508,8.8432382"
@@ -1096,6 +1139,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35290.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/tipperne/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=55.8718753,8.2354687"
@@ -1121,6 +1165,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35284.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/vejlerne-naturreservat-de-vestlige-vejler-2/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=57.0299645,8.9242379"
@@ -1146,6 +1191,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35274.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/vejlerne-naturreservat-de-oestlige-vejler-2/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=57.0743719,9.0792017"
@@ -1171,6 +1217,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35285.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/vejlerne-naturreservat-de-oestlige-vejler/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=57.0739196,9.0743199"
@@ -1196,6 +1243,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35277.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/vest-stadil-fjord-vildtreservat/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=56.2047768,8.1515628"
@@ -1221,6 +1269,7 @@
         "primary_category": "naturomraader",
         "reason_key": "illustration",
         "reason": "Viser en Gemini-illustration (lavet ud fra net-fundet referencefoto)",
+        "thumb": "thumbs/35264.jpg",
         "shot": false,
         "dev_url": "https://vestkystendk.local/listings/vilsboel-klitplantage/",
         "maps_url": "https://www.google.com/maps/search/?api=1&query=57.033243,8.5659039"

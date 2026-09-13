@@ -865,7 +865,8 @@ const state = {
   gpsLat: null, gpsLon: null, gpsName: null,   // den rigtige GPS-position (så man kan skifte tilbage)
   items: [],
   photoScout: [],   // Vestkysten-attraktioner der mangler VORES eget foto (Gemini-placeholder)
-  photoShot: new Set(JSON.parse(localStorage.getItem('fotoscout-shot') || '[]'))  // id'er markeret "fotograferet"
+  photoShot: new Set(JSON.parse(localStorage.getItem('fotoscout-shot') || '[]')),  // id'er markeret "fotograferet"
+  photoCat: localStorage.getItem('fotoscout-photocat') || 'all'   // kategori-filter i foto-view
 };
 
 // --- Haversine ---
@@ -3635,6 +3636,12 @@ function togglePhotoShot(id) {
   render();
 }
 
+function setPhotoCat(cat) {
+  state.photoCat = cat;
+  localStorage.setItem('fotoscout-photocat', cat);
+  render();
+}
+
 function renderFoto(content, statusEl) {
   const lbl = document.getElementById('activeFilterLabel');
   if (lbl) lbl.textContent = 'Mangler foto';
@@ -3643,27 +3650,52 @@ function renderFoto(content, statusEl) {
     ...p,
     dist: (pos && p.lat && p.lon) ? haversine(pos.lat, pos.lon, p.lat, p.lon) : null
   }));
-  const remaining = all.filter(p => !state.photoShot.has(p.id));
-  const done = all.filter(p => state.photoShot.has(p.id));
-  remaining.sort((a, b) => pos
-    ? ((a.dist ?? 1e9) - (b.dist ?? 1e9))
-    : ((a.city || '').localeCompare(b.city || '', 'da') || a.title.localeCompare(b.title, 'da')));
-
-  statusEl.innerHTML = `<span class="count">${remaining.length}</span> attraktioner mangler vores foto${done.length ? ` · ${done.length} taget` : ''}`;
 
   if (!all.length) {
+    statusEl.innerHTML = '';
     content.innerHTML = `<div class="empty"><div class="icon">📷</div><p>Ingen foto-liste indlæst</p>
       <p class="sub">Kør photo_scout_feed.py --fotoscout for at opdatere listen</p></div>`;
     return;
   }
+
+  // Kategori-filter: byg pills med antal tilbage pr. kategori (kun kategorier der findes)
+  const cat = state.photoCat || 'all';
+  const remainCount = {};
+  all.filter(p => !state.photoShot.has(p.id)).forEach(p => {
+    remainCount[p.primary_category] = (remainCount[p.primary_category] || 0) + 1;
+  });
+  const cats = [...new Set(all.map(p => p.primary_category))]
+    .sort((a, b) => psCat(a).l.localeCompare(psCat(b).l, 'da'));
+  const totalRemain = all.filter(p => !state.photoShot.has(p.id)).length;
+  const catPill = (key, label, n, active) =>
+    `<button class="pill ${active ? 'active' : ''}" onclick="setPhotoCat('${key}')">${label}${n != null ? ` (${n})` : ''}</button>`;
+  const catPills = `<div class="filters" style="padding:0 0 12px;display:flex;flex-wrap:wrap;gap:8px">
+    ${catPill('all', '📋 Alle', totalRemain, cat === 'all')}
+    ${cats.map(k => catPill(k, `${psCat(k).i} ${psCat(k).l}`, remainCount[k] || 0, cat === k)).join('')}
+  </div>`;
+
+  const inCat = p => cat === 'all' || p.primary_category === cat;
+  const remaining = all.filter(p => !state.photoShot.has(p.id) && inCat(p));
+  const done = all.filter(p => state.photoShot.has(p.id) && inCat(p));
+  remaining.sort((a, b) => pos
+    ? ((a.dist ?? 1e9) - (b.dist ?? 1e9))
+    : ((a.city || '').localeCompare(b.city || '', 'da') || a.title.localeCompare(b.title, 'da')));
+
+  const catLabel = cat === 'all' ? '' : ` · ${psCat(cat).l}`;
+  statusEl.innerHTML = `<span class="count">${remaining.length}</span> mangler vores foto${catLabel}${done.length ? ` · ${done.length} taget` : ''}`;
 
   const card = (p) => {
     const c = psCat(p.primary_category);
     const navUrl = (p.lat && p.lon) ? `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving` : null;
     const imgUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(p.title + ' ' + (p.city || ''))}`;
     const shot = state.photoShot.has(p.id);
+    // Venstre: nuværende placeholder-billede (thumbnail), ellers kategori-ikon
+    const thumb = p.thumb
+      ? `<img src="./data/${p.thumb}" alt="Nuværende billede" loading="lazy" style="width:74px;height:74px;object-fit:cover;border-radius:10px;display:block;border:1px solid var(--border)">
+         <div style="font-size:9px;text-align:center;color:var(--text-dim);margin-top:3px;letter-spacing:.03em">NU: AI-BILLEDE</div>`
+      : `<div style="width:74px;height:74px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--pin-bg);border:1px solid var(--border)">${c.i}</div>`;
     return `<div class="rt-stop">
-      <div class="rt-rail"><div class="rt-num">${c.i}</div><div class="rt-line"></div></div>
+      <div style="flex:0 0 auto;width:74px">${thumb}</div>
       <div class="rt-info">
         <div class="rt-name">${esc(p.title)}${shot ? ' <span style="color:#3fb950">✓</span>' : ''}</div>
         <div class="rt-sub">${esc(p.city || '')}${p.dist != null ? ` · <span class="rt-dist">📏 ${formatDist(p.dist)}</span>` : ''}</div>
@@ -3685,9 +3717,10 @@ function renderFoto(content, statusEl) {
     </details>` : '';
 
   content.innerHTML = `<div class="route-wrap">
-    <div class="route-intro">Attraktioner på Vestkysten der stadig viser et <b>Gemini-genereret placeholder-billede</b> — de trænger til <b>dit eget foto</b>. ${pos ? 'Sorteret efter afstand fra din position.' : 'Aktivér GPS for at sortere efter afstand.'} Tryk <b>Kør hertil</b> for navigation, og <b>Markér fotograferet</b> når du har taget billedet.</div>
+    <div class="route-intro">Attraktioner på Vestkysten der stadig viser et <b>Gemini-genereret placeholder-billede</b> (vist til venstre) — de trænger til <b>dit eget foto</b>. ${pos ? 'Sorteret efter afstand fra din position.' : 'Aktivér GPS for at sortere efter afstand.'} Vælg kategori nedenfor, tryk <b>Kør hertil</b> for navigation, og <b>Markér fotograferet</b> når du har taget billedet.</div>
+    ${catPills}
     ${remaining.length ? `<div class="rt-timeline">${remaining.map(card).join('')}</div>`
-      : `<div class="empty"><div class="icon">🎉</div><p>Alle attraktioner er fotograferet!</p></div>`}
+      : `<div class="empty"><div class="icon">🎉</div><p>${cat === 'all' ? 'Alle attraktioner er fotograferet!' : 'Ingen tilbage i ' + psCat(cat).l + '!'}</p></div>`}
     ${doneSection}
   </div>`;
 }
