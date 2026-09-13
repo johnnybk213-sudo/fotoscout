@@ -866,7 +866,8 @@ const state = {
   items: [],
   photoScout: [],   // Vestkysten-attraktioner der mangler VORES eget foto (Gemini-placeholder)
   photoShot: new Set(JSON.parse(localStorage.getItem('fotoscout-shot') || '[]')),  // id'er markeret "fotograferet"
-  photoCat: localStorage.getItem('fotoscout-photocat') || 'all'   // kategori-filter i foto-view
+  photoCat: localStorage.getItem('fotoscout-photocat') || 'all',   // kategori-filter i foto-view
+  photoMapMode: localStorage.getItem('fotoscout-photomap') === '1'  // foto-view: kort vs liste
 };
 
 // --- Haversine ---
@@ -3617,17 +3618,64 @@ function buildFullRouteUrl(route) {
 
 // --- Vestkysten "mangler foto"-view ---
 const PS_CAT = {
-  naturomraader:  { i: '🌿', l: 'Naturområde' },
-  bunkere:        { i: '🪖', l: 'Bunker' },
-  museum:         { i: '🏛️', l: 'Museum' },
-  legesteder:     { i: '🛝', l: 'Legeplads' },
-  fyrtaarne:      { i: '🗼', l: 'Fyrtårn' },
-  gallerier:      { i: '🖼️', l: 'Galleri' },
-  kirker:         { i: '⛪', l: 'Kirke' },
-  sevaerdigheder: { i: '📸', l: 'Seværdighed' },
-  strande:        { i: '🏖️', l: 'Strand' }
+  naturomraader:  { i: '🌿', l: 'Naturområde', c: '#2e7d32' },
+  bunkere:        { i: '🪖', l: 'Bunker',      c: '#6d4c41' },
+  museum:         { i: '🏛️', l: 'Museum',      c: '#1565c0' },
+  legesteder:     { i: '🛝', l: 'Legeplads',   c: '#f9a825' },
+  fyrtaarne:      { i: '🗼', l: 'Fyrtårn',     c: '#c62828' },
+  gallerier:      { i: '🖼️', l: 'Galleri',     c: '#6a1b9a' },
+  kirker:         { i: '⛪', l: 'Kirke',        c: '#455a64' },
+  sevaerdigheder: { i: '📸', l: 'Seværdighed', c: '#00838f' },
+  strande:        { i: '🏖️', l: 'Strand',      c: '#fbc02d' }
 };
-function psCat(c) { return PS_CAT[c] || { i: '📍', l: c || 'Attraktion' }; }
+function psCat(c) { return PS_CAT[c] || { i: '📍', l: c || 'Attraktion', c: '#e91e63' }; }
+
+let _photoMap = null;   // Leaflet-instans for foto-kortet (fjernes før re-init)
+
+function setPhotoMapMode(on) {
+  state.photoMapMode = on;
+  localStorage.setItem('fotoscout-photomap', on ? '1' : '0');
+  render();
+}
+
+function renderPhotoMap(pts, pos) {
+  const el = document.getElementById('photoMap');
+  if (!el) return;
+  if (typeof L === 'undefined') {
+    el.innerHTML = '<div class="empty"><div class="icon">🗺️</div><p>Kort kræver net ved første indlæsning</p><p class="sub">Prøv igen med forbindelse — derefter virker det offline.</p></div>';
+    return;
+  }
+  if (_photoMap) { try { _photoMap.remove(); } catch (e) {} _photoMap = null; }
+  const map = L.map(el, { zoomControl: true }).setView([56.2, 8.4], 8);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  const bounds = [];
+  pts.forEach(p => {
+    if (!(p.lat && p.lon)) return;
+    const c = psCat(p.primary_category);
+    const shot = state.photoShot.has(p.id);
+    const color = shot ? '#3fb950' : c.c;
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.5)"></div>`,
+      iconSize: [18, 18], iconAnchor: [9, 9]
+    });
+    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving`;
+    const thumb = p.thumb ? `<img src="./data/${p.thumb}" alt="" style="width:100%;height:96px;object-fit:cover;border-radius:6px;margin-bottom:6px">` : '';
+    L.marker([p.lat, p.lon], { icon }).addTo(map).bindPopup(
+      `<div style="min-width:170px">${thumb}<b>${esc(p.title)}</b><br>
+       <span style="color:#666;font-size:12px">${c.i} ${c.l}${p.city ? ' · ' + esc(p.city) : ''}</span><br>
+       <a href="${navUrl}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;font-weight:700;color:#1565c0;text-decoration:none">🚗 Kør hertil</a><br>
+       <button onclick="togglePhotoShot(${p.id})" style="margin-top:6px;padding:5px 10px;border-radius:6px;border:1px solid #ccc;background:${shot ? '#e8f5e9' : '#fff'};cursor:pointer">${shot ? '✓ Fotograferet' : '📷 Markér fotograferet'}</button></div>`);
+    bounds.push([p.lat, p.lon]);
+  });
+  if (pos) {
+    L.circleMarker([pos.lat, pos.lon], { radius: 6, color: '#1e88e5', fillColor: '#42a5f5', fillOpacity: 1, weight: 2 })
+      .addTo(map).bindPopup('📍 Din position');
+  }
+  if (bounds.length) { try { map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 }); } catch (e) {} }
+  setTimeout(() => { try { map.invalidateSize(); } catch (e) {} }, 60);
+  _photoMap = map;
+}
 
 function togglePhotoShot(id) {
   if (state.photoShot.has(id)) state.photoShot.delete(id);
@@ -3716,13 +3764,25 @@ function renderFoto(content, statusEl) {
       <div class="rt-timeline" style="opacity:.6">${done.map(card).join('')}</div>
     </details>` : '';
 
-  content.innerHTML = `<div class="route-wrap">
-    <div class="route-intro">Attraktioner på Vestkysten der stadig viser et <b>Gemini-genereret placeholder-billede</b> (vist til venstre) — de trænger til <b>dit eget foto</b>. ${pos ? 'Sorteret efter afstand fra din position.' : 'Aktivér GPS for at sortere efter afstand.'} Vælg kategori nedenfor, tryk <b>Kør hertil</b> for navigation, og <b>Markér fotograferet</b> når du har taget billedet.</div>
-    ${catPills}
-    ${remaining.length ? `<div class="rt-timeline">${remaining.map(card).join('')}</div>`
-      : `<div class="empty"><div class="icon">🎉</div><p>${cat === 'all' ? 'Alle attraktioner er fotograferet!' : 'Ingen tilbage i ' + psCat(cat).l + '!'}</p></div>`}
-    ${doneSection}
+  const mapMode = state.photoMapMode;
+  const toggleRow = `<div class="filters" style="padding:0 0 10px;display:flex;gap:8px">
+    <button class="pill ${!mapMode ? 'active' : ''}" onclick="setPhotoMapMode(false)">📋 Liste</button>
+    <button class="pill ${mapMode ? 'active' : ''}" onclick="setPhotoMapMode(true)">🗺️ Kort</button>
   </div>`;
+
+  const listBody = (remaining.length ? `<div class="rt-timeline">${remaining.map(card).join('')}</div>`
+      : `<div class="empty"><div class="icon">🎉</div><p>${cat === 'all' ? 'Alle attraktioner er fotograferet!' : 'Ingen tilbage i ' + psCat(cat).l + '!'}</p></div>`) + doneSection;
+  const mapBody = `<div id="photoMap" style="height:70vh;min-height:380px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>
+    <div style="font-size:12px;color:var(--text-dim);padding:8px 2px">Tryk på en pin for billede + <b>Kør hertil</b>. Grønne pins = allerede fotograferet.</div>`;
+
+  content.innerHTML = `<div class="route-wrap">
+    <div class="route-intro">Attraktioner på Vestkysten der stadig viser et <b>Gemini-genereret placeholder-billede</b> — de trænger til <b>dit eget foto</b>. ${pos ? 'Sorteret efter afstand fra din position.' : 'Aktivér GPS for afstand/din-position på kortet.'} Skift mellem liste og kort, og vælg kategori nedenfor.</div>
+    ${toggleRow}
+    ${catPills}
+    ${mapMode ? mapBody : listBody}
+  </div>`;
+
+  if (mapMode) renderPhotoMap(remaining.concat(done), pos);
 }
 
 function renderRuter(content, statusEl) {
